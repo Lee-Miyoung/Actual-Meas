@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v14.1)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v15.1)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -39,6 +39,10 @@
         .btn-action:active { transform: scale(0.96); opacity: 0.9; }
         .btn-action * { pointer-events: none; }
 
+        .tab-btn { flex: 1; padding: 10px; font-size: 13px; font-weight: 800; text-align: center; cursor: pointer; border-radius: 10px; transition: all 0.2s; }
+        .tab-btn.active { background: white; color: #2563eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .tab-btn.inactive { color: #94a3b8; }
+
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .accordion-content.open { max-height: 1000px; transition: max-height 0.5s ease-in; }
         input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -51,9 +55,9 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v14.1</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v15.1</p>
             <div class="relative mb-4">
-                <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500 transition-all placeholder-slate-400" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
+                <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
             <button onclick="checkAppLogin()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-black text-lg shadow-xl hover:bg-slate-800 transition-colors">접속하기</button>
             <p class="text-[10px] text-slate-300 mt-6 tracking-widest uppercase">Authorized Personnel Only</p>
@@ -61,7 +65,7 @@
     </div>
 
     <div id="pwd-modal" class="modal-overlay">
-        <div class="bg-white p-6 rounded-3xl shadow-2xl w-[90%] max-w-xs mx-auto animate-fade-in-up">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl w-[90%] max-w-xs mx-auto">
             <div class="text-center mb-5">
                 <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-600"><i class="fas fa-lock text-xl"></i></div>
                 <h3 class="text-lg font-black text-slate-900">관리자 인증</h3>
@@ -78,7 +82,7 @@
         <header class="flex flex-col items-center justify-center mb-8 relative pt-4">
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm">
-                    <i class="fas fa-star text-yellow-300 text-[8px]"></i> Zone System
+                    <i class="fas fa-star text-yellow-300 text-[8px]"></i> Direct-Height System
                 </div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
                 <p class="text-sm text-slate-500 font-bold">Smart Quote System <span class="text-slate-300">|</span> Wall Panels</p>
@@ -90,7 +94,13 @@
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400"></div>
                 
                 <div class="space-y-4">
-                    <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5"><i class="fas fa-user-circle text-blue-500"></i> 고객 정보</h3>
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5"><i class="fas fa-user-circle text-blue-500"></i> 고객 정보</h3>
+                        <div class="flex bg-slate-100 p-1 rounded-xl w-40">
+                            <div id="tab-home" onclick="setSpaceType('home')" class="tab-btn active">주거</div>
+                            <div id="tab-shop" onclick="setSpaceType('shop')" class="tab-btn inactive">상가</div>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="input-group"><input type="text" id="cust-name" class="input-premium" placeholder="고객명" oninput="updateCustInfo();"><span class="input-label">성함</span></div>
                         <div class="input-group"><input type="tel" id="cust-phone" class="input-premium" placeholder="010-1234-5678" oninput="formatPhone(this); updateCustInfo();"><span class="input-label">연락처</span></div>
@@ -102,7 +112,7 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
                         <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5"><i class="fas fa-layer-group text-blue-500"></i> 자재 선택</h3>
-                        <label class="flex items-center gap-2 cursor-pointer group">
+                        <label class="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" id="manual-mode-toggle" class="sr-only peer" onchange="toggleManualMode();">
                             <span class="text-[10px] font-bold text-slate-400">수기 입력</span>
                             <div class="w-8 h-4 bg-slate-200 rounded-full peer peer-checked:bg-blue-500 relative transition-all"><div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-all peer-checked:left-4.5"></div></div>
@@ -128,30 +138,48 @@
                 <hr class="border-slate-100">
 
                 <div>
-                    <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5 mb-3"><i class="fas fa-ruler-combined text-blue-500"></i> 공간별 상세 견적</h3>
-                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-4">
+                    <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5 mb-3"><i class="fas fa-ruler-combined text-blue-500"></i> 공간별 상세 견적 (mm 단위)</h3>
+                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-4 shadow-inner">
                         <div class="flex gap-2 mb-3">
                             <select id="zone-name-select" class="flex-1 p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 outline-none">
-                                <option value="거실 아트월">거실 아트월</option>
-                                <option value="거실 쇼파월">거실 쇼파월</option>
-                                <option value="복도 전체">복도 전체</option>
-                                <option value="주방 벽면">주방 벽면</option>
-                                <option value="현관">현관</option>
-                                <option value="기타">기타</option>
+                                <optgroup label="주거 공간" id="opt-home">
+                                    <option value="거실 아트월">거실 아트월</option>
+                                    <option value="거실 쇼파월">거실 쇼파월</option>
+                                    <option value="복도 전체">복도 전체</option>
+                                    <option value="현관">현관</option>
+                                </optgroup>
+                                <optgroup label="상업 공간" id="opt-shop" class="hidden">
+                                    <option value="매장 메인벽">매장 메인벽</option>
+                                    <option value="카운터 배면">카운터 배면</option>
+                                    <option value="홀 측면">홀 측면</option>
+                                    <option value="입구 파사드">입구 파사드</option>
+                                </optgroup>
+                                <option value="기타 직접입력">기타 직접입력</option>
                             </select>
-                            <input type="number" id="zone-deduct-input" class="w-24 p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 text-center outline-none" placeholder="공제(㎡)">
+                            <div class="relative w-32">
+                                <input type="number" id="zone-deduct-input" class="w-full p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 text-center outline-none" placeholder="공제(㎡)">
+                                <span class="absolute right-2 top-2 text-[8px] text-slate-300">공제</span>
+                            </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <input type="number" id="zone-width-input" class="flex-1 p-3 bg-white rounded-xl text-center font-black text-slate-700 border border-slate-200" placeholder="가로(mm)">
-                            <span class="text-slate-400 font-bold">×</span>
-                            <input type="number" id="zone-height-input" class="flex-1 p-3 bg-white rounded-xl text-center font-black text-slate-700 border border-slate-200" placeholder="높이(mm)" value="2300">
-                            <button onclick="addZone()" class="bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all"><i class="fas fa-plus"></i></button>
+                            <div class="flex-1">
+                                <span class="text-[9px] font-black text-slate-400 block mb-1 uppercase ml-1">Width (가로)</span>
+                                <input type="number" id="zone-width-input" class="w-full p-3 bg-white rounded-xl text-center font-black text-slate-700 border border-slate-200 focus:border-blue-500 outline-none" placeholder="0">
+                            </div>
+                            <span class="text-slate-300 font-bold mt-4">×</span>
+                            <div class="flex-1">
+                                <span class="text-[9px] font-black text-blue-500 block mb-1 uppercase ml-1 text-center">Height (높이)</span>
+                                <input type="number" id="zone-height-input" class="w-full p-3 bg-blue-50 rounded-xl text-center font-black text-blue-700 border border-blue-200 focus:ring-2 ring-blue-500 outline-none" placeholder="직접입력">
+                            </div>
+                            <button onclick="addZone()" class="bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all mt-4"><i class="fas fa-plus"></i></button>
                         </div>
                     </div>
+
                     <div id="zone-list-container" class="space-y-2 mb-4"></div>
+
                     <div class="grid grid-cols-2 gap-2">
                          <div class="stat-box !bg-blue-50 flex flex-col justify-center">
-                            <span class="stat-label">총 면적 합계</span>
+                            <span class="stat-label text-blue-400">총 실면적 합계</span>
                             <div class="flex items-center justify-center gap-1"><input type="number" id="input-real-m2" class="stat-input text-blue-600" placeholder="0" readonly><span class="text-xs font-bold text-blue-300">㎡</span></div>
                         </div>
                         <div class="stat-box !bg-slate-900 border-slate-900 flex flex-col justify-center">
@@ -164,7 +192,7 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div class="stat-box !bg-slate-50 flex flex-col justify-center"><span class="stat-label">1Box 면적(㎡)</span><input type="number" id="input-factor" class="stat-input text-slate-600 text-base" value="3.2" oninput="calculate();"></div>
                     <div class="stat-box !bg-slate-50 flex flex-col justify-center"><span class="stat-label">로스율(%)</span>
-                        <select id="select-loss" class="w-full bg-transparent font-bold text-center outline-none text-slate-600" onchange="calculate();"><option value="5">5%</option><option value="10" selected>10%</option><option value="15">15%</option></select>
+                        <select id="select-loss" class="w-full bg-transparent font-bold text-center outline-none text-slate-600" onchange="calculate();"><option value="5">5%</option><option value="10" selected>10%</option><option value="15">15%</option><option value="20">20%</option></select>
                     </div>
                 </div>
 
@@ -221,7 +249,7 @@
 
     <script>
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSnR1o1t9JI_ar-N_puOF6UpeM9N3RWWHIStfaRj17wXewF8_WPh5neRqk8J5MApdLFQXrnCbHssklU/pub?output=csv";
-        let masterData = []; let isManualMode = false; let zoneList = [];
+        let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'home';
 
         window.onload = async function() {
             if (localStorage.getItem('cm_auth_session') === 'valid') {
@@ -231,24 +259,43 @@
             document.getElementById('quote-number-disp').innerText = "NO. " + generateQuoteNumber();
         };
 
-        // [복구] 로그인 및 모달 핸들러
         function checkAppLogin() { if (btoa(document.getElementById('app-password').value) === 'MTMwNg==') { localStorage.setItem('cm_auth_session', 'valid'); location.reload(); } else { alert('오류'); } }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function handleAuthSubmit() { if(btoa(document.getElementById('admin-pwd-input').value) === 'MjU4MA==') { closeModal('pwd-modal'); } }
 
-        // [추천 로직] Zone 관리
+        // [MODIFIED] 탭 변경 시 높이를 자동 세팅하지 않도록 수정
+        function setSpaceType(type) {
+            spaceType = type;
+            document.getElementById('tab-home').className = type === 'home' ? 'tab-btn active' : 'tab-btn inactive';
+            document.getElementById('tab-shop').className = type === 'shop' ? 'tab-btn active' : 'tab-btn inactive';
+            document.getElementById('opt-home').classList.toggle('hidden', type !== 'home');
+            document.getElementById('opt-shop').classList.toggle('hidden', type !== 'shop');
+            document.getElementById('zone-name-select').value = type === 'home' ? '거실 아트월' : '매장 메인벽';
+            
+            // 기존에 입력된 값이 없다면 주거 공간용 2300만 살짝 추천 표시(Placeholder처럼)
+            if (type === 'home' && !document.getElementById('zone-height-input').value) {
+                document.getElementById('zone-height-input').value = 2300;
+            } else if (type === 'shop') {
+                // 상가는 층고가 너무 다양하므로 입력창을 비워주어 직접 입력을 유도
+                document.getElementById('zone-height-input').value = "";
+                document.getElementById('zone-height-input').placeholder = "직접입력";
+            }
+        }
+
         function addZone() {
             const name = document.getElementById('zone-name-select').value;
             const w = parseFloat(document.getElementById('zone-width-input').value) || 0;
             const h = parseFloat(document.getElementById('zone-height-input').value) || 0;
             const deduct = parseFloat(document.getElementById('zone-deduct-input').value) || 0;
-            if (w === 0 || h === 0) return;
+            if (w === 0 || h === 0) { alert("가로와 높이를 모두 입력해주세요."); return; }
             let area = (w * h) / 1000000 - deduct;
             zoneList.push({ name, w, h, deduct, area: area < 0 ? 0 : area });
             document.getElementById('zone-width-input').value = '';
+            // 높이는 여러 구역 시공 시 편의를 위해 유지 (사용자가 수정 가능)
             document.getElementById('zone-deduct-input').value = '';
             renderZones(); calculate();
         }
+
         function removeZone(index) { zoneList.splice(index, 1); renderZones(); calculate(); }
         function renderZones() {
             const container = document.getElementById('zone-list-container');
@@ -258,7 +305,7 @@
             zoneList.forEach((z, i) => {
                 const div = document.createElement('div');
                 div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm';
-                div.innerHTML = `<div><span class="text-xs font-black text-slate-700 block">${z.name}</span><span class="text-[10px] text-slate-400">${z.w}x${z.h}mm (-${z.deduct}㎡)</span></div><div class="flex items-center gap-3"><span class="text-sm font-black text-blue-600">${z.area.toFixed(2)}㎡</span><button onclick="removeZone(${i})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></div>`;
+                div.innerHTML = `<div><span class="text-xs font-black text-slate-700 block">${z.name}</span><span class="text-[10px] text-slate-400">W:${z.w} / H:${z.h}mm ${z.deduct > 0 ? `(-${z.deduct}㎡)` : ''}</span></div><div class="flex items-center gap-3"><span class="text-sm font-black text-blue-600">${z.area.toFixed(2)}㎡</span><button onclick="removeZone(${i})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></div>`;
                 container.appendChild(div);
                 summaryHTML += `<div>${z.name}: ${z.area.toFixed(2)}㎡</div>`;
             });
@@ -301,13 +348,13 @@
             const name = document.getElementById('cust-name').value;
             document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님";
             const phone = document.getElementById('cust-phone').value;
-            const addr = ""; // 필요시 추가
             document.getElementById('disp-cust-info').innerHTML = phone;
         }
 
         function formatPhone(el) { el.value = el.value.replace(/[^0-9]/g, "").replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, "$1-$2-$3").replace("--", "-"); }
         function formatInput(el) { let val = el.value.replace(/[^0-9]/g, ''); el.value = val ? parseInt(val).toLocaleString() : ''; }
         function toggleManualMode() { isManualMode = document.getElementById('manual-mode-toggle').checked; document.getElementById('select-area').classList.toggle('hidden', isManualMode); document.getElementById('manual-area').classList.toggle('hidden', !isManualMode); calculate(); }
+        
         async function loadSheetData() {
             try {
                 const res = await fetch(SHEET_URL + "&cache=" + Date.now());
