@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v15.5)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v15.6)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -33,11 +33,8 @@
         .stat-label { font-size: 11px; font-weight: 800; color: #94a3b8; display: block; margin-bottom: 4px; }
         .stat-input { width: 100%; background: transparent; text-align: center; font-weight: 900; font-size: 1.4rem; outline: none; color: #1e293b; }
         
-        .btn-action { 
-            display: flex; align-items: center; justify-content: center; width: 100%; padding: 16px 12px; border-radius: 14px; font-weight: 800; font-size: 14px; transition: all 0.1s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); touch-action: manipulation; cursor: pointer; user-select: none;
-        }
+        .btn-action { display: flex; align-items: center; justify-content: center; width: 100%; padding: 16px 12px; border-radius: 14px; font-weight: 800; font-size: 14px; transition: all 0.1s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); touch-action: manipulation; cursor: pointer; user-select: none; }
         .btn-action:active { transform: scale(0.96); opacity: 0.9; }
-        .btn-action * { pointer-events: none; }
 
         .tab-btn { flex: 1; padding: 10px; font-size: 13px; font-weight: 800; text-align: center; cursor: pointer; border-radius: 10px; transition: all 0.2s; }
         .tab-btn.active { background: white; color: #2563eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
@@ -56,7 +53,7 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v15.5</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v15.6</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -83,7 +80,7 @@
         <header class="flex flex-col items-center justify-center mb-8 relative pt-4">
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm">
-                    <i class="fas fa-star text-yellow-300 text-[8px]"></i> Residential Specialized
+                    <i class="fas fa-star text-yellow-300 text-[8px]"></i> Smart Quote System
                 </div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
                 <p class="text-sm text-slate-500 font-bold">Smart Quote System <span class="text-slate-300">|</span> Wall Panels</p>
@@ -247,8 +244,6 @@
     <script>
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSnR1o1t9JI_ar-N_puOF6UpeM9N3RWWHIStfaRj17wXewF8_WPh5neRqk8J5MApdLFQXrnCbHssklU/pub?output=csv";
         let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'home';
-
-        // [수정] 탭별 공간 리스트 정의
         const spaceOptions = {
             home: ["거실 아트월", "거실 쇼파월", "복도 전체", "현관", "주방연결부분", "기타 직접입력"],
             shop: ["매장 메인벽", "카운터 배면", "홀 측면", "입구 파사드", "기타 직접입력"]
@@ -259,7 +254,7 @@
                 document.getElementById('login-gate').style.display = 'none';
                 await loadSheetData();
             }
-            setSpaceType('home'); // 초기 세팅
+            setSpaceType('home');
             document.getElementById('quote-number-disp').innerText = "NO. " + generateQuoteNumber();
         };
 
@@ -267,22 +262,12 @@
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function handleAuthSubmit() { if(btoa(document.getElementById('admin-pwd-input').value) === 'MjU4MA==') { closeModal('pwd-modal'); } }
 
-        // [수정] 탭 변경 시 목록을 아예 새로 그림 (모바일 섞임 방지)
         function setSpaceType(type) {
             spaceType = type;
             document.getElementById('tab-home').className = type === 'home' ? 'tab-btn active' : 'tab-btn inactive';
             document.getElementById('tab-shop').className = type === 'shop' ? 'tab-btn active' : 'tab-btn inactive';
-            
-            const sel = document.getElementById('zone-name-select');
-            sel.innerHTML = ''; // 기존 항목 완전 삭제
-            
-            spaceOptions[type].forEach(opt => {
-                const o = document.createElement('option');
-                o.value = opt;
-                o.innerText = opt;
-                sel.appendChild(o);
-            });
-
+            const sel = document.getElementById('zone-name-select'); sel.innerHTML = '';
+            spaceOptions[type].forEach(opt => { const o = document.createElement('option'); o.value = opt; o.innerText = opt; sel.appendChild(o); });
             if (type === 'home') document.getElementById('zone-height-input').placeholder = "2300 (추천)";
             else document.getElementById('zone-height-input').placeholder = "직접입력";
         }
@@ -295,26 +280,20 @@
             if (w === 0 || h === 0) { alert("가로와 높이를 입력해주세요."); return; }
             let area = (w * h) / 1000000 - deduct;
             zoneList.push({ name, w, h, deduct, area: area < 0 ? 0 : area });
-            document.getElementById('zone-width-input').value = '';
-            document.getElementById('zone-deduct-input').value = '';
+            document.getElementById('zone-width-input').value = ''; document.getElementById('zone-deduct-input').value = '';
             renderZones(); calculate();
         }
 
         function removeZone(index) { zoneList.splice(index, 1); renderZones(); calculate(); }
         function renderZones() {
-            const container = document.getElementById('zone-list-container');
-            const summary = document.getElementById('res-zone-summary');
-            container.innerHTML = '';
-            let summaryHTML = '<strong class="block mb-1">시공 구역 상세</strong>';
+            const container = document.getElementById('zone-list-container'); const summary = document.getElementById('res-zone-summary');
+            container.innerHTML = ''; let summaryHTML = '<strong class="block mb-1">시공 구역 상세</strong>';
             zoneList.forEach((z, i) => {
-                const div = document.createElement('div');
-                div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm';
+                const div = document.createElement('div'); div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm';
                 div.innerHTML = `<div><span class="text-xs font-black text-slate-700 block">${z.name}</span><span class="text-[10px] text-slate-400">W:${z.w} / H:${z.h}mm ${z.deduct > 0 ? `(-${z.deduct}㎡)` : ''}</span></div><div class="flex items-center gap-3"><span class="text-sm font-black text-blue-600">${z.area.toFixed(2)}㎡</span><button onclick="removeZone(${i})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></div>`;
-                container.appendChild(div);
-                summaryHTML += `<div>${z.name}: ${z.area.toFixed(2)}㎡</div>`;
+                container.appendChild(div); summaryHTML += `<div>${z.name}: ${z.area.toFixed(2)}㎡</div>`;
             });
-            summary.innerHTML = summaryHTML;
-            summary.classList.toggle('hidden', zoneList.length === 0);
+            summary.innerHTML = summaryHTML; summary.classList.toggle('hidden', zoneList.length === 0);
         }
 
         function calculate() {
@@ -343,22 +322,15 @@
         function updateInfoText() {
             const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value;
             const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value;
-            document.getElementById('res-brand-category').innerText = brand || "BRAND";
-            document.getElementById('res-product').innerText = prod || "제품명";
+            document.getElementById('res-brand-category').innerText = brand || "BRAND"; document.getElementById('res-product').innerText = prod || "제품명";
             updateCustInfo();
         }
 
         function updateCustInfo() {
-            const name = document.getElementById('cust-name').value;
-            const phone = document.getElementById('cust-phone').value;
-            const addr = document.getElementById('cust-addr').value;
-            const sDate = document.getElementById('cust-survey-date').value;
-            const wDate = document.getElementById('cust-work-date').value;
+            const name = document.getElementById('cust-name').value; const phone = document.getElementById('cust-phone').value; const addr = document.getElementById('cust-addr').value; const sDate = document.getElementById('cust-survey-date').value; const wDate = document.getElementById('cust-work-date').value;
             document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님";
-            document.getElementById('disp-phone').innerText = phone || "-";
-            document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : "";
-            document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : "";
-            document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : "";
+            document.getElementById('disp-phone').innerText = phone || "-"; document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : "";
+            document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : ""; document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : "";
         }
 
         function formatPhone(el) { el.value = el.value.replace(/[^0-9]/g, "").replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, "$1-$2-$3").replace("--", "-"); }
@@ -367,38 +339,27 @@
         
         async function loadSheetData() {
             try {
-                const res = await fetch(SHEET_URL + "&cache=" + Date.now());
-                const text = await res.text();
-                const rows = text.split('\n').slice(1);
-                const tempMaster = {};
+                const res = await fetch(SHEET_URL + "&cache=" + Date.now()); const text = await res.text(); const rows = text.split('\n').slice(1); const tempMaster = {};
                 rows.forEach(row => {
                     const cols = row.match(/(".*?"|[^",\s\r\n]+)(?=\s*,|\s*$)/g);
                     if (cols && cols.length >= 4) {
-                        const brand = cols[0].replace(/"/g, '').trim();
-                        const name = cols[1].replace(/"/g, '').trim();
+                        const brand = cols[0].replace(/"/g, '').trim(); const name = cols[1].replace(/"/g, '').trim();
                         if (!tempMaster[brand]) tempMaster[brand] = { brand, products: [] };
                         tempMaster[brand].products.push({ name, price: parseInt(cols[2].replace(/[^0-9]/g,'')), factor: parseFloat(cols[3]) });
                     }
                 });
-                masterData = Object.values(tempMaster);
-                const bSel = document.getElementById('select-brand');
-                bSel.innerHTML = '<option value="">브랜드 선택</option>';
+                masterData = Object.values(tempMaster); const bSel = document.getElementById('select-brand'); bSel.innerHTML = '<option value="">브랜드 선택</option>';
                 masterData.forEach(b => bSel.add(new Option(b.brand, b.brand)));
             } catch (e) {}
         }
         function updateProducts() {
-            const bName = document.getElementById('select-brand').value;
-            const pSel = document.getElementById('select-product');
-            pSel.innerHTML = '<option value="">제품 선택</option>';
-            const bObj = masterData.find(x => x.brand === bName);
-            if(bObj) bObj.products.forEach(p => pSel.add(new Option(p.name, p.name)));
+            const bName = document.getElementById('select-brand').value; const pSel = document.getElementById('select-product'); pSel.innerHTML = '<option value="">제품 선택</option>';
+            const bObj = masterData.find(x => x.brand === bName); if(bObj) bObj.products.forEach(p => pSel.add(new Option(p.name, p.name)));
             handleProductSelect();
         }
         function handleProductSelect() {
-            const bName = document.getElementById('select-brand').value;
-            const pName = document.getElementById('select-product').value;
-            const bObj = masterData.find(x => x.brand === bName);
-            const pObj = bObj?.products.find(x => x.name === pName);
+            const bName = document.getElementById('select-brand').value; const pName = document.getElementById('select-product').value;
+            const bObj = masterData.find(x => x.brand === bName); const pObj = bObj?.products.find(x => x.name === pName);
             if (pObj) { document.getElementById('input-box-price').value = pObj.price.toLocaleString(); document.getElementById('input-factor').value = pObj.factor; }
             calculate();
         }
