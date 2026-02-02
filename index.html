@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v16.4)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v16.7)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -17,7 +17,6 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f4f8; color: #1e293b; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .premium-shadow { box-shadow: 0 10px 40px -10px rgba(30, 41, 59, 0.15); }
         .report-gradient { background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%); color: white; position: relative; }
@@ -29,7 +28,7 @@
         .input-premium { width: 100%; padding: 14px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #334155; outline: none; transition: all 0.2s; }
         .input-premium:focus { background: #fff; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         .input-label { position: absolute; top: -8px; left: 12px; background: #f8fafc; padding: 0 6px; font-size: 11px; font-weight: 800; color: #64748b; border-radius: 4px; }
-        .stat-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; text-align: center; height: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .stat-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
         .stat-label { font-size: 11px; font-weight: 800; color: #94a3b8; display: block; margin-bottom: 4px; }
         .stat-input { width: 100%; background: transparent; text-align: center; font-weight: 900; font-size: 1.4rem; outline: none; color: #1e293b; }
         .btn-action { display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 8px; border-radius: 14px; font-weight: 800; font-size: 13px; transition: all 0.1s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); touch-action: manipulation; cursor: pointer; user-select: none; }
@@ -55,7 +54,7 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v16.4</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v16.7</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -84,7 +83,7 @@
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm"><i class="fas fa-star text-yellow-300 text-[8px]"></i> PREMIUM SYSTEM</div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v16.4</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v16.7</p>
                 <div class="flex gap-2 justify-center">
                     <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 hover:text-blue-500"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="alert('준비중입니다.')" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2"><i class="fas fa-list-ul text-blue-500"></i> 기록 보기</button>
@@ -142,7 +141,7 @@
                         <div class="flex gap-2 mb-3">
                             <div id="zone-name-wrapper" class="flex-1 flex gap-1">
                                 <select id="zone-name-select" class="flex-1 p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 outline-none" onchange="handleZoneNameChange(this)"></select>
-                                <input type="text" id="zone-name-input" class="hidden flex-1 p-2 bg-blue-50 rounded-lg text-sm font-bold border border-blue-200 outline-none" placeholder="공간 이름 입력">
+                                <input type="text" id="zone-name-input" class="hidden flex-1 p-2 bg-blue-50 rounded-lg text-sm font-bold border border-blue-200 outline-none" placeholder="공간 이름">
                                 <button id="btn-reset-zone" onclick="resetZoneName()" class="hidden w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center text-slate-500"><i class="fas fa-undo"></i></button>
                             </div>
                             <div class="relative w-24"><input type="number" id="zone-deduct-input" class="w-full p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 text-center outline-none" placeholder="공제(㎡)"><span class="absolute right-1 top-2 text-[7px] text-slate-300">공제</span></div>
@@ -150,7 +149,7 @@
                         <div class="flex items-center gap-2">
                             <div class="flex-1"><span class="text-[9px] font-black text-slate-400 block mb-1 uppercase ml-1">가로(W)</span><input type="number" id="zone-width-input" class="w-full p-3 bg-white rounded-xl text-center font-black text-slate-700 border border-slate-200 outline-none" placeholder="0"></div>
                             <span class="text-slate-300 font-bold mt-4">×</span>
-                            <div class="flex-1"><span class="text-[9px] font-black text-blue-500 block mb-1 uppercase ml-1 text-center">높이(H)</span><input type="number" id="zone-height-input" class="w-full p-3 bg-blue-50 rounded-xl text-center font-black text-blue-700 border border-blue-200 outline-none" placeholder="직접입력"></div>
+                            <div class="flex-1"><span class="text-[9px] font-black text-blue-500 block mb-1 uppercase ml-1 text-center">높이(H)</span><input type="number" id="zone-height-input" class="w-full p-3 bg-blue-50 rounded-xl text-center font-black text-blue-700 border border-blue-200 outline-none" placeholder="2300"></div>
                             <button onclick="addZone()" class="bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all mt-4"><i class="fas fa-plus"></i></button>
                         </div>
                     </div>
@@ -161,34 +160,41 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="stat-box !bg-slate-50 flex flex-col justify-center"><span class="stat-label">1Box 면적(㎡)</span><input type="number" id="input-factor" class="stat-input text-slate-600 text-base" value="3.2" oninput="calculate();"></div>
-                    <div class="stat-box !bg-slate-50 flex flex-col justify-center"><span class="stat-label">로스율(%)</span><select id="select-loss" class="w-full bg-transparent font-bold text-center outline-none text-slate-600" onchange="calculate();"><option value="5">5%</option><option value="10" selected>10%</option><option value="15">15%</option><option value="20">20%</option></select></div>
-                </div>
-
                 <div class="border border-slate-200 rounded-2xl overflow-hidden">
                     <button onclick="toggleAccordion('extra-cost')" class="w-full flex justify-between items-center p-4 bg-slate-50"><span class="text-xs font-black text-slate-600 uppercase flex items-center gap-2"><i class="fas fa-tools"></i> 부자재 및 기타 시공비</span><i id="arrow-extra-cost" class="fas fa-chevron-down text-slate-400 transition-transform"></i></button>
                     <div id="content-extra-cost" class="accordion-content bg-white">
-                        <div class="p-4 grid grid-cols-2 gap-3">
-                            <div class="space-y-3">
-                                <div class="input-group"><input type="text" id="input-bond" class="input-premium text-right pr-8" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">전용본드</span><span class="absolute right-3 top-3.5 text-xs text-slate-400">원</span></div>
-                                <div class="input-group"><input type="text" id="input-wood" class="input-premium text-right pr-8" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">시공목</span><span class="absolute right-3 top-3.5 text-xs text-slate-400">원</span></div>
-                                <div class="input-group"><input type="text" id="input-corner" class="input-premium text-right pr-8" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">코너마감재</span><span class="absolute right-3 top-3.5 text-xs text-slate-400">원</span></div>
-                                <div class="input-group"><input type="text" id="input-removal" class="input-premium text-right pr-8" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">기존벽재제거(벽지,몰딩등)</span><span class="absolute right-3 top-3.5 text-xs text-slate-400">원</span></div>
+                        <div class="p-4 space-y-4">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="input-group"><input type="number" id="qty-bond" class="input-premium text-center" placeholder="개수" oninput="calculate();"><span class="input-label">전용본드 (개당 1만)</span></div>
+                                <div class="input-group"><input type="number" id="qty-wood" class="input-premium text-center" placeholder="개수" oninput="calculate();"><span class="input-label">시공목 (개당 5천)</span></div>
                             </div>
-                            <div class="space-y-3">
-                                <div class="input-group"><input type="text" id="input-lifting" class="input-premium text-right pr-8" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">운반/양중</span><span class="absolute right-3 top-3.5 text-xs text-slate-400">원</span></div>
-                                <div class="input-group"><input type="text" id="input-protection" class="input-premium text-right pr-8" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">보양 서비스</span><span class="absolute right-3 top-3.5 text-xs text-slate-400">원</span></div>
-                                <div class="input-group"><input type="text" id="input-travel" class="input-premium text-right pr-8" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">광역출장비</span><span class="absolute right-3 top-3.5 text-xs text-slate-400">원</span></div>
-                                <div class="input-group"><input type="text" id="input-waste" class="input-premium text-right pr-8" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">폐기물처리비(벽지,몰딩외)</span><span class="absolute right-3 top-3.5 text-xs text-slate-400">원</span></div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="input-group">
+                                    <select id="price-molding" class="input-premium" onchange="calculate();">
+                                        <option value="0">단가 선택</option>
+                                        <option value="5000">5,000원</option>
+                                        <option value="15000">15,000원</option>
+                                        <option value="10000">10,000원</option>
+                                    </select>
+                                    <span class="input-label">마감몰딩 단가</span>
+                                </div>
+                                <div class="input-group"><input type="number" id="qty-molding" class="input-premium text-center" placeholder="개수" oninput="calculate();"><span class="input-label">몰딩 개수</span></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="input-group"><input type="text" id="input-removal" class="input-premium text-right" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">기존벽재제거</span></div>
+                                <div class="input-group"><input type="text" id="input-waste" class="input-premium text-right" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">폐기물처리비</span></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="input-group"><input type="text" id="input-lifting" class="input-premium text-right" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">운반/양중</span></div>
+                                <div class="input-group"><input type="text" id="input-protection" class="input-premium text-right" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">보양/기타</span></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="capture-area" class="report-gradient rounded-[2rem] p-6 md:p-8 flex flex-col justify-between premium-shadow relative min-h-[850px] text-white overflow-hidden">
-                <div class="watermark-wrapper"><img src="maruni.png" class="watermark-img" onerror="this.style.display='none'"></div>
+            <div id="capture-area" class="report-gradient rounded-[2rem] p-6 md:p-8 flex flex-col justify-between premium-shadow relative min-h-[750px] text-white overflow-hidden">
+                <div class="watermark-wrapper"><img src="maruni.png" class="watermark-img" onerror="this.src='icon.jpg'"></div>
                 <div class="relative z-10">
                     <div class="flex justify-between items-start mb-8 pb-6 border-b border-white/10">
                         <div class="flex-1"><h2 id="disp-cust-name" class="text-2xl font-black mb-1">고객님</h2><div id="disp-cust-info" class="text-[11px] text-slate-400 opacity-80 space-y-0.5 font-bold"><p id="disp-phone">-</p><p id="disp-addr" class="text-blue-200/60"></p><div class="flex gap-3 mt-1 text-[10px]"><span id="disp-survey-date" class="text-amber-400/80"></span><span id="disp-work-date" class="text-emerald-400/80"></span></div></div></div>
@@ -200,11 +206,10 @@
                             <div class="flex justify-between text-xs" id="row-base"><span class="text-slate-300">기본 자재 및 시공비</span><span id="detail-base" class="font-bold">0 원</span></div>
                             <div class="flex justify-between text-xs hidden" id="row-bond"><span class="text-slate-300">전용본드</span><span id="detail-bond" class="font-bold">0 원</span></div>
                             <div class="flex justify-between text-xs hidden" id="row-wood"><span class="text-slate-300">시공목</span><span id="detail-wood" class="font-bold">0 원</span></div>
-                            <div class="flex justify-between text-xs hidden" id="row-corner"><span class="text-slate-300">코너마감재</span><span id="detail-corner" class="font-bold">0 원</span></div>
+                            <div class="flex justify-between text-xs hidden" id="row-corner"><span class="text-slate-300">코너마감재/몰딩</span><span id="detail-corner" class="font-bold">0 원</span></div>
                             <div class="flex justify-between text-xs hidden" id="row-removal"><span class="text-slate-300">기존벽재제거</span><span id="detail-removal" class="font-bold">0 원</span></div>
                             <div class="flex justify-between text-xs hidden" id="row-lifting"><span class="text-slate-300">운반/양중</span><span id="detail-lifting" class="font-bold">0 원</span></div>
-                            <div class="flex justify-between text-xs hidden" id="row-protection"><span class="text-slate-300">보양</span><span id="detail-protection" class="font-bold">0 원</span></div>
-                            <div class="flex justify-between text-xs hidden" id="row-travel"><span class="text-slate-300">출장비</span><span id="detail-travel" class="font-bold">0 원</span></div>
+                            <div class="flex justify-between text-xs hidden" id="row-protection"><span class="text-slate-300">보양/기타</span><span id="detail-protection" class="font-bold">0 원</span></div>
                             <div class="flex justify-between text-xs hidden" id="row-waste"><span class="text-slate-300">폐기물처리비</span><span id="detail-waste" class="font-bold">0 원</span></div>
                             <div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center font-black"><span class="text-xs text-slate-300">합계 (VAT 별도)</span><span id="res-total" class="text-lg text-white">0</span></div>
                         </div>
@@ -223,8 +228,8 @@
                         <div class="text-center mb-6"><span class="bg-white/20 px-2 py-0.5 rounded text-[9px] font-black text-white uppercase mb-1 inline-block">TOTAL AMOUNT (VAT INC.)</span><div class="flex items-baseline justify-center gap-1.5"><span id="res-total-vat" class="text-4xl md:text-5xl font-black text-white">0</span><span class="text-xl font-bold text-blue-200">원</span></div></div>
                         <div class="grid grid-cols-2 gap-2" data-html2canvas-ignore="true">
                             <button onclick="shareQuote()" class="btn-action bg-[#FEE500] text-[#3c1e1e]"><i class="fas fa-comment mr-2"></i> 카카오톡 공유</button>
-                            <button onclick="alert('문자가 전송되었습니다.')" class="btn-action bg-emerald-500 text-white"><i class="fas fa-sms mr-2"></i> 문자 전송</button>
-                            <button onclick="alert('데이터가 저장되었습니다.')" class="btn-action bg-slate-800 text-white"><i class="fas fa-save mr-2"></i> 기록 저장</button>
+                            <button onclick="sendSms()" class="btn-action bg-emerald-500 text-white"><i class="fas fa-sms mr-2"></i> 문자 전송</button>
+                            <button onclick="alert('기록이 저장되었습니다.')" class="btn-action bg-slate-800 text-white"><i class="fas fa-save mr-2"></i> 기록 저장</button>
                             <button onclick="saveImage()" class="btn-action bg-white text-blue-900"><i class="fas fa-download mr-2"></i> 이미지 저장</button>
                         </div>
                     </div>
@@ -252,16 +257,18 @@
         function removeZone(index) { zoneList.splice(index, 1); renderZones(); calculate(); }
         function renderZones() { const container = document.getElementById('zone-list-container'); const summary = document.getElementById('res-zone-summary'); container.innerHTML = ''; let summaryHTML = '<strong class="block mb-1">시공 구역 상세</strong>'; zoneList.forEach((z, i) => { const div = document.createElement('div'); div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm'; div.innerHTML = `<div><span class="text-xs font-black text-slate-700 block">${z.name}</span><span class="text-[10px] text-slate-400">W:${z.w} / H:${z.h}mm (-${z.deduct}㎡)</span></div><div class="flex items-center gap-3"><span class="text-sm font-black text-blue-600">${z.area.toFixed(2)}㎡</span><button onclick="removeZone(${i})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></div>`; container.appendChild(div); summaryHTML += `<div>${z.name}: ${z.area.toFixed(2)}㎡</div>`; }); summary.innerHTML = summaryHTML; summary.classList.toggle('hidden', zoneList.length === 0); }
         function calculate() { let totalM2 = zoneList.reduce((sum, z) => sum + z.area, 0); document.getElementById('input-real-m2').value = totalM2.toFixed(2); const factor = parseFloat(document.getElementById('input-factor').value) || 3.2; const loss = parseFloat(document.getElementById('select-loss').value) / 100; const boxes = totalM2 > 0 ? Math.ceil((totalM2 / factor) * (1 + loss)) : 0; document.getElementById('input-boxes').value = boxes; updateCalculations(boxes); }
-        function updateCalculations(boxes) { const getNum = (id) => parseInt(document.getElementById(id).value.replace(/,/g, '')) || 0; const price = getNum('input-box-price'); const costs = { base: boxes * price, bond: getNum('input-bond'), wood: getNum('input-wood'), corner: getNum('input-corner'), removal: getNum('input-removal'), lifting: getNum('input-lifting'), protection: getNum('input-protection'), travel: getNum('input-travel'), waste: getNum('input-waste') }; const total = Object.values(costs).reduce((a,b) => a+b, 0); document.getElementById('res-box').innerHTML = `${boxes} <span class="text-sm not-italic">BOX</span>`; const updateRow = (rowId, valId, cost) => { if (document.getElementById(rowId)) { document.getElementById(rowId).classList.toggle('hidden', cost === 0); document.getElementById(valId).innerText = `${cost.toLocaleString()} 원`; } }; updateRow('row-base', 'detail-base', costs.base); updateRow('row-bond', 'detail-bond', costs.bond); updateRow('row-wood', 'detail-wood', costs.wood); updateRow('row-corner', 'detail-corner', costs.corner); updateRow('row-removal', 'detail-removal', costs.removal); updateRow('row-lifting', 'detail-lifting', costs.lifting); updateRow('row-protection', 'detail-protection', costs.protection); updateRow('row-travel', 'detail-travel', costs.travel); updateRow('row-waste', 'detail-waste', costs.waste); document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString(); updateInfoText(); }
+        function updateCalculations(boxes) { const getNum = (id) => parseInt(document.getElementById(id).value.replace(/,/g, '')) || 0; const price = getNum('input-box-price'); const bondCost = getNum('qty-bond') * 10000; const woodCost = getNum('qty-wood') * 5000; const moldingCost = getNum('qty-molding') * parseInt(document.getElementById('price-molding').value); const costs = { base: boxes * price, bond: bondCost, wood: woodCost, corner: moldingCost, removal: getNum('input-removal'), lifting: getNum('input-lifting'), protection: getNum('input-protection'), travel: 0, waste: getNum('input-waste') }; const total = Object.values(costs).reduce((a,b) => a+b, 0); document.getElementById('res-box').innerHTML = `${boxes} <span class="text-sm not-italic">BOX</span>`; const updateRow = (rowId, valId, cost) => { if (document.getElementById(rowId)) { document.getElementById(rowId).classList.toggle('hidden', cost === 0); document.getElementById(valId).innerText = `${cost.toLocaleString()} 원`; } }; updateRow('row-base', 'detail-base', costs.base); updateRow('row-bond', 'detail-bond', costs.bond); updateRow('row-wood', 'detail-wood', costs.wood); updateRow('row-corner', 'detail-corner', costs.corner); updateRow('row-removal', 'detail-removal', costs.removal); updateRow('row-lifting', 'detail-lifting', costs.lifting); updateRow('row-protection', 'detail-protection', costs.protection); updateRow('row-waste', 'detail-waste', costs.waste); document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString(); updateInfoText(); }
         function updateInfoText() { const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value; const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value; document.getElementById('res-brand-category').innerText = brand || "BRAND"; document.getElementById('res-product').innerText = prod || "제품명"; updateCustInfo(); }
         function updateCustInfo() { const name = document.getElementById('cust-name').value; const phone = document.getElementById('cust-phone').value; const addr = document.getElementById('cust-addr').value; const sDate = document.getElementById('cust-survey-date').value; const wDate = document.getElementById('cust-work-date').value; document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님"; document.getElementById('disp-phone').innerText = phone || "-"; document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : ""; document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : ""; document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : ""; }
+        function sendSms() { const name = document.getElementById('cust-name').value || "고객"; const phone = document.getElementById('cust-phone').value.replace(/-/g, ""); const product = document.getElementById('res-product').innerText; const boxes = document.getElementById('input-boxes').value; const total = document.getElementById('res-total-vat').innerText; const addr = document.getElementById('cust-addr').value || "현장 정보 없음"; if(!phone) { alert("연락처를 입력해주세요."); return; } const msg = `[청인마루 벽장재 견적]\n안녕하세요 ${name}님,\n\n제품: ${product}\n수량: ${boxes} BOX\n합계: ${total}원 (VAT포함)\n현장: ${addr}\n\n상세 내용은 이미지를 확인해주세요.`; window.location.href = `sms:${phone}${navigator.userAgent.match(/iPhone/i) ? '&' : '?'}body=${encodeURIComponent(msg)}`; }
         function formatPhone(el) { el.value = el.value.replace(/[^0-9]/g, "").replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, "$1-$2-$3").replace("--", "-"); }
         function formatInput(el) { let val = el.value.replace(/[^0-9]/g, ''); el.value = val ? parseInt(val).toLocaleString() : ''; }
         function toggleManualMode() { isManualMode = document.getElementById('manual-mode-toggle').checked; document.getElementById('select-area').classList.toggle('hidden', isManualMode); document.getElementById('manual-area').classList.toggle('hidden', !isManualMode); calculate(); }
         async function loadSheetData() { try { const res = await fetch(SHEET_URL + "&cache=" + Date.now()); const text = await res.text(); const rows = text.split('\n').slice(1); const tempMaster = {}; rows.forEach(row => { const cols = row.match(/(".*?"|[^",\s\r\n]+)(?=\s*,|\s*$)/g); if (cols && cols.length >= 4) { const brand = cols[0].replace(/"/g, '').trim(); const name = cols[1].replace(/"/g, '').trim(); if (!tempMaster[brand]) tempMaster[brand] = { brand, products: [] }; tempMaster[brand].products.push({ name, price: parseInt(cols[2].replace(/[^0-9]/g,'')), factor: parseFloat(cols[3]) }); } }); masterData = Object.values(tempMaster); const bSel = document.getElementById('select-brand'); bSel.innerHTML = '<option value="">브랜드 선택</option>'; masterData.forEach(b => bSel.add(new Option(b.brand, b.brand))); } catch (e) {} }
         function updateProducts() { const bName = document.getElementById('select-brand').value; const pSel = document.getElementById('select-product'); pSel.innerHTML = '<option value="">제품 선택</option>'; const bObj = masterData.find(x => x.brand === bName); if(bObj) bObj.products.forEach(p => pSel.add(new Option(p.name, p.name))); handleProductSelect(); }
         function handleProductSelect() { const bName = document.getElementById('select-brand').value; const pName = document.getElementById('select-product').value; const bObj = masterData.find(x => x.brand === bName); const pObj = bObj?.products.find(x => x.name === pName); if (pObj) { document.getElementById('input-box-price').value = pObj.price.toLocaleString(); document.getElementById('input-factor').value = pObj.factor; } calculate(); }
-        function generateQuoteNumber() { const now = new Date(); return `W${now.getFullYear().toString().slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`; }
+        // [수정] 견적번호에 시간과 분 추가
+        function generateQuoteNumber() { const now = new Date(); return `W${now.getFullYear().toString().slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`; }
         function toggleAccordion(id) { document.getElementById('content-' + id).classList.toggle('open'); }
         function showToast() { const t = document.getElementById('toast'); t.className = "show"; setTimeout(() => { t.className = t.className.replace("show", ""); }, 2000); }
         function shareQuote() { showToast(); html2canvas(document.getElementById('capture-area'), { scale: 2 }).then(canvas => { canvas.toBlob(blob => { if(navigator.share) navigator.share({ files: [new File([blob], "청인마루_견적.png", {type:"image/png"})] }); }); }); }
