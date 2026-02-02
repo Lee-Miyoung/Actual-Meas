@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>청인마루 스마트 견적 계산기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f4f8; transition: background-color 0.3s; }
+        .card { background: white; border-radius: 1.5rem; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); }
+        .character-bubble { position: relative; background: #ffffff; border: 2px solid #3b82f6; border-radius: 1rem; padding: 1.2rem; margin-bottom: 1.5rem; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.1); }
+        .character-bubble::after { content: ''; position: absolute; bottom: -12px; left: 40px; border-width: 12px 12px 0; border-style: solid; border-color: #3b82f6 transparent; }
+        .character-bubble::before { content: ''; position: absolute; bottom: -8px; left: 42px; border-width: 10px 10px 0; border-style: solid; border-color: #ffffff transparent; z-index: 1; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } 100% { transform: translateY(0px) rotate(0deg); } }
+        .kakao-btn { background-color: #FEE500; color: #191919; }
+        .kakao-btn:hover { background-color: #FADA0A; }
+        .admin-view { display: none; }
+        .admin-view.active { display: block; }
+        .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 100; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+    <!-- 로딩 화면 (서버 연결 지연 시 데모 모드 버튼 노출) -->
+    <div id="loading" class="loading-overlay">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="font-bold text-blue-600" id="loading-text">마루니가 데이터를 가져오는 중...</p>
+        <button id="force-start" class="mt-8 px-8 py-3 bg-slate-800 text-white rounded-2xl font-black hidden shadow-xl animate-pulse">데모 모드로 시작하기</button>
+        <p id="force-tip" class="mt-4 text-[11px] text-slate-400 hidden text-center">PC에서 직접 파일을 열 경우,<br>서버 연결 없이 미리보기가 가능합니다.</p>
+    </div>
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Brand Header -->
+        <div class="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
+            <div class="flex items-center gap-6">
+                <!-- 마루니 캐릭터 SVG -->
+                <div class="w-24 h-24 animate-float relative cursor-pointer" id="maruni-logo">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-lg">
+                        <rect x="40" y="50" width="120" height="100" rx="15" fill="#3b82f6" />
+                        <path d="M50 70 H150 M50 100 H150 M50 130 H150" stroke="#60a5fa" stroke-width="4" stroke-linecap="round" />
+                        <circle cx="80" cy="90" r="8" fill="white" />
+                        <circle cx="120" cy="90" r="8" fill="white" />
+                        <path d="M85 120 Q100 135 115 120" stroke="white" stroke-width="6" fill="none" stroke-linecap="round" />
+                    </svg>
+                    <div class="absolute -bottom-1 -right-1 bg-white p-2 rounded-full shadow-md text-blue-600"><i class="fas fa-hammer"></i></div>
+                </div>
+                <div class="text-left">
+                    <h1 class="text-3xl font-black text-slate-800 tracking-tight leading-tight">청인마루 <span class="text-blue-600">스마트 견적</span></h1>
+                    <p class="text-slate-500 font-bold text-sm mt-1">마루니가 제안하는 실시간 맞춤 견적</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="sync-badge" class="hidden bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1.5 rounded-full border border-green-200">실시간 연결됨</span>
+                <span id="demo-badge" class="hidden bg-amber-100 text-amber-700 text-[10px] font-bold px-3 py-1.5 rounded-full border border-amber-200">데모 모드</span>
+                <button id="admin-trigger" class="text-slate-300 hover:text-blue-500 text-xs transition-all font-bold">관리자 모드</button>
+            </div>
+        </div>
+
+        <!-- Main UI -->
+        <div id="calculator-ui">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="card p-8 border-t-8 border-blue-600">
+                        <h2 class="text-xl font-bold mb-8 text-slate-800 flex items-center"><i class="fas fa-edit mr-3 text-blue-600"></i> 현장 정보 입력</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-600 mb-2">1. 브랜드 선택</label>
+                                    <select id="select-brand" class="w-full px-4 py-3 border-2 border-slate-100 rounded-xl outline-none bg-slate-50 font-bold focus:border-blue-300 transition-all cursor-pointer"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-600 mb-2">2. 제품 라인업</label>
+                                    <select id="select-product" class="w-full px-4 py-3 border-2 border-slate-100 rounded-xl outline-none bg-white font-bold focus:border-blue-300 transition-all cursor-pointer"></select>
+                                </div>
+                            </div>
+                            <div class="space-y-6">
+                                <div class="bg-blue-50 p-5 rounded-3xl border border-blue-100">
+                                    <label class="block text-xs font-bold text-blue-600 mb-2 uppercase tracking-widest text-center">박스당 면적 기준 (m²/평)</label>
+                                    <input type="number" id="conv-factor" step="0.001" class="w-full px-4 py-2 border-2 border-white rounded-xl outline-none font-black text-blue-700 bg-white/50 text-center" readonly>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-600 mb-2">면적 (m²)</label>
+                                        <input type="number" id="area-m2" class="w-full px-4 py-4 border-2 border-slate-50 rounded-2xl outline-none font-black text-lg text-blue-900" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-600 mb-2">평수 (평)</label>
+                                        <input type="number" id="area-py" class="w-full px-4 py-4 border-2 border-slate-50 rounded-2xl outline-none font-black text-lg text-blue-900" placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-10">
+                            <label class="block text-sm font-bold text-slate-600 mb-4">3. 상세 옵션 (부가세 별도)</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <label class="flex items-center p-5 border-2 border-slate-50 rounded-3xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group">
+                                    <input type="checkbox" id="remove-old" class="w-6 h-6 text-blue-600 rounded-lg border-slate-300 focus:ring-0">
+                                    <div class="ml-4"><span class="block font-black text-slate-700">기존 바닥 철거</span><span class="text-xs text-slate-400 font-medium">평당 15,000원 추가</span></div>
+                                </label>
+                                <label class="flex items-center p-5 border-2 border-slate-50 rounded-3xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group">
+                                    <input type="checkbox" id="molding" class="w-6 h-6 text-blue-600 rounded-lg border-slate-300 focus:ring-0">
+                                    <div class="ml-4"><span class="block font-black text-slate-700">걸레받이 마감</span><span class="text-xs text-slate-400 font-medium">개당 6,000원 (평수 기준)</span></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-1">
+                    <div class="sticky top-6">
+                        <div class="character-bubble"><p id="char-msg" class="text-slate-700 font-bold text-sm leading-relaxed">마루니가 견적을 뽑을 준비가 됐어요! 🔨</p></div>
+                        <div class="card p-8 bg-slate-900 text-white shadow-2xl relative border-b-8 border-blue-600">
+                            <h3 class="text-lg font-black mb-8 flex items-center text-blue-400 tracking-tight"><i class="fas fa-file-invoice-dollar mr-3"></i> 견적 리포트</h3>
+                            <div class="space-y-6">
+                                <div class="flex justify-between items-start border-b border-slate-800 pb-4">
+                                    <span class="text-slate-500 text-xs font-bold uppercase tracking-widest">PRODUCT</span>
+                                    <div class="text-right"><p id="res-brand" class="text-[10px] text-slate-500 font-black mb-1">BRAND</p><p id="res-product" class="font-black text-blue-400 text-base leading-tight">제품 선택</p></div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="flex justify-between text-sm"><span class="text-slate-400 font-medium">시공 단가 (평당)</span><span id="res-unit-price" class="font-black">0 원</span></div>
+                                    <div class="flex justify-between text-sm"><span class="text-slate-400 text-blue-300 font-medium text-lg">최종 시공 평수</span><span id="res-py" class="font-black text-blue-300 text-lg">0.00 평</span></div>
+                                    <div id="res-molding-row" class="hidden flex justify-between text-[11px] text-slate-500 font-bold">
+                                        <span id="res-molding-cnt">ㄴ 걸레받이 (0개)</span>
+                                        <span id="res-molding-val">0 원</span>
+                                    </div>
+                                </div>
+                                <div class="mt-10 pt-8 border-t border-slate-800 text-center">
+                                    <p class="text-slate-500 text-xs mb-3 font-bold uppercase tracking-tighter">Estimated Total (VAT Excl.)</p>
+                                    <div class="flex items-end justify-center gap-1 mb-4"><span class="text-5xl font-black text-white tracking-tighter" id="res-total">0</span><span class="text-xl font-bold text-slate-500">원</span></div>
+                                    <div class="bg-slate-800/80 py-3 rounded-2xl border border-slate-700 font-black text-slate-200"><span id="res-vat">0</span> 원 (VAT 포함 예상)</div>
+                                </div>
+                                <div class="mt-8 space-y-3">
+                                    <button id="kakao-btn" class="kakao-btn w-full py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-xl transition-all transform hover:-translate-y-1"><i class="fas fa-comment text-2xl"></i> 카카오톡 상담</button>
+                                    <button id="contact-btn" class="w-full bg-slate-800 hover:bg-slate-700 text-blue-400 py-4 rounded-2xl font-black text-sm border border-slate-700">방문 실측 예약</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin View -->
+        <div id="admin-view" class="admin-view space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-black text-slate-800"><i class="fas fa-tools mr-2 text-blue-600"></i> 마루니 관리자 모드</h2>
+                <button id="exit-admin" class="bg-slate-200 px-6 py-2 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all">나가기</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card p-8 border-t-8 border-slate-800">
+                    <h3 class="text-lg font-black mb-6">💰 실시간 단가 수정</h3>
+                    <div id="admin-price-list" class="space-y-4 max-h-[500px] overflow-y-auto pr-2"></div>
+                </div>
+                <div class="card p-8 border-t-8 border-blue-600">
+                    <h3 class="text-lg font-black mb-6">📝 실시간 상담 신청 목록</h3>
+                    <div id="admin-inquiry-list" class="space-y-4 max-h-[500px] overflow-y-auto pr-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full relative shadow-2xl border-t-8 border-blue-600">
+            <button id="close-modal" class="absolute top-8 right-8 text-slate-300 hover:text-slate-600 transition"><i class="fas fa-times text-2xl"></i></button>
+            <div class="text-center">
+                <h3 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">정밀 실측 신청</h3>
+                <p class="text-slate-500 text-sm mb-10 font-medium">마루니가 방문하여 견적을 안내드립니다.</p>
+                <div class="space-y-4 text-left">
+                    <input type="text" id="user-name" placeholder="성함" class="w-full px-5 py-4 border-2 border-slate-100 rounded-2xl outline-none font-black bg-slate-50 focus:border-blue-400 transition-all">
+                    <input type="tel" id="user-phone" placeholder="연락처" class="w-full px-5 py-4 border-2 border-slate-100 rounded-2xl outline-none font-black bg-slate-50 focus:border-blue-400 transition-all">
+                </div>
+                <button id="submit-btn" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black mt-10 hover:bg-blue-700 shadow-xl active:scale-95 transition-all">신청 완료</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-10 py-5 rounded-3xl shadow-2xl z-[100] font-black hidden border-4 border-blue-400 animate-bounce">접수 완료! 마루니가 금방 연락드릴게요!</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, addDoc, onSnapshot, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Helper ---
+        function format(n) { return new Intl.NumberFormat('ko-KR').format(Math.round(n)); }
+
+        // --- Configuration ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'cheongin-maru-pwa';
+        const KAKAO_CHAT_URL = "https://open.kakao.com/o/sXXXXXXXX"; 
+        const ADMIN_PASS = "1234";
+        let db, auth;
+        let masterData = {}; 
+        let isFirebaseActive = false;
+
+        const DEFAULT_DATA = {
+            "동화": { products: { "진 그란데 스퀘어 (650*1210)": { price: 140000, factor: 3.172 }, "진 스퀘어 (650*650)": { price: 140000, factor: 3.172 }, "진 듀오텍스처 (143*1205)": { price: 120000, factor: 2.3 }, "진 그란데 (325*805)": { price: 120000, factor: 3.139 } } },
+            "한솔": { products: { "sb마루 그란데": { price: 135000, factor: 3.25 }, "sb마루 오리지널": { price: 115000, factor: 3.2 } } },
+            "구정": { products: { "마뷸러스": { price: 155000, factor: 3.22 }, "구정 강마루": { price: 125000, factor: 3.2 } } },
+            "노바": { products: { "노바 테라스": { price: 145000, factor: 3.18 }, "노바 강마루": { price: 120000, factor: 3.2 } } },
+            "네스트": { products: { "SPC 돌마루": { price: 130000, factor: 2.5 } } },
+            "성원": { products: { "Nass 강마루": { price: 110000, factor: 3.2 } } }
+        };
+
+        const startDemoMode = () => {
+            masterData = DEFAULT_DATA;
+            document.getElementById('demo-badge').classList.remove('hidden');
+            document.getElementById('loading').style.display = 'none';
+            renderUIContent();
+            renderAdminPrices();
+        };
+
+        // 로딩 중 5초가 지나면 데모 모드 버튼 노출
+        setTimeout(() => {
+            if (!isFirebaseActive) {
+                document.getElementById('force-start').classList.remove('hidden');
+                document.getElementById('force-tip').classList.remove('hidden');
+            }
+        }, 5000);
+
+        // Firebase 연결 시도 (Canvas 환경 및 배포 환경 대응)
+        try {
+            const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+            if (configStr) {
+                const firebaseConfig = JSON.parse(configStr);
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                const initAuth = async () => {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                };
+                initAuth();
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        isFirebaseActive = true;
+                        document.getElementById('sync-badge').classList.remove('hidden');
+                        syncData();
+                        syncInquiries();
+                    }
+                });
+            } else {
+                console.warn("No Firebase config found. Please click Demo button.");
+            }
+        } catch (e) { console.error("Firebase init error:", e); }
+
+        function syncData() {
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'config');
+            onSnapshot(colRef, (snap) => {
+                const data = {};
+                snap.forEach(d => data[d.id] = d.data());
+                if (Object.keys(data).length === 0) {
+                    initializeDefaults();
+                } else {
+                    masterData = data;
+                    renderUIContent();
+                    renderAdminPrices();
+                    document.getElementById('loading').style.display = 'none';
+                }
+            }, () => startDemoMode());
+        }
+
+        async function initializeDefaults() {
+            for (const b in DEFAULT_DATA) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', b), DEFAULT_DATA[b]);
+            }
+        }
+
+        // --- Core UI Functions ---
+        function renderUIContent() {
+            const bSelect = document.getElementById('select-brand');
+            const currentBrand = bSelect.value;
+            bSelect.innerHTML = '';
+            Object.keys(masterData).forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b; opt.textContent = b;
+                bSelect.appendChild(opt);
+            });
+            if (currentBrand && masterData[currentBrand]) bSelect.value = currentBrand;
+            updateProductList();
+        }
+
+        function updateProductList() {
+            const b = document.getElementById('select-brand').value;
+            const pSelect = document.getElementById('select-product');
+            const currentProd = pSelect.value;
+            pSelect.innerHTML = '';
+            if (!masterData[b]) return;
+            const prods = masterData[b].products;
+            Object.keys(prods).forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n; opt.textContent = n;
+                pSelect.appendChild(opt);
+            });
+            if (currentProd && prods[currentProd]) pSelect.value = currentProd;
+            onSelectionChange();
+        }
+
+        function onSelectionChange() {
+            const b = document.getElementById('select-brand').value;
+            const p = document.getElementById('select-product').value;
+            const data = masterData[b]?.products[p];
+            if (data) {
+                document.getElementById('conv-factor').value = data.factor;
+                calculate();
+                document.getElementById('char-msg').innerHTML = `**${p}** 모델은 마루니가 정말 좋아하는 디자인이에요! 탁월한 선택이십니다. 🌟`;
+            }
+        }
+
+        function calculate() {
+            const b = document.getElementById('select-brand').value;
+            const p = document.getElementById('select-product').value;
+            const py = parseFloat(document.getElementById('area-py').value) || 0;
+            const data = masterData[b]?.products[p];
+            if (!data) return;
+
+            const base = data.price * py;
+            let removeCost = document.getElementById('remove-old').checked ? (15000 * py) : 0;
+            let moldingCost = document.getElementById('molding').checked ? (6000 * Math.ceil(py)) : 0;
+            
+            if (document.getElementById('molding').checked) {
+                document.getElementById('res-molding-row').classList.remove('hidden');
+                document.getElementById('res-molding-cnt').innerText = `ㄴ 걸레받이 (${Math.ceil(py)}개)`;
+                document.getElementById('res-molding-val').innerText = '+ ' + format(moldingCost) + ' 원';
+            } else { document.getElementById('res-molding-row').classList.add('hidden'); }
+
+            const grand = base + removeCost + moldingCost;
+            document.getElementById('res-brand').innerText = b;
+            document.getElementById('res-product').innerText = p;
+            document.getElementById('res-unit-price').innerText = format(data.price) + ' 원';
+            document.getElementById('res-py').innerText = py.toFixed(2) + ' 평';
+            document.getElementById('res-total').innerText = format(grand);
+            document.getElementById('res-vat').innerText = format(grand * 1.1);
+        }
+
+        function renderAdminPrices() {
+            const container = document.getElementById('admin-price-list');
+            container.innerHTML = '';
+            Object.keys(masterData).forEach(b => {
+                const box = document.createElement('div');
+                box.className = "p-4 bg-slate-50 rounded-2xl mb-4";
+                box.innerHTML = `<h4 class="font-black text-slate-800 mb-3 border-b pb-1">${b}</h4>`;
+                const prods = masterData[b].products;
+                Object.keys(prods).forEach(p => {
+                    const row = document.createElement('div');
+                    row.className = "flex items-center gap-2 mb-2 text-xs";
+                    row.innerHTML = `<span class="flex-1 font-bold truncate">${p}</span><input type="number" value="${prods[p].price}" class="w-20 p-2 border-2 rounded-lg font-black" onchange="updatePrice('${b}', '${p}', this.value)"> 원`;
+                    box.appendChild(row);
+                });
+                container.appendChild(box);
+            });
+        }
+
+        window.updatePrice = async (b, p, val) => {
+            if (!isFirebaseActive) {
+                masterData[b].products[p].price = parseInt(val);
+                calculate(); return;
+            }
+            const update = { ...masterData[b].products };
+            update[p].price = parseInt(val);
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', b), { products: update });
+        };
+
+        function syncInquiries() {
+            const q = collection(db, 'artifacts', appId, 'public', 'data', 'inquiries');
+            onSnapshot(q, (snap) => {
+                const container = document.getElementById('admin-inquiry-list');
+                container.innerHTML = '';
+                snap.docs.map(d => d.data()).sort((a,b) => (b.at?.seconds || 0) - (a.at?.seconds || 0)).forEach(d => {
+                    const box = document.createElement('div');
+                    box.className = "p-4 border-2 border-slate-50 rounded-2xl bg-white mb-2 shadow-sm";
+                    box.innerHTML = `<div class="flex justify-between font-black"><span>${d.name}</span><span class="text-[10px] text-slate-400">${d.at ? new Date(d.at.seconds*1000).toLocaleDateString() : ''}</span></div><div class="text-blue-600 font-bold">${d.phone}</div><div class="text-[10px] text-slate-500">${d.product} / ${d.py}평</div><div class="text-right font-black text-slate-800">${d.total}원</div>`;
+                    container.appendChild(box);
+                });
+            });
+        }
+
+        // --- Events ---
+        document.getElementById('force-start').onclick = startDemoMode;
+        document.getElementById('select-brand').onchange = updateProductList;
+        document.getElementById('select-product').onchange = onSelectionChange;
+        document.getElementById('area-m2').oninput = (e) => {
+            const f = parseFloat(document.getElementById('conv-factor').value) || 1;
+            document.getElementById('area-py').value = (parseFloat(e.target.value || 0) / f).toFixed(2);
+            calculate();
+        };
+        document.getElementById('area-py').oninput = (e) => {
+            const f = parseFloat(document.getElementById('conv-factor').value) || 1;
+            document.getElementById('area-m2').value = (parseFloat(e.target.value || 0) * f).toFixed(2);
+            calculate();
+        };
+        [document.getElementById('remove-old'), document.getElementById('molding')].forEach(el => el.onchange = calculate);
+        
+        document.getElementById('admin-trigger').onclick = () => {
+            if (prompt("관리자 비밀번호 입력 (기본: 1234)") === ADMIN_PASS) {
+                document.getElementById('calculator-ui').style.display = 'none';
+                document.getElementById('admin-view').classList.add('active');
+                document.body.style.backgroundColor = '#1e293b';
+            }
+        };
+        document.getElementById('exit-admin').onclick = () => {
+            document.getElementById('calculator-ui').style.display = 'block';
+            document.getElementById('admin-view').classList.remove('active');
+            document.body.style.backgroundColor = '#f0f4f8';
+        };
+
+        document.getElementById('submit-btn').onclick = async () => {
+            const n = document.getElementById('user-name').value, p = document.getElementById('user-phone').value;
+            if (!n || !p) return alert('성함과 연락처를 입력해주세요!');
+            if (isFirebaseActive) {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'inquiries'), {
+                    name: n, phone: p, brand: document.getElementById('res-brand').innerText,
+                    product: document.getElementById('res-product').innerText, py: document.getElementById('res-py').innerText,
+                    total: document.getElementById('res-total').innerText, at: serverTimestamp()
+                });
+            } else { alert("데모 모드에서는 서버 저장이 되지 않습니다. Netlify에 업로드하여 사용해 주세요!"); }
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('toast').classList.remove('hidden');
+            setTimeout(() => document.getElementById('toast').classList.add('hidden'), 4000);
+        };
+
+        document.getElementById('kakao-btn').onclick = () => {
+            const msg = `[청인마루 견적 문의]\n제품: ${document.getElementById('res-product').innerText}\n평수: ${document.getElementById('res-py').innerText}\n견적: ${document.getElementById('res-total').innerText}원`;
+            const t = document.createElement("textarea"); t.value = msg; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t);
+            alert("견적 정보가 복사되었습니다! 채팅방에 붙여넣기 해주세요."); window.open(KAKAO_CHAT_URL, "_blank");
+        };
+
+        document.getElementById('contact-btn').onclick = () => document.getElementById('modal').classList.remove('hidden');
+        document.getElementById('close-modal').onclick = () => document.getElementById('modal').classList.add('hidden');
+    </script>
+</body>
+</html>
