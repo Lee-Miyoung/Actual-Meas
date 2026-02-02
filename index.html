@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v18.2)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v18.4)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -15,7 +15,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f4f8; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+        /* [수정] 모바일 당겨서 새로고침 방지 로직 추가 */
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            background-color: #f0f4f8; 
+            color: #1e293b; 
+            -webkit-tap-highlight-color: transparent; 
+            overscroll-behavior-y: contain; /* 이 코드가 당겨서 새로고침을 막아줍니다 */
+        }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .premium-shadow { box-shadow: 0 10px 40px -10px rgba(30, 41, 59, 0.15); }
@@ -25,11 +32,13 @@
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         #login-gate { display: flex; position: fixed; inset: 0; background: #0f172a; z-index: 99999; align-items: center; justify-content: center; }
         
-        #record-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 20px; }
-        .record-container { background: white; width: 100%; max-width: 500px; max-height: 80vh; border-radius: 24px; overflow-y: auto; padding: 24px; position: relative; }
+        #record-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 15px; }
+        .record-container { background: #f8fafc; width: 100%; max-width: 500px; height: 90vh; border-radius: 32px; overflow: hidden; display: flex; flex-direction: column; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .record-card { background: white; border-radius: 20px; padding: 16px; border: 1px solid #e2e8f0; transition: all 0.2s; position: relative; }
+        .record-card.expanded { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.1); }
 
         .input-group { position: relative; transition: all 0.3s ease; }
-        .input-premium { width: 100%; padding: 14px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #334155; outline: none; transition: all 0.2s; -webkit-appearance: none; }
+        .input-premium { width: 100%; padding: 14px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #334155; outline: none; transition: all 0.2s; }
         .input-premium:focus { background: #fff; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         .input-label { position: absolute; top: -8px; left: 12px; background: #f8fafc; padding: 0 6px; font-size: 11px; font-weight: 800; color: #64748b; border-radius: 4px; z-index: 10; }
         .stat-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
@@ -38,18 +47,18 @@
         .btn-action { display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 8px; border-radius: 14px; font-weight: 800; font-size: 13px; transition: all 0.1s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); touch-action: manipulation; cursor: pointer; user-select: none; }
         .btn-action:active { transform: scale(0.96); opacity: 0.9; }
         .tab-btn { flex: 1; padding: 12px; font-size: 13px; font-weight: 800; text-align: center; cursor: pointer; border-radius: 10px; transition: all 0.2s; }
-        .tab-btn.active { background: #2563eb; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .tab-btn.active { background: #2563eb; color: white; }
         .tab-btn.inactive { background: #f1f5f9; color: #94a3b8; }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
         .accordion-content.open { max-height: 1000px; transition: max-height 0.5s ease-in; }
         input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        #toast { visibility: hidden; min-width: 200px; background-color: #334155; color: #fff; text-align: center; border-radius: 50px; padding: 12px 24px; position: fixed; z-index: 10000; left: 50%; bottom: 100px; transform: translateX(-50%); font-size: 14px; font-weight: 700; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2); }
+        #toast { visibility: hidden; min-width: 200px; background-color: #334155; color: #fff; text-align: center; border-radius: 50px; padding: 12px 24px; position: fixed; z-index: 10000; left: 50%; bottom: 100px; transform: translateX(-50%); font-size: 14px; font-weight: 700; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 1.5s; }
         @keyframes fadein { from {bottom: 80px; opacity: 0;} to {bottom: 100px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 80px; opacity: 0;} }
     </style>
 </head>
-<body class="antialiased overflow-x-hidden">
+<body class="antialiased overflow-x-hidden" onmousedown="resetInactivityTimer()" onkeypress="resetInactivityTimer()" onscroll="resetInactivityTimer()" ontouchstart="resetInactivityTimer()">
 
     <div id="toast">이미지를 생성하고 있습니다...</div>
 
@@ -58,7 +67,7 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v18.2</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v18.4</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500 transition-all placeholder-slate-400" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -68,14 +77,30 @@
 
     <div id="record-modal" onclick="closeRecordModal(event)">
         <div class="record-container" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-black text-slate-900">최근 견적 기록</h3>
-                <button onclick="document.getElementById('record-modal').style.display='none'" class="text-slate-400 text-2xl"><i class="fas fa-times"></i></button>
+            <div class="p-6 bg-white border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-xl font-black text-slate-900 flex items-center gap-2"><i class="fas fa-history text-blue-500"></i> 견적 기록</h3>
+                <button onclick="document.getElementById('record-modal').style.display='none'" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"><i class="fas fa-times"></i></button>
             </div>
-            <div id="record-list" class="space-y-3"></div>
-            <button onclick="clearRecords()" class="w-full mt-6 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-sm">전체 기록 삭제</button>
+            <div class="p-4 bg-white">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-4 top-3.5 text-slate-400"></i>
+                    <input type="text" id="record-search" class="w-full pl-11 pr-4 py-3 bg-slate-100 rounded-2xl text-sm font-bold outline-none focus:ring-2 ring-blue-500" placeholder="고객명 또는 제품명으로 검색..." oninput="renderRecords()">
+                </div>
+            </div>
+            <div id="record-list" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+            <div class="p-4 bg-white border-t border-slate-100 space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="exportToCSV()" class="py-3 bg-blue-50 text-blue-700 rounded-xl font-black text-xs"><i class="fas fa-file-excel mr-1"></i> 전체기록 엑셀백업</button>
+                    <button onclick="importFromFile()" class="py-3 bg-purple-50 text-purple-700 rounded-xl font-black text-xs"><i class="fas fa-file-import mr-1"></i> 파일에서 기록가져오기</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="clearAllRecords()" class="py-3 bg-red-50 text-red-600 rounded-xl font-black text-xs">전체 삭제</button>
+                    <button onclick="deleteSelectedRecords()" class="py-3 bg-red-500 text-white rounded-xl font-black text-xs shadow-lg">선택 삭제</button>
+                </div>
+            </div>
         </div>
     </div>
+    <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileImport(event)">
 
     <div class="max-w-7xl mx-auto p-4 md:p-8">
         <header class="flex flex-col items-center justify-center mb-8 relative pt-4">
@@ -83,10 +108,10 @@
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm"><i class="fas fa-star text-yellow-300 text-[8px]"></i> PREMIUM SYSTEM</div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v18.2</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v18.4</p>
                 <div class="flex gap-2 justify-center">
-                    <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 hover:text-blue-500"><i class="fas fa-sync-alt"></i></button>
-                    <button onclick="showRecordModal()" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2 hover:text-blue-600 transition-colors">
+                    <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400"><i class="fas fa-sync-alt"></i></button>
+                    <button onclick="showRecordModal()" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2">
                         <i class="fas fa-list-ul text-blue-500"></i> 기록 보기
                     </button>
                 </div>
@@ -96,7 +121,6 @@
         <main class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
             <div class="bg-white rounded-[2rem] p-5 md:p-8 premium-shadow space-y-6 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400"></div>
-                
                 <div class="space-y-4">
                     <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5"><i class="fas fa-user-circle text-blue-500"></i> 고객 정보</h3>
                     <div class="grid grid-cols-2 gap-3">
@@ -109,9 +133,7 @@
                         <div class="input-group"><input type="date" id="cust-work-date" class="input-premium" oninput="updateCustInfo();"><span class="input-label">시공일</span></div>
                     </div>
                 </div>
-
                 <hr class="border-slate-100">
-
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
                         <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5"><i class="fas fa-layer-group text-blue-500"></i> 자재 선택</h3>
@@ -138,9 +160,7 @@
                         <div class="flex items-center gap-1"><input type="text" id="input-box-price" class="bg-transparent font-black text-2xl text-right text-amber-600 outline-none w-32" placeholder="0" oninput="formatInput(this); calculate();"><span class="text-sm font-bold text-amber-600">원</span></div>
                     </div>
                 </div>
-
                 <hr class="border-slate-100">
-
                 <div>
                     <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5 mb-3"><i class="fas fa-ruler-combined text-blue-500"></i> 공간별 상세 견적 (mm 단위)</h3>
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-4 shadow-inner">
@@ -206,7 +226,7 @@
                 </div>
             </div>
 
-            <div id="capture-area" class="report-gradient rounded-[2rem] p-6 md:p-8 flex flex-col justify-between premium-shadow relative min-h-[750px] text-white overflow-hidden">
+            <div id="capture-area" class="report-gradient rounded-[2rem] p-6 md:p-8 flex flex-col justify-between premium-shadow lg:sticky lg:top-6 relative min-h-[750px] text-white overflow-hidden">
                 <div class="watermark-wrapper"><img src="maruni.png" class="watermark-img" onerror="this.src='icon.jpg'"></div>
                 <div class="relative z-10">
                     <div class="flex justify-between items-start mb-8 pb-6 border-b border-white/10">
@@ -278,7 +298,7 @@
                         <div class="grid grid-cols-2 gap-2" data-html2canvas-ignore="true">
                             <button onclick="shareQuote()" class="btn-action bg-[#FEE500] text-[#3c1e1e]"><i class="fas fa-comment mr-2"></i> 카카오톡 공유</button>
                             <button onclick="sendSms()" class="btn-action bg-emerald-500 text-white"><i class="fas fa-sms mr-2"></i> 문자 전송</button>
-                            <button onclick="saveCurrentQuote()" class="btn-action bg-slate-800 text-white"><i class="fas fa-save mr-2"></i> 기록 저장</button>
+                            <button onclick="saveRecord()" class="btn-action bg-slate-800 text-white"><i class="fas fa-save mr-2"></i> 기록 저장</button>
                             <button onclick="saveImage()" class="btn-action bg-white text-blue-900"><i class="fas fa-download mr-2"></i> 이미지 저장</button>
                         </div>
                     </div>
@@ -296,39 +316,140 @@
         let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'home';
         const spaceOptions = { home: ["거실 아트월", "거실 쇼파월", "복도 전체", "현관", "주방연결부분", "기타 직접입력"], shop: ["매장 메인벽", "카운터 배면", "홀 측면", "입구 파사드", "기타 직접입력"] };
         
-        window.onload = async function() { if (localStorage.getItem('cm_auth_session') === 'valid') { document.getElementById('login-gate').style.display = 'none'; await loadSheetData(); } setSpaceType('home'); document.getElementById('quote-number-disp').innerText = "NO. " + generateQuoteNumber(); };
-        function checkAppLogin() { if (btoa(document.getElementById('app-password').value) === 'MTMwNg==') { localStorage.setItem('cm_auth_session', 'valid'); location.reload(); } else { alert('오류'); } }
+        /* [핵심] 5분 세션 관리 로직 */
+        let lastActivity = Date.now();
+        function resetInactivityTimer() {
+            lastActivity = Date.now();
+        }
+
+        setInterval(() => {
+            const now = Date.now();
+            if (now - lastActivity > 300000) { // 300,000ms = 5분
+                logoutAndClear();
+            }
+        }, 10000); // 10초마다 체크
+
+        function logoutAndClear() {
+            localStorage.removeItem('cm_auth_session');
+            document.getElementById('login-gate').style.display = 'flex';
+            // 데이터 초기화
+            document.getElementById('cust-name').value = '';
+            document.getElementById('cust-phone').value = '';
+            document.getElementById('cust-addr').value = '';
+            zoneList = [];
+            renderZones();
+            calculate();
+            alert('5분간 활동이 없어 보안을 위해 자동 로그아웃 되었습니다.');
+        }
+
+        window.onload = async function() { 
+            if (localStorage.getItem('cm_auth_session') === 'valid') { 
+                document.getElementById('login-gate').style.display = 'none'; 
+                await loadSheetData(); 
+            } 
+            setSpaceType('home'); 
+            document.getElementById('quote-number-disp').innerText = "NO. " + generateQuoteNumber(); 
+        };
+
+        function checkAppLogin() { if (btoa(document.getElementById('app-password').value) === 'MTMwNg==') { localStorage.setItem('cm_auth_session', 'valid'); lastActivity = Date.now(); location.reload(); } else { alert('비밀번호가 틀렸습니다.'); } }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function handleAuthSubmit() { if(btoa(document.getElementById('admin-pwd-input').value) === 'MjU4MA==') { closeModal('pwd-modal'); } }
 
-        function saveCurrentQuote() {
-            const name = document.getElementById('cust-name').value || "미지정 고객";
-            const product = document.getElementById('res-product').innerText;
-            const area = document.getElementById('input-real-m2').value;
-            const price = document.getElementById('res-total-vat').innerText;
-            const date = new Date().toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            const newRecord = { name, product, area, price, date };
-            let records = JSON.parse(localStorage.getItem('chungin_records') || '[]');
-            records.unshift(newRecord);
-            localStorage.setItem('chungin_records', JSON.stringify(records));
-            alert('기록이 안전하게 저장되었습니다!');
+        function saveRecord() {
+            const data = {
+                id: Date.now(),
+                quoteNo: document.getElementById('quote-number-disp').innerText,
+                name: document.getElementById('cust-name').value || "미지정",
+                phone: document.getElementById('cust-phone').value || "-",
+                addr: document.getElementById('cust-addr').value || "-",
+                product: document.getElementById('res-product').innerText,
+                spec: document.getElementById('input-spec').value || "-",
+                m2: document.getElementById('input-real-m2').value,
+                total: document.getElementById('res-total-vat').innerText,
+                date: new Date().toLocaleString(),
+                fullData: {
+                    zones: [...zoneList],
+                    bond: document.getElementById('qty-bond').value,
+                    wood: document.getElementById('qty-wood').value,
+                    mold5: document.getElementById('qty-mold-5000').value,
+                    mold15: document.getElementById('qty-mold-15000').value,
+                    mold10: document.getElementById('qty-mold-10000').value,
+                    removal: document.getElementById('input-removal').value,
+                    waste: document.getElementById('input-waste').value
+                }
+            };
+            let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
+            records.unshift(data);
+            if(records.length > 1000) records.pop();
+            localStorage.setItem('chungin_v18_records', JSON.stringify(records));
+            alert('견적 기록이 저장되었습니다 (최대 1000개)');
         }
 
-        function showRecordModal() {
-            const modal = document.getElementById('record-modal');
+        function renderRecords() {
             const list = document.getElementById('record-list');
-            let records = JSON.parse(localStorage.getItem('chungin_records') || '[]');
-            list.innerHTML = records.length ? '' : '<p class="text-center text-slate-400 py-10 font-bold">저장된 기록이 없습니다.</p>';
-            records.forEach(rec => {
+            const search = document.getElementById('record-search').value.toLowerCase();
+            let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
+            list.innerHTML = '';
+            records.filter(r => r.name.toLowerCase().includes(search) || r.product.toLowerCase().includes(search)).forEach(r => {
                 const div = document.createElement('div');
-                div.className = 'p-4 border border-slate-100 rounded-2xl bg-slate-50 flex flex-col gap-1';
-                div.innerHTML = `<div class="flex justify-between items-start"><span class="font-black text-slate-900">${rec.name}</span><span class="text-[10px] text-slate-400 font-bold">${rec.date}</span></div><div class="text-xs text-slate-600 font-bold">${rec.product} / ${rec.area}㎡</div><div class="text-sm text-blue-600 font-black mt-1">${rec.price}원</div>`;
+                div.className = 'record-card';
+                div.innerHTML = `<div class="flex justify-between items-start mb-2"><div class="flex items-center gap-2"><input type="checkbox" class="record-check w-4 h-4" data-id="${r.id}"><span class="font-black text-slate-900">${r.name} 님</span></div><span class="text-blue-600 font-black">${r.total}원</span></div><div class="text-xs text-slate-500 font-bold mb-3">${r.product} (${r.spec}) / ${r.m2}㎡</div><div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-medium">${r.date}</span><button onclick="restoreRecord(${r.id})" class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black italic">복원하기</button></div>`;
                 list.appendChild(div);
             });
-            modal.style.display = 'flex';
         }
 
-        function clearRecords() { if(confirm('모든 기록을 삭제하시겠습니까?')) { localStorage.removeItem('chungin_records'); showRecordModal(); } }
+        function restoreRecord(id) {
+            if(!confirm('해당 견적 데이터를 계산기로 불러오시겠습니까?')) return;
+            let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
+            const r = records.find(x => x.id === id);
+            if(r) {
+                document.getElementById('cust-name').value = r.name;
+                document.getElementById('cust-phone').value = r.phone;
+                document.getElementById('cust-addr').value = r.addr;
+                document.getElementById('input-spec').value = r.spec;
+                zoneList = r.fullData.zones;
+                document.getElementById('qty-bond').value = r.fullData.bond;
+                document.getElementById('qty-wood').value = r.fullData.wood;
+                document.getElementById('qty-mold-5000').value = r.fullData.mold5;
+                document.getElementById('record-modal').style.display = 'none';
+                renderZones(); calculate();
+                alert('데이터가 복원되었습니다.');
+            }
+        }
+
+        function exportToCSV() {
+            let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
+            let csv = "\uFEFF날짜,견적번호,고객명,연락처,제품명,면적,합계\n";
+            records.forEach(r => { csv += `${r.date},${r.quoteNo},${r.name},${r.phone},${r.product},${r.m2},${r.total.replace(/,/g,'')}\n`; });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `청인마루_견적백업_${new Date().toLocaleDateString()}.csv`;
+            link.click();
+        }
+
+        function importFromFile() { document.getElementById('file-input').click(); }
+        function handleFileImport(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imported = JSON.parse(e.target.result);
+                localStorage.setItem('chungin_v18_records', JSON.stringify(imported));
+                renderRecords(); alert('기록을 성공적으로 가져왔습니다.');
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllRecords() { if(confirm('모든 기록을 영구 삭제하시겠습니까?')) { localStorage.removeItem('chungin_v18_records'); renderRecords(); } }
+        function deleteSelectedRecords() {
+            let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
+            const checkedIds = Array.from(document.querySelectorAll('.record-check:checked')).map(el => parseInt(el.dataset.id));
+            records = records.filter(r => !checkedIds.includes(r.id));
+            localStorage.setItem('chungin_v18_records', JSON.stringify(records));
+            renderRecords();
+        }
+
+        function showRecordModal() { document.getElementById('record-modal').style.display = 'flex'; renderRecords(); }
         function closeRecordModal(e) { if(e.target.id === 'record-modal') e.target.style.display = 'none'; }
 
         function setSpaceType(type) { spaceType = type; document.getElementById('tab-home').className = type === 'home' ? 'tab-btn active' : 'tab-btn inactive'; document.getElementById('tab-shop').className = type === 'shop' ? 'tab-btn active' : 'tab-btn inactive'; resetZoneName(); }
@@ -368,28 +489,15 @@
             const total = Object.values(costs).reduce((a,b) => a+b, 0);
             const updateRow = (rowId, valId, cost, qty, unitPrice) => {
                 const el = document.getElementById(rowId);
-                if (el) {
-                    el.classList.toggle('hidden', cost === 0);
-                    const label = qty > 0 ? `(${qty.toLocaleString()}개 x ${unitPrice.toLocaleString()}원) ` : "";
-                    document.getElementById(valId).innerText = label + cost.toLocaleString() + " 원";
-                }
+                if (el) { el.classList.toggle('hidden', cost === 0); const label = qty > 0 ? `(${qty.toLocaleString()}개 x ${unitPrice.toLocaleString()}원) ` : ""; document.getElementById(valId).innerText = label + cost.toLocaleString() + " 원"; }
             };
-            updateRow('row-base', 'detail-base', costs.base, 0, 0);
-            updateRow('row-labor', 'detail-labor', costs.labor, 0, 0);
-            updateRow('row-bond', 'detail-bond', costs.bond, bondQty, 10000);
-            updateRow('row-wood', 'detail-wood', costs.wood, woodQty, 5000);
-            document.getElementById('row-corner').classList.toggle('hidden', moldingCost === 0);
-            document.getElementById('detail-corner').innerText = moldingCost.toLocaleString() + " 원";
-            updateRow('row-removal', 'detail-removal', costs.removal, 0, 0);
-            updateRow('row-lifting', 'detail-lifting', costs.lifting, 0, 0);
-            updateRow('row-protection', 'detail-protection', costs.protection, 0, 0);
-            updateRow('row-waste', 'detail-waste', costs.waste, 0, 0);
-            document.getElementById('res-total').innerText = total.toLocaleString() + " 원";
-            document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString();
+            updateRow('row-base', 'detail-base', costs.base, 0, 0); updateRow('row-labor', 'detail-labor', costs.labor, 0, 0); updateRow('row-bond', 'detail-bond', costs.bond, bondQty, 10000); updateRow('row-wood', 'detail-wood', costs.wood, woodQty, 5000);
+            document.getElementById('row-corner').classList.toggle('hidden', moldingCost === 0); document.getElementById('detail-corner').innerText = moldingCost.toLocaleString() + " 원";
+            updateRow('row-removal', 'detail-removal', costs.removal, 0, 0); updateRow('row-lifting', 'detail-lifting', costs.lifting, 0, 0); updateRow('row-protection', 'detail-protection', costs.protection, 0, 0); updateRow('row-waste', 'detail-waste', costs.waste, 0, 0);
+            document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString();
             updateInfoText();
         }
 
-        // [수정] 제품 규격 업데이트 로직 추가
         function updateInfoText() { 
             const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value; 
             const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value; 
@@ -399,18 +507,10 @@
             document.getElementById('res-spec').innerText = spec ? `규격: ${spec}` : "-";
             updateCustInfo(); 
         }
-
         function updateCustInfo() { 
-            const name = document.getElementById('cust-name').value; 
-            const phone = document.getElementById('cust-phone').value; 
-            const addr = document.getElementById('cust-addr').value; 
-            const sDate = document.getElementById('cust-survey-date').value; 
-            const wDate = document.getElementById('cust-work-date').value; 
-            document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님"; 
-            document.getElementById('disp-phone').innerText = phone || "-"; 
-            document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : ""; 
-            document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : ""; 
-            document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : ""; 
+            const name = document.getElementById('cust-name').value; const phone = document.getElementById('cust-phone').value; const addr = document.getElementById('cust-addr').value; const sDate = document.getElementById('cust-survey-date').value; const wDate = document.getElementById('cust-work-date').value; 
+            document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님"; document.getElementById('disp-phone').innerText = phone || "-"; document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : ""; 
+            document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : ""; document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : ""; 
         }
         function sendSms() { const name = document.getElementById('cust-name').value || "고객"; const phone = document.getElementById('cust-phone').value.replace(/-/g, ""); const product = document.getElementById('res-product').innerText; const total = document.getElementById('res-total-vat').innerText; const addr = document.getElementById('cust-addr').value || "현장 정보 없음"; if(!phone) { alert("연락처를 입력해주세요."); return; } const msg = `[청인마루 벽장재 견적]\n안녕하세요 ${name}님,\n\n제품: ${product}\n합계: ${total}원 (VAT포함)\n현장: ${addr}\n\n상세 내용은 이미지를 확인해주세요.`; window.location.href = `sms:${phone}${navigator.userAgent.match(/iPhone/i) ? '&' : '?'}body=${encodeURIComponent(msg)}`; }
         function formatPhone(el) { el.value = el.value.replace(/[^0-9]/g, "").replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, "$1-$2-$3").replace("--", "-"); }
