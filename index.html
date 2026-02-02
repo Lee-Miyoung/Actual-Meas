@@ -25,11 +25,9 @@
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         #login-gate { display: flex; position: fixed; inset: 0; background: #0f172a; z-index: 99999; align-items: center; justify-content: center; }
         
-        /* 기록 보기 시스템 스타일 */
         #record-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 15px; }
         .record-container { background: #f8fafc; width: 100%; max-width: 500px; height: 90vh; border-radius: 32px; overflow: hidden; display: flex; flex-direction: column; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         .record-card { background: white; border-radius: 20px; padding: 16px; border: 1px solid #e2e8f0; transition: all 0.2s; position: relative; }
-        .record-card.expanded { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.1); }
 
         .input-group { position: relative; transition: all 0.3s ease; }
         .input-premium { width: 100%; padding: 14px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #334155; outline: none; transition: all 0.2s; }
@@ -39,7 +37,6 @@
         .stat-label { font-size: 11px; font-weight: 800; color: #94a3b8; display: block; margin-bottom: 4px; }
         .stat-input { width: 100%; background: transparent; text-align: center; font-weight: 900; font-size: 1.4rem; outline: none; color: #1e293b; }
         .btn-action { display: flex; align-items: center; justify-content: center; width: 100%; padding: 14px 8px; border-radius: 14px; font-weight: 800; font-size: 13px; transition: all 0.1s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); touch-action: manipulation; cursor: pointer; user-select: none; }
-        .btn-action:active { transform: scale(0.96); opacity: 0.9; }
         .tab-btn { flex: 1; padding: 12px; font-size: 13px; font-weight: 800; text-align: center; cursor: pointer; border-radius: 10px; transition: all 0.2s; }
         .tab-btn.active { background: #2563eb; color: white; }
         .tab-btn.inactive { background: #f1f5f9; color: #94a3b8; }
@@ -297,19 +294,18 @@
     <script>
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSnR1o1t9JI_ar-N_puOF6UpeM9N3RWWHIStfaRj17wXewF8_WPh5neRqk8J5MApdLFQXrnCbHssklU/pub?output=csv";
         let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'home';
+        let currentCosts = {}; // 전역 변수로 현재 계산된 비용 저장 (저장 시 사용)
+
         const spaceOptions = { home: ["거실 아트월", "거실 쇼파월", "복도 전체", "현관", "주방연결부분", "기타 직접입력"], shop: ["매장 메인벽", "카운터 배면", "홀 측면", "입구 파사드", "기타 직접입력"] };
         window.onload = async function() { if (localStorage.getItem('cm_auth_session') === 'valid') { document.getElementById('login-gate').style.display = 'none'; await loadSheetData(); } setSpaceType('home'); document.getElementById('quote-number-disp').innerText = "NO. " + generateQuoteNumber(); };
         function checkAppLogin() { if (btoa(document.getElementById('app-password').value) === 'MTMwNg==') { localStorage.setItem('cm_auth_session', 'valid'); location.reload(); } else { alert('오류'); } }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         
-        /* [핵심] 기록 저장 로직 - 상세 항목 추가 */
+        /* [동기화 수정] 기록 저장 - 현재 화면의 계산값을 그대로 저장 */
         function saveRecord() {
             const boxPriceRaw = document.getElementById('input-box-price').value.replace(/,/g, '');
-            const m5 = parseInt(document.getElementById('qty-mold-5000').value) || 0;
-            const m15 = parseInt(document.getElementById('qty-mold-15000').value) || 0;
-            const m10 = parseInt(document.getElementById('qty-mold-10000').value) || 0;
-            const moldTotal = (m5 * 5000) + (m15 * 15000) + (m10 * 10000);
-
+            const removalCost = document.getElementById('input-removal').value.replace(/,/g, '') || "0";
+            
             const data = {
                 id: Date.now(),
                 quoteNo: document.getElementById('quote-number-disp').innerText,
@@ -323,6 +319,8 @@
                 date: new Date().toLocaleString(),
                 sDate: document.getElementById('cust-survey-date').value || "-",
                 wDate: document.getElementById('cust-work-date').value || "-",
+                // 계산된 비용 객체 전체 저장
+                costs: {...currentCosts},
                 fullData: {
                     zones: [...zoneList],
                     bond: document.getElementById('qty-bond').value,
@@ -330,36 +328,33 @@
                     mold5: document.getElementById('qty-mold-5000').value,
                     mold15: document.getElementById('qty-mold-15000').value,
                     mold10: document.getElementById('qty-mold-10000').value,
-                    moldTotal: moldTotal,
-                    removal: document.getElementById('input-removal').value,
-                    waste: document.getElementById('input-waste').value,
+                    removal: removalCost,
                     boxPrice: boxPriceRaw,
-                    boxCount: document.getElementById('input-boxes').value
+                    boxCount: document.getElementById('input-boxes').value,
+                    laborM2: document.getElementById('input-labor-m2').value.replace(/,/g, '')
                 }
             };
             let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
             records.unshift(data);
-            if(records.length > 1000) records.pop();
             localStorage.setItem('chungin_v18_records', JSON.stringify(records));
             alert('견적 기록이 저장되었습니다.');
             renderRecords();
         }
 
-        /* [핵심] 기록 보기 로직 - 사진 디자인과 동일화 */
+        /* [동기화 수정] 기록 보기 - 저장된 상세 내역을 정확히 출력 */
         function renderRecords() {
             const list = document.getElementById('record-list');
-            const search = document.getElementById('record-search').value.toLowerCase();
+            const searchInput = document.getElementById('record-search');
+            const search = searchInput ? searchInput.value.toLowerCase() : "";
             let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
             list.innerHTML = '';
             
-            if (records.length === 0) { list.innerHTML = '<div class="text-center p-8 text-slate-400 font-bold">기록이 없습니다.</div>'; return; }
-
             records.filter(r => (r.name || "").toLowerCase().includes(search) || (r.product || "").toLowerCase().includes(search))
                    .forEach(r => {
-                const fData = r.fullData || {};
-                const boxPrice = parseInt(fData.boxPrice || 0).toLocaleString();
-                const removalCost = parseInt((fData.removal || "0").replace(/,/g,'')).toLocaleString();
-                const moldCost = parseInt(fData.moldTotal || 0).toLocaleString();
+                const boxPrice = parseInt(r.fullData.boxPrice || 0).toLocaleString();
+                const removal = parseInt(r.fullData.removal || 0).toLocaleString();
+                // 걸레받이/부자재 합계 (본드 + 시공목 + 몰딩)
+                const extras = (r.costs.bond || 0) + (r.costs.wood || 0) + (r.costs.corner || 0);
 
                 const div = document.createElement('div');
                 div.className = 'record-card mb-4';
@@ -382,17 +377,16 @@
                         <div class="flex text-[11px]"><span class="w-16 font-bold text-slate-400">현장:</span><span class="font-bold text-slate-700 truncate flex-1">${r.addr}</span></div>
                         <div class="flex justify-between items-center text-[11px] mt-2"><span class="font-bold text-blue-500">실측/시공</span><span class="font-bold text-slate-700">${r.sDate} / ${r.wDate}</span></div>
                         <div class="flex justify-between items-center text-[11px]"><span class="font-bold text-slate-500">자재 (1Box)</span><span class="font-bold text-slate-700">${boxPrice}원/box</span></div>
-                        <div class="flex justify-between items-center text-[11px]"><span class="font-bold text-slate-500">철거비</span><span class="font-bold text-slate-700">${removalCost}원</span></div>
-                        <div class="flex justify-between items-center text-[11px]"><span class="font-bold text-slate-500">걸레받이</span><span class="font-bold text-slate-700">${moldCost}원</span></div>
+                        <div class="flex justify-between items-center text-[11px]"><span class="font-bold text-slate-500">철거비</span><span class="font-bold text-slate-700">${removal}원</span></div>
+                        <div class="flex justify-between items-center text-[11px]"><span class="font-bold text-slate-500">걸레받이/부자재</span><span class="font-bold text-slate-700">${extras.toLocaleString()}원</span></div>
                     </div>
                 `;
                 list.appendChild(div);
             });
         }
 
-        /* [핵심] 기록 복원 로직 */
+        /* [동기화 수정] 복원 - 모든 입력 필드 완벽 복원 */
         function restoreRecord(id) {
-            if(!confirm('해당 데이터를 불러오시겠습니까?')) return;
             let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
             const r = records.find(x => x.id === id);
             if(r) {
@@ -402,43 +396,41 @@
                 document.getElementById('cust-survey-date').value = r.sDate === "-" ? "" : r.sDate;
                 document.getElementById('cust-work-date').value = r.wDate === "-" ? "" : r.wDate;
                 document.getElementById('input-spec').value = r.spec;
-                if(r.fullData) {
-                    zoneList = r.fullData.zones || [];
-                    document.getElementById('qty-bond').value = r.fullData.bond;
-                    document.getElementById('qty-wood').value = r.fullData.wood;
-                    document.getElementById('qty-mold-5000').value = r.fullData.mold5;
-                    document.getElementById('qty-mold-15000').value = r.fullData.mold15;
-                    document.getElementById('qty-mold-10000').value = r.fullData.mold10;
-                    document.getElementById('input-removal').value = r.fullData.removal;
-                    document.getElementById('input-waste').value = r.fullData.waste;
-                    document.getElementById('chk-mold-5000').checked = !!r.fullData.mold5;
-                }
+                document.getElementById('input-box-price').value = parseInt(r.fullData.boxPrice || 0).toLocaleString();
+                document.getElementById('input-labor-m2').value = parseInt(r.fullData.laborM2 || 0).toLocaleString();
+                
+                zoneList = r.fullData.zones || [];
+                document.getElementById('qty-bond').value = r.fullData.bond;
+                document.getElementById('qty-wood').value = r.fullData.wood;
+                document.getElementById('qty-mold-5000').value = r.fullData.mold5;
+                document.getElementById('qty-mold-15000').value = r.fullData.mold15;
+                document.getElementById('qty-mold-10000').value = r.fullData.mold10;
+                document.getElementById('input-removal').value = parseInt(r.fullData.removal || 0).toLocaleString();
+                
+                document.getElementById('chk-mold-5000').checked = !!r.fullData.mold5;
+                document.getElementById('chk-mold-15000').checked = !!r.fullData.mold15;
+                document.getElementById('chk-mold-10000').checked = !!r.fullData.mold10;
+
                 document.getElementById('record-modal').style.display = 'none';
-                renderZones(); calculate(); updateCustInfo(); alert('데이터가 복원되었습니다.');
+                renderZones(); calculate(); updateCustInfo(); alert('데이터가 견적서와 동일하게 복원되었습니다.');
             }
         }
 
-        /* 기타 기본 기능 유지 */
-        function exportToCSV() {
-            let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
-            let csv = "\uFEFF날짜,견적번호,고객명,연락처,제품명,면적,합계\n";
-            records.forEach(r => { csv += `${r.date},${r.quoteNo},${r.name},${r.phone},${r.product},${r.m2},${r.total.replace(/,/g,'')}\n`; });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `청인마루_견적백업_${new Date().toLocaleDateString()}.csv`; link.click();
+        function calculate() { 
+            if (!isManualMode) { 
+                let totalM2 = zoneList.reduce((sum, z) => sum + z.area, 0); 
+                document.getElementById('input-real-m2').value = totalM2.toFixed(2); 
+                const factor = parseFloat(document.getElementById('input-factor').value) || 3.2; 
+                const loss = parseFloat(document.getElementById('select-loss').value) / 100; 
+                const boxes = totalM2 > 0 ? Math.ceil((totalM2 / factor) * (1 + loss)) : 0; 
+                document.getElementById('input-boxes').value = boxes; 
+            } 
+            const curM2 = parseFloat(document.getElementById('input-real-m2').value) || 0; 
+            const curBoxes = parseInt(document.getElementById('input-boxes').value) || 0; 
+            document.getElementById('res-total-area').innerHTML = `${curM2.toFixed(2)} <span class="text-sm not-italic text-white">㎡</span>`; 
+            updateCalculations(curBoxes, curM2); 
         }
-        function importFromFile() { document.getElementById('file-input').click(); }
-        function handleFileImport(e) { const file = e.target.files[0]; const reader = new FileReader(); reader.onload = function(e) { const imported = JSON.parse(e.target.result); localStorage.setItem('chungin_v18_records', JSON.stringify(imported)); renderRecords(); alert('가져오기 성공'); }; reader.readAsText(file); }
-        function clearAllRecords() { if(confirm('모든 기록을 영구 삭제하시겠습니까?')) { localStorage.removeItem('chungin_v18_records'); renderRecords(); } }
-        function deleteSelectedRecords() { let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); const checkedIds = Array.from(document.querySelectorAll('.record-check:checked')).map(el => parseInt(el.dataset.id)); records = records.filter(r => !checkedIds.includes(r.id)); localStorage.setItem('chungin_v18_records', JSON.stringify(records)); renderRecords(); }
-        function showRecordModal() { document.getElementById('record-modal').style.display = 'flex'; renderRecords(); }
-        function closeRecordModal(e) { if(e.target.id === 'record-modal') e.target.style.display = 'none'; }
-        function setSpaceType(type) { spaceType = type; document.getElementById('tab-home').className = type === 'home' ? 'tab-btn active' : 'tab-btn inactive'; document.getElementById('tab-shop').className = type === 'shop' ? 'tab-btn active' : 'tab-btn inactive'; resetZoneName(); }
-        function handleZoneNameChange(el) { if (el.value === "기타 직접입력") { el.classList.add('hidden'); document.getElementById('zone-name-input').classList.remove('hidden'); document.getElementById('btn-reset-zone').classList.remove('hidden'); document.getElementById('zone-name-input').focus(); } }
-        function resetZoneName() { const sel = document.getElementById('zone-name-select'); sel.innerHTML = ''; spaceOptions[spaceType].forEach(opt => { const o = document.createElement('option'); o.value = opt; o.innerText = opt; sel.appendChild(o); }); sel.classList.remove('hidden'); document.getElementById('zone-name-input').classList.add('hidden'); document.getElementById('zone-name-input').value = ''; document.getElementById('btn-reset-zone').classList.add('hidden'); }
-        function addZone() { let name = document.getElementById('zone-name-select').classList.contains('hidden') ? document.getElementById('zone-name-input').value : document.getElementById('zone-name-select').value; if (!name || name === "기타 직접입력") { alert("공간 이름을 입력해주세요."); return; } const w = parseFloat(document.getElementById('zone-width-input').value) || 0; const h = parseFloat(document.getElementById('zone-height-input').value) || 2300; const deduct = parseFloat(document.getElementById('zone-deduct-input').value) || 0; if (w === 0) { alert("가로 길이를 입력해주세요."); return; } let area = (w * h) / 1000000 - deduct; zoneList.push({ name, w, h, deduct, area: area < 0 ? 0 : area }); document.getElementById('zone-width-input').value = ''; document.getElementById('zone-deduct-input').value = ''; resetZoneName(); renderZones(); calculate(); }
-        function removeZone(index) { zoneList.splice(index, 1); renderZones(); calculate(); }
-        function renderZones() { const container = document.getElementById('zone-list-container'); container.innerHTML = ''; zoneList.forEach((z, i) => { const div = document.createElement('div'); div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm'; div.innerHTML = `<div><span class="text-xs font-black text-slate-700 block">${z.name}</span><span class="text-[10px] text-slate-400">W:${z.w} / H:${z.h}mm (-${z.deduct}㎡)</span></div><div class="flex items-center gap-3"><span class="text-sm font-black text-blue-600">${z.area.toFixed(2)}㎡</span><button onclick="removeZone(${i})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></div>`; container.appendChild(div); }); calculate(); }
-        function calculate() { if (!isManualMode) { let totalM2 = zoneList.reduce((sum, z) => sum + z.area, 0); document.getElementById('input-real-m2').value = totalM2.toFixed(2); const factor = parseFloat(document.getElementById('input-factor').value) || 3.2; const loss = parseFloat(document.getElementById('select-loss').value) / 100; const boxes = totalM2 > 0 ? Math.ceil((totalM2 / factor) * (1 + loss)) : 0; document.getElementById('input-boxes').value = boxes; } const curM2 = parseFloat(document.getElementById('input-real-m2').value) || 0; const curBoxes = parseInt(document.getElementById('input-boxes').value) || 0; document.getElementById('res-total-area').innerHTML = `${curM2.toFixed(2)} <span class="text-sm not-italic text-white">㎡</span>`; updateCalculations(curBoxes, curM2); }
+
         function updateCalculations(boxes, realM2) {
             const getNum = (id) => parseInt(document.getElementById(id).value) || 0;
             const price = parseInt(document.getElementById('input-box-price').value.replace(/,/g,'')) || 0;
@@ -450,25 +442,72 @@
             if(document.getElementById('chk-mold-5000').checked) moldingCost += getNum('qty-mold-5000') * 5000;
             if(document.getElementById('chk-mold-15000').checked) moldingCost += getNum('qty-mold-15000') * 15000;
             if(document.getElementById('chk-mold-10000').checked) moldingCost += getNum('qty-mold-10000') * 10000;
-            const costs = { base: boxes * price, bond: bondQty * 10000, wood: woodQty * 5000, corner: moldingCost, labor: laborCost, removal: parseInt(document.getElementById('input-removal').value.replace(/,/g,'')) || 0, lifting: parseInt(document.getElementById('input-lifting').value.replace(/,/g,'')) || 0, protection: parseInt(document.getElementById('input-protection').value.replace(/,/g,'')) || 0, waste: parseInt(document.getElementById('input-waste').value.replace(/,/g,'')) || 0 };
+
+            const costs = { 
+                base: boxes * price, 
+                bond: bondQty * 10000, 
+                wood: woodQty * 5000, 
+                corner: moldingCost, 
+                labor: laborCost, 
+                removal: parseInt(document.getElementById('input-removal').value.replace(/,/g,'')) || 0, 
+                lifting: parseInt(document.getElementById('input-lifting').value.replace(/,/g,'')) || 0, 
+                protection: parseInt(document.getElementById('input-protection').value.replace(/,/g,'')) || 0, 
+                waste: parseInt(document.getElementById('input-waste').value.replace(/,/g,'')) || 0 
+            };
+            currentCosts = costs; // 현재 비용 업데이트
+
             const total = Object.values(costs).reduce((a,b) => a+b, 0);
-            const updateRow = (rowId, valId, cost, qty, unitPrice) => { const el = document.getElementById(rowId); if (el) { el.classList.toggle('hidden', cost === 0); const label = qty > 0 ? `(${qty.toLocaleString()}개 x ${unitPrice.toLocaleString()}원) ` : ""; document.getElementById(valId).innerText = label + cost.toLocaleString() + " 원"; } };
-            updateRow('row-base', 'detail-base', costs.base, 0, 0); updateRow('row-labor', 'detail-labor', costs.labor, 0, 0); updateRow('row-bond', 'detail-bond', costs.bond, bondQty, 10000); updateRow('row-wood', 'detail-wood', costs.wood, woodQty, 5000); document.getElementById('row-corner').classList.toggle('hidden', moldingCost === 0); document.getElementById('detail-corner').innerText = moldingCost.toLocaleString() + " 원"; updateRow('row-removal', 'detail-removal', costs.removal, 0, 0); updateRow('row-lifting', 'detail-lifting', costs.lifting, 0, 0); updateRow('row-protection', 'detail-protection', costs.protection, 0, 0); updateRow('row-waste', 'detail-waste', costs.waste, 0, 0); document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString(); updateInfoText();
+            const updateRow = (rowId, valId, cost, qty, unitPrice) => { 
+                const el = document.getElementById(rowId); 
+                if (el) { 
+                    el.classList.toggle('hidden', cost === 0); 
+                    const label = qty > 0 ? `(${qty.toLocaleString()}개 x ${unitPrice.toLocaleString()}원) ` : ""; 
+                    document.getElementById(valId).innerText = label + cost.toLocaleString() + " 원"; 
+                } 
+            };
+            updateRow('row-base', 'detail-base', costs.base, 0, 0); 
+            updateRow('row-labor', 'detail-labor', costs.labor, 0, 0); 
+            updateRow('row-bond', 'detail-bond', costs.bond, bondQty, 10000); 
+            updateRow('row-wood', 'detail-wood', costs.wood, woodQty, 5000); 
+            document.getElementById('row-corner').classList.toggle('hidden', moldingCost === 0); 
+            document.getElementById('detail-corner').innerText = moldingCost.toLocaleString() + " 원"; 
+            updateRow('row-removal', 'detail-removal', costs.removal, 0, 0); 
+            updateRow('row-lifting', 'detail-lifting', costs.lifting, 0, 0); 
+            updateRow('row-protection', 'detail-protection', costs.protection, 0, 0); 
+            updateRow('row-waste', 'detail-waste', costs.waste, 0, 0); 
+            document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; 
+            document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString(); 
+            updateInfoText();
         }
-        function updateInfoText() { const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value; const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value; const spec = document.getElementById('input-spec').value; document.getElementById('res-brand-category').innerText = brand || "BRAND"; document.getElementById('res-product').innerText = prod || "제품명"; document.getElementById('res-spec').innerText = spec ? `규격: ${spec}` : "-"; updateCustInfo(); }
-        function updateCustInfo() { const name = document.getElementById('cust-name').value; const phone = document.getElementById('cust-phone').value; const addr = document.getElementById('cust-addr').value; const sDate = document.getElementById('cust-survey-date').value; const wDate = document.getElementById('cust-work-date').value; document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님"; document.getElementById('disp-phone').innerText = phone || "-"; document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : ""; document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : ""; document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : ""; }
-        function sendSms() { const name = document.getElementById('cust-name').value || "고객"; const phone = document.getElementById('cust-phone').value.replace(/-/g, ""); const product = document.getElementById('res-product').innerText; const total = document.getElementById('res-total-vat').innerText; const addr = document.getElementById('cust-addr').value || "현장 정보 없음"; if(!phone) { alert("연락처를 입력해주세요."); return; } const msg = `[청인마루 벽장재 견적]\n안녕하세요 ${name}님,\n\n제품: ${product}\n합계: ${total}원 (VAT포함)\n현장: ${addr}\n\n상세 내용은 이미지를 확인해주세요.`; window.location.href = `sms:${phone}${navigator.userAgent.match(/iPhone/i) ? '&' : '?'}body=${encodeURIComponent(msg)}`; }
+
+        /* 기타 기본 유틸리티 함수 */
+        function generateQuoteNumber() { const now = new Date(); return `Q${now.getFullYear().toString().slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`; }
+        function setSpaceType(type) { spaceType = type; document.getElementById('tab-home').className = type === 'home' ? 'tab-btn active' : 'tab-btn inactive'; document.getElementById('tab-shop').className = type === 'shop' ? 'tab-btn active' : 'tab-btn inactive'; resetZoneName(); }
+        function handleZoneNameChange(el) { if (el.value === "기타 직접입력") { el.classList.add('hidden'); document.getElementById('zone-name-input').classList.remove('hidden'); document.getElementById('btn-reset-zone').classList.remove('hidden'); document.getElementById('zone-name-input').focus(); } }
+        function resetZoneName() { const sel = document.getElementById('zone-name-select'); sel.innerHTML = ''; spaceOptions[spaceType].forEach(opt => { const o = document.createElement('option'); o.value = opt; o.innerText = opt; sel.appendChild(o); }); sel.classList.remove('hidden'); document.getElementById('zone-name-input').classList.add('hidden'); document.getElementById('zone-name-input').value = ''; document.getElementById('btn-reset-zone').classList.add('hidden'); }
+        function addZone() { let name = document.getElementById('zone-name-select').classList.contains('hidden') ? document.getElementById('zone-name-input').value : document.getElementById('zone-name-select').value; if (!name || name === "기타 직접입력") { alert("공간 이름을 입력해주세요."); return; } const w = parseFloat(document.getElementById('zone-width-input').value) || 0; const h = parseFloat(document.getElementById('zone-height-input').value) || 2300; const deduct = parseFloat(document.getElementById('zone-deduct-input').value) || 0; if (w === 0) { alert("가로 길이를 입력해주세요."); return; } let area = (w * h) / 1000000 - deduct; zoneList.push({ name, w, h, deduct, area: area < 0 ? 0 : area }); document.getElementById('zone-width-input').value = ''; document.getElementById('zone-deduct-input').value = ''; resetZoneName(); renderZones(); calculate(); }
+        function renderZones() { const container = document.getElementById('zone-list-container'); container.innerHTML = ''; zoneList.forEach((z, i) => { const div = document.createElement('div'); div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm'; div.innerHTML = `<div><span class="text-xs font-black text-slate-700 block">${z.name}</span><span class="text-[10px] text-slate-400">W:${z.w} / H:${z.h}mm (-${z.deduct}㎡)</span></div><div class="flex items-center gap-3"><span class="text-sm font-black text-blue-600">${z.area.toFixed(2)}㎡</span><button onclick="removeZone(${i})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></div>`; container.appendChild(div); }); calculate(); }
+        function removeZone(i) { zoneList.splice(i, 1); renderZones(); }
         function formatPhone(el) { el.value = el.value.replace(/[^0-9]/g, "").replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, "$1-$2-$3").replace("--", "-"); }
         function formatInput(el) { let val = el.value.replace(/[^0-9]/g, ''); el.value = val ? parseInt(val).toLocaleString() : ''; }
+        function updateInfoText() { const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value; const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value; const spec = document.getElementById('input-spec').value; document.getElementById('res-brand-category').innerText = brand || "BRAND"; document.getElementById('res-product').innerText = prod || "제품명"; document.getElementById('res-spec').innerText = spec ? `규격: ${spec}` : "-"; updateCustInfo(); }
+        function updateCustInfo() { const name = document.getElementById('cust-name').value; const phone = document.getElementById('cust-phone').value; const addr = document.getElementById('cust-addr').value; const sDate = document.getElementById('cust-survey-date').value; const wDate = document.getElementById('cust-work-date').value; document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님"; document.getElementById('disp-phone').innerText = phone || "-"; document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : ""; document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : ""; document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : ""; }
         function toggleManualMode() { isManualMode = document.getElementById('manual-mode-toggle').checked; document.getElementById('select-area').classList.toggle('hidden', isManualMode); document.getElementById('manual-area').classList.toggle('hidden', !isManualMode); document.getElementById('input-real-m2').readOnly = !isManualMode; document.getElementById('input-boxes').readOnly = !isManualMode; calculate(); }
         async function loadSheetData() { try { const res = await fetch(SHEET_URL + "&cache=" + Date.now()); const text = await res.text(); const rows = text.split('\n').slice(1); const tempMaster = {}; rows.forEach(row => { const cols = row.match(/(".*?"|[^",\s\r\n]+)(?=\s*,|\s*$)/g); if (cols && cols.length >= 4) { const brand = cols[0].replace(/"/g, '').trim(); const name = cols[1].replace(/"/g, '').trim(); if (!tempMaster[brand]) tempMaster[brand] = { brand, products: [] }; tempMaster[brand].products.push({ name, price: parseInt(cols[2].replace(/[^0-9]/g,'')), factor: parseFloat(cols[3]) }); } }); masterData = Object.values(tempMaster); const bSel = document.getElementById('select-brand'); bSel.innerHTML = '<option value="">브랜드 선택</option>'; masterData.forEach(b => bSel.add(new Option(b.brand, b.brand))); } catch (e) {} }
         function updateProducts() { const bName = document.getElementById('select-brand').value; const pSel = document.getElementById('select-product'); pSel.innerHTML = '<option value="">제품 선택</option>'; const bObj = masterData.find(x => x.brand === bName); if(bObj) bObj.products.forEach(p => pSel.add(new Option(p.name, p.name))); handleProductSelect(); }
         function handleProductSelect() { const bName = document.getElementById('select-brand').value; const pName = document.getElementById('select-product').value; const bObj = masterData.find(x => x.brand === bName); const pObj = bObj?.products.find(x => x.name === pName); if (pObj) { document.getElementById('input-box-price').value = pObj.price.toLocaleString(); document.getElementById('input-factor').value = pObj.factor; } calculate(); }
-        function generateQuoteNumber() { const now = new Date(); return `Q${now.getFullYear().toString().slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`; }
         function toggleAccordion(id) { document.getElementById('content-' + id).classList.toggle('open'); }
         function showToast() { const t = document.getElementById('toast'); t.className = "show"; setTimeout(() => { t.className = t.className.replace("show", ""); }, 2000); }
-        function shareQuote() { showToast(); html2canvas(document.getElementById('capture-area'), { scale: 2 }).then(canvas => { canvas.toBlob(blob => { if(navigator.share) navigator.share({ files: [new File([blob], "청인마루_견적.png", {type:"image/png"})] }); }); }); }
-        function saveImage() { showToast(); html2canvas(document.getElementById('capture-area'), { scale: 2 }).then(canvas => { const a = document.createElement('a'); a.href = canvas.toDataURL(); a.download = "청인마루_견적.png"; a.click(); }); }
+        function showRecordModal() { document.getElementById('record-modal').style.display = 'flex'; renderRecords(); }
+        function closeRecordModal(e) { if(e.target.id === 'record-modal') e.target.style.display = 'none'; }
+        function clearAllRecords() { if(confirm('모든 기록을 삭제하시겠습니까?')) { localStorage.removeItem('chungin_v18_records'); renderRecords(); } }
+        function deleteSelectedRecords() { let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); const checkedIds = Array.from(document.querySelectorAll('.record-check:checked')).map(el => parseInt(el.dataset.id)); records = records.filter(r => !checkedIds.includes(r.id)); localStorage.setItem('chungin_v18_records', JSON.stringify(records)); renderRecords(); }
+        function exportToCSV() { let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); let csv = "\uFEFF날짜,고객명,제품명,합계\n"; records.forEach(r => { csv += `${r.date},${r.name},${r.product},${r.total}\n`; }); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `견적백업_${new Date().toLocaleDateString()}.csv`; link.click(); }
+        function importFromFile() { document.getElementById('file-input').click(); }
+        function handleFileImport(e) { const file = e.target.files[0]; const reader = new FileReader(); reader.onload = function(e) { const imported = JSON.parse(e.target.result); localStorage.setItem('chungin_v18_records', JSON.stringify(imported)); renderRecords(); alert('가져오기 성공'); }; reader.readAsText(file); }
+        function shareQuote() { showToast(); html2canvas(document.getElementById('capture-area'), { scale: 2 }).then(canvas => { canvas.toBlob(blob => { if(navigator.share) navigator.share({ files: [new File([blob], "견적.png", {type:"image/png"})] }); }); }); }
+        function saveImage() { showToast(); html2canvas(document.getElementById('capture-area'), { scale: 2 }).then(canvas => { const a = document.createElement('a'); a.href = canvas.toDataURL(); a.download = "견적.png"; a.click(); }); }
+        function sendSms() { const phone = document.getElementById('cust-phone').value.replace(/-/g, ""); const msg = `[청인마루 견적]\n제품: ${document.getElementById('res-product').innerText}\n합계: ${document.getElementById('res-total-vat').innerText}원`; window.location.href = `sms:${phone}${navigator.userAgent.match(/iPhone/i) ? '&' : '?'}body=${encodeURIComponent(msg)}`; }
     </script>
 </body>
 </html>
