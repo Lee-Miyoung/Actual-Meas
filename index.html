@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v16.2)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v16.4)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -55,7 +55,7 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v16.2</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v16.4</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -84,7 +84,7 @@
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm"><i class="fas fa-star text-yellow-300 text-[8px]"></i> PREMIUM SYSTEM</div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v16.2</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v16.4</p>
                 <div class="flex gap-2 justify-center">
                     <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 hover:text-blue-500"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="alert('준비중입니다.')" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2"><i class="fas fa-list-ul text-blue-500"></i> 기록 보기</button>
@@ -140,8 +140,12 @@
                     <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5 mb-3"><i class="fas fa-ruler-combined text-blue-500"></i> 공간별 상세 견적 (mm 단위)</h3>
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-4 shadow-inner">
                         <div class="flex gap-2 mb-3">
-                            <select id="zone-name-select" class="flex-1 p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 outline-none"></select>
-                            <div class="relative w-32"><input type="number" id="zone-deduct-input" class="w-full p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 text-center outline-none" placeholder="공제(㎡)"><span class="absolute right-2 top-2 text-[8px] text-slate-300">공제</span></div>
+                            <div id="zone-name-wrapper" class="flex-1 flex gap-1">
+                                <select id="zone-name-select" class="flex-1 p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 outline-none" onchange="handleZoneNameChange(this)"></select>
+                                <input type="text" id="zone-name-input" class="hidden flex-1 p-2 bg-blue-50 rounded-lg text-sm font-bold border border-blue-200 outline-none" placeholder="공간 이름 입력">
+                                <button id="btn-reset-zone" onclick="resetZoneName()" class="hidden w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center text-slate-500"><i class="fas fa-undo"></i></button>
+                            </div>
+                            <div class="relative w-24"><input type="number" id="zone-deduct-input" class="w-full p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 text-center outline-none" placeholder="공제(㎡)"><span class="absolute right-1 top-2 text-[7px] text-slate-300">공제</span></div>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="flex-1"><span class="text-[9px] font-black text-slate-400 block mb-1 uppercase ml-1">가로(W)</span><input type="number" id="zone-width-input" class="w-full p-3 bg-white rounded-xl text-center font-black text-slate-700 border border-slate-200 outline-none" placeholder="0"></div>
@@ -204,11 +208,18 @@
                             <div class="flex justify-between text-xs hidden" id="row-waste"><span class="text-slate-300">폐기물처리비</span><span id="detail-waste" class="font-bold">0 원</span></div>
                             <div class="border-t border-white/10 pt-2 mt-2 flex justify-between items-center font-black"><span class="text-xs text-slate-300">합계 (VAT 별도)</span><span id="res-total" class="text-lg text-white">0</span></div>
                         </div>
+                        <div class="mt-4 bg-white/5 p-3 rounded-xl border border-white/10 text-[9px] text-slate-400 leading-relaxed">
+                            <p class="flex items-center gap-1.5 mb-1 text-blue-300"><i class="fas fa-info-circle"></i> 투명하고 정직한 거래를 위해 100% 정식 세금 증빙 발행을 원칙으로 합니다.</p>
+                            <p>• 현장 실측 시 구조나 <strong>기존 벽면의 구조</strong>에 따라 최종 금액은 변동될 수 있습니다.</p>
+                            <p>• 본 견적서는 발행일로부터 15일간 유효합니다.</p>
+                        </div>
+                        <div id="res-zone-summary" class="mt-3 text-[10px] text-slate-400 bg-white/5 p-2 rounded-xl hidden"></div>
                     </div>
                 </div>
 
-                <div class="relative z-10 mt-auto">
-                    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-[2rem] shadow-2xl">
+                <div class="relative z-10 mt-auto text-center">
+                    <div class="inline-block bg-white text-blue-900 text-[10px] font-bold px-3 py-1.5 rounded-full mb-2 relative shadow-md">궁금한 점은 언제든 물어보세요!<div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-white"></div></div>
+                    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-[2rem] shadow-2xl text-left">
                         <div class="text-center mb-6"><span class="bg-white/20 px-2 py-0.5 rounded text-[9px] font-black text-white uppercase mb-1 inline-block">TOTAL AMOUNT (VAT INC.)</span><div class="flex items-baseline justify-center gap-1.5"><span id="res-total-vat" class="text-4xl md:text-5xl font-black text-white">0</span><span class="text-xl font-bold text-blue-200">원</span></div></div>
                         <div class="grid grid-cols-2 gap-2" data-html2canvas-ignore="true">
                             <button onclick="shareQuote()" class="btn-action bg-[#FEE500] text-[#3c1e1e]"><i class="fas fa-comment mr-2"></i> 카카오톡 공유</button>
@@ -216,6 +227,10 @@
                             <button onclick="alert('데이터가 저장되었습니다.')" class="btn-action bg-slate-800 text-white"><i class="fas fa-save mr-2"></i> 기록 저장</button>
                             <button onclick="saveImage()" class="btn-action bg-white text-blue-900"><i class="fas fa-download mr-2"></i> 이미지 저장</button>
                         </div>
+                    </div>
+                    <div class="mt-4 bg-white/5 p-3 rounded-2xl flex items-center justify-between border border-white/10 text-left">
+                        <div class="flex items-center gap-3"><img src="maruni.png" class="w-10 h-10 rounded-lg bg-white/10 p-1" onerror="this.src='icon.jpg'"><div><p class="text-xs font-black text-white">시공 사례 보기</p><p class="text-[9px] text-slate-400">유튜브 '마루아빠' / 블로그 '청인마루'</p></div></div>
+                        <div class="bg-white p-1.5 rounded-lg"><img src="https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=https%3A%2F%2Fblog.naver.com%2Fflooring_dad" class="w-8 h-8"></div>
                     </div>
                 </div>
             </div>
@@ -230,12 +245,14 @@
         function checkAppLogin() { if (btoa(document.getElementById('app-password').value) === 'MTMwNg==') { localStorage.setItem('cm_auth_session', 'valid'); location.reload(); } else { alert('오류'); } }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function handleAuthSubmit() { if(btoa(document.getElementById('admin-pwd-input').value) === 'MjU4MA==') { closeModal('pwd-modal'); } }
-        function setSpaceType(type) { spaceType = type; document.getElementById('tab-home').className = type === 'home' ? 'tab-btn active' : 'tab-btn inactive'; document.getElementById('tab-shop').className = type === 'shop' ? 'tab-btn active' : 'tab-btn inactive'; const sel = document.getElementById('zone-name-select'); sel.innerHTML = ''; spaceOptions[type].forEach(opt => { const o = document.createElement('option'); o.value = opt; o.innerText = opt; sel.appendChild(o); }); if (type === 'home') document.getElementById('zone-height-input').placeholder = "2300 (추천)"; else document.getElementById('zone-height-input').placeholder = "직접입력"; }
-        function addZone() { const name = document.getElementById('zone-name-select').value; const w = parseFloat(document.getElementById('zone-width-input').value) || 0; const h = parseFloat(document.getElementById('zone-height-input').value) || 0; const deduct = parseFloat(document.getElementById('zone-deduct-input').value) || 0; if (w === 0 || h === 0) { alert("가로와 높이를 입력해주세요."); return; } let area = (w * h) / 1000000 - deduct; zoneList.push({ name, w, h, deduct, area: area < 0 ? 0 : area }); document.getElementById('zone-width-input').value = ''; document.getElementById('zone-deduct-input').value = ''; renderZones(); calculate(); }
+        function setSpaceType(type) { spaceType = type; document.getElementById('tab-home').className = type === 'home' ? 'tab-btn active' : 'tab-btn inactive'; document.getElementById('tab-shop').className = type === 'shop' ? 'tab-btn active' : 'tab-btn inactive'; resetZoneName(); }
+        function handleZoneNameChange(el) { if (el.value === "기타 직접입력") { el.classList.add('hidden'); document.getElementById('zone-name-input').classList.remove('hidden'); document.getElementById('btn-reset-zone').classList.remove('hidden'); document.getElementById('zone-name-input').focus(); } }
+        function resetZoneName() { const sel = document.getElementById('zone-name-select'); sel.innerHTML = ''; spaceOptions[spaceType].forEach(opt => { const o = document.createElement('option'); o.value = opt; o.innerText = opt; sel.appendChild(o); }); sel.classList.remove('hidden'); document.getElementById('zone-name-input').classList.add('hidden'); document.getElementById('zone-name-input').value = ''; document.getElementById('btn-reset-zone').classList.add('hidden'); }
+        function addZone() { let name = document.getElementById('zone-name-select').classList.contains('hidden') ? document.getElementById('zone-name-input').value : document.getElementById('zone-name-select').value; if (!name || name === "기타 직접입력") { alert("공간 이름을 입력해주세요."); return; } const w = parseFloat(document.getElementById('zone-width-input').value) || 0; const h = parseFloat(document.getElementById('zone-height-input').value) || 2300; const deduct = parseFloat(document.getElementById('zone-deduct-input').value) || 0; if (w === 0) { alert("가로 길이를 입력해주세요."); return; } let area = (w * h) / 1000000 - deduct; zoneList.push({ name, w, h, deduct, area: area < 0 ? 0 : area }); document.getElementById('zone-width-input').value = ''; document.getElementById('zone-deduct-input').value = ''; resetZoneName(); renderZones(); calculate(); }
         function removeZone(index) { zoneList.splice(index, 1); renderZones(); calculate(); }
         function renderZones() { const container = document.getElementById('zone-list-container'); const summary = document.getElementById('res-zone-summary'); container.innerHTML = ''; let summaryHTML = '<strong class="block mb-1">시공 구역 상세</strong>'; zoneList.forEach((z, i) => { const div = document.createElement('div'); div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm'; div.innerHTML = `<div><span class="text-xs font-black text-slate-700 block">${z.name}</span><span class="text-[10px] text-slate-400">W:${z.w} / H:${z.h}mm (-${z.deduct}㎡)</span></div><div class="flex items-center gap-3"><span class="text-sm font-black text-blue-600">${z.area.toFixed(2)}㎡</span><button onclick="removeZone(${i})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></div>`; container.appendChild(div); summaryHTML += `<div>${z.name}: ${z.area.toFixed(2)}㎡</div>`; }); summary.innerHTML = summaryHTML; summary.classList.toggle('hidden', zoneList.length === 0); }
         function calculate() { let totalM2 = zoneList.reduce((sum, z) => sum + z.area, 0); document.getElementById('input-real-m2').value = totalM2.toFixed(2); const factor = parseFloat(document.getElementById('input-factor').value) || 3.2; const loss = parseFloat(document.getElementById('select-loss').value) / 100; const boxes = totalM2 > 0 ? Math.ceil((totalM2 / factor) * (1 + loss)) : 0; document.getElementById('input-boxes').value = boxes; updateCalculations(boxes); }
-        function updateCalculations(boxes) { const getNum = (id) => parseInt(document.getElementById(id).value.replace(/,/g, '')) || 0; const price = getNum('input-box-price'); const costs = { base: boxes * price, bond: getNum('input-bond'), wood: getNum('input-wood'), corner: getNum('input-corner'), removal: getNum('input-removal'), lifting: getNum('input-lifting'), protection: getNum('input-protection'), travel: getNum('input-travel'), waste: getNum('input-waste') }; const total = Object.values(costs).reduce((a,b) => a+b, 0); document.getElementById('res-box').innerHTML = `${boxes} <span class="text-sm not-italic">BOX</span>`; const updateRow = (rowId, valId, cost) => { document.getElementById(rowId).classList.toggle('hidden', cost === 0); document.getElementById(valId).innerText = `${cost.toLocaleString()} 원`; }; updateRow('row-base', 'detail-base', costs.base); updateRow('row-bond', 'detail-bond', costs.bond); updateRow('row-wood', 'detail-wood', costs.wood); updateRow('row-corner', 'detail-corner', costs.corner); updateRow('row-removal', 'detail-removal', costs.removal); updateRow('row-lifting', 'detail-lifting', costs.lifting); updateRow('row-protection', 'detail-protection', costs.protection); updateRow('row-travel', 'detail-travel', costs.travel); updateRow('row-waste', 'detail-waste', costs.waste); document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString(); updateInfoText(); }
+        function updateCalculations(boxes) { const getNum = (id) => parseInt(document.getElementById(id).value.replace(/,/g, '')) || 0; const price = getNum('input-box-price'); const costs = { base: boxes * price, bond: getNum('input-bond'), wood: getNum('input-wood'), corner: getNum('input-corner'), removal: getNum('input-removal'), lifting: getNum('input-lifting'), protection: getNum('input-protection'), travel: getNum('input-travel'), waste: getNum('input-waste') }; const total = Object.values(costs).reduce((a,b) => a+b, 0); document.getElementById('res-box').innerHTML = `${boxes} <span class="text-sm not-italic">BOX</span>`; const updateRow = (rowId, valId, cost) => { if (document.getElementById(rowId)) { document.getElementById(rowId).classList.toggle('hidden', cost === 0); document.getElementById(valId).innerText = `${cost.toLocaleString()} 원`; } }; updateRow('row-base', 'detail-base', costs.base); updateRow('row-bond', 'detail-bond', costs.bond); updateRow('row-wood', 'detail-wood', costs.wood); updateRow('row-corner', 'detail-corner', costs.corner); updateRow('row-removal', 'detail-removal', costs.removal); updateRow('row-lifting', 'detail-lifting', costs.lifting); updateRow('row-protection', 'detail-protection', costs.protection); updateRow('row-travel', 'detail-travel', costs.travel); updateRow('row-waste', 'detail-waste', costs.waste); document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString(); updateInfoText(); }
         function updateInfoText() { const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value; const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value; document.getElementById('res-brand-category').innerText = brand || "BRAND"; document.getElementById('res-product').innerText = prod || "제품명"; updateCustInfo(); }
         function updateCustInfo() { const name = document.getElementById('cust-name').value; const phone = document.getElementById('cust-phone').value; const addr = document.getElementById('cust-addr').value; const sDate = document.getElementById('cust-survey-date').value; const wDate = document.getElementById('cust-work-date').value; document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님"; document.getElementById('disp-phone').innerText = phone || "-"; document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : ""; document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : ""; document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : ""; }
         function formatPhone(el) { el.value = el.value.replace(/[^0-9]/g, "").replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, "$1-$2-$3").replace("--", "-"); }
