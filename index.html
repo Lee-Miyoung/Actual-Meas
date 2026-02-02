@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v15.1)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v15.2)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -51,11 +51,11 @@
 <body class="antialiased overflow-x-hidden" id="main-body">
 
     <div id="login-gate">
-        <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-sm text-center mx-4 relative overflow-hidden">
+        <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-sm text-center mx-4 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v15.1</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v15.2</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -82,7 +82,7 @@
         <header class="flex flex-col items-center justify-center mb-8 relative pt-4">
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm">
-                    <i class="fas fa-star text-yellow-300 text-[8px]"></i> Direct-Height System
+                    <i class="fas fa-star text-yellow-300 text-[8px]"></i> Clean Separation
                 </div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
                 <p class="text-sm text-slate-500 font-bold">Smart Quote System <span class="text-slate-300">|</span> Wall Panels</p>
@@ -154,7 +154,7 @@
                                     <option value="홀 측면">홀 측면</option>
                                     <option value="입구 파사드">입구 파사드</option>
                                 </optgroup>
-                                <option value="기타 직접입력">기타 직접입력</option>
+                                <option value="기타 직접입력" class="font-black text-blue-600">기타 직접입력 (계속 추가 가능)</option>
                             </select>
                             <div class="relative w-32">
                                 <input type="number" id="zone-deduct-input" class="w-full p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 text-center outline-none" placeholder="공제(㎡)">
@@ -164,12 +164,12 @@
                         <div class="flex items-center gap-2">
                             <div class="flex-1">
                                 <span class="text-[9px] font-black text-slate-400 block mb-1 uppercase ml-1">Width (가로)</span>
-                                <input type="number" id="zone-width-input" class="w-full p-3 bg-white rounded-xl text-center font-black text-slate-700 border border-slate-200 focus:border-blue-500 outline-none" placeholder="0">
+                                <input type="number" id="zone-width-input" class="w-full p-3 bg-white rounded-xl text-center font-black text-slate-700 border border-slate-200 outline-none" placeholder="0">
                             </div>
                             <span class="text-slate-300 font-bold mt-4">×</span>
                             <div class="flex-1">
                                 <span class="text-[9px] font-black text-blue-500 block mb-1 uppercase ml-1 text-center">Height (높이)</span>
-                                <input type="number" id="zone-height-input" class="w-full p-3 bg-blue-50 rounded-xl text-center font-black text-blue-700 border border-blue-200 focus:ring-2 ring-blue-500 outline-none" placeholder="직접입력">
+                                <input type="number" id="zone-height-input" class="w-full p-3 bg-blue-50 rounded-xl text-center font-black text-blue-700 border border-blue-200 outline-none" placeholder="직접입력">
                             </div>
                             <button onclick="addZone()" class="bg-blue-600 text-white w-12 h-12 rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all mt-4"><i class="fas fa-plus"></i></button>
                         </div>
@@ -263,21 +263,28 @@
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function handleAuthSubmit() { if(btoa(document.getElementById('admin-pwd-input').value) === 'MjU4MA==') { closeModal('pwd-modal'); } }
 
-        // [MODIFIED] 탭 변경 시 높이를 자동 세팅하지 않도록 수정
+        // [MODIFIED] 모바일 환경에서의 optgroup 분리 완벽 지원
         function setSpaceType(type) {
             spaceType = type;
             document.getElementById('tab-home').className = type === 'home' ? 'tab-btn active' : 'tab-btn inactive';
             document.getElementById('tab-shop').className = type === 'shop' ? 'tab-btn active' : 'tab-btn inactive';
-            document.getElementById('opt-home').classList.toggle('hidden', type !== 'home');
-            document.getElementById('opt-shop').classList.toggle('hidden', type !== 'shop');
-            document.getElementById('zone-name-select').value = type === 'home' ? '거실 아트월' : '매장 메인벽';
             
-            // 기존에 입력된 값이 없다면 주거 공간용 2300만 살짝 추천 표시(Placeholder처럼)
-            if (type === 'home' && !document.getElementById('zone-height-input').value) {
-                document.getElementById('zone-height-input').value = 2300;
-            } else if (type === 'shop') {
-                // 상가는 층고가 너무 다양하므로 입력창을 비워주어 직접 입력을 유도
-                document.getElementById('zone-height-input').value = "";
+            const homeGroup = document.getElementById('opt-home');
+            const shopGroup = document.getElementById('opt-shop');
+            
+            if (type === 'home') {
+                homeGroup.disabled = false;
+                homeGroup.style.display = 'block';
+                shopGroup.disabled = true;
+                shopGroup.style.display = 'none';
+                document.getElementById('zone-name-select').value = '거실 아트월';
+                document.getElementById('zone-height-input').placeholder = "2300 (추천)";
+            } else {
+                homeGroup.disabled = true;
+                homeGroup.style.display = 'none';
+                shopGroup.disabled = false;
+                shopGroup.style.display = 'block';
+                document.getElementById('zone-name-select').value = '매장 메인벽';
                 document.getElementById('zone-height-input').placeholder = "직접입력";
             }
         }
@@ -287,11 +294,12 @@
             const w = parseFloat(document.getElementById('zone-width-input').value) || 0;
             const h = parseFloat(document.getElementById('zone-height-input').value) || 0;
             const deduct = parseFloat(document.getElementById('zone-deduct-input').value) || 0;
-            if (w === 0 || h === 0) { alert("가로와 높이를 모두 입력해주세요."); return; }
+            if (w === 0 || h === 0) { alert("가로와 높이를 입력해주세요."); return; }
             let area = (w * h) / 1000000 - deduct;
             zoneList.push({ name, w, h, deduct, area: area < 0 ? 0 : area });
+            
+            // 입력창 초기화하여 계속 추가 유도
             document.getElementById('zone-width-input').value = '';
-            // 높이는 여러 구역 시공 시 편의를 위해 유지 (사용자가 수정 가능)
             document.getElementById('zone-deduct-input').value = '';
             renderZones(); calculate();
         }
