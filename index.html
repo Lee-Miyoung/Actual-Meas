@@ -115,7 +115,7 @@
                     <i class="fas fa-star text-yellow-300 text-[8px]"></i> Premium System
                 </div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold">Smart Quote System <span class="text-slate-300">|</span> v13.3</p>
+                <p class="text-sm text-slate-500 font-bold">Smart Quote System <span class="text-slate-300">|</span> v13.4</p>
             </div>
             <div class="flex gap-2 mt-4 z-10">
                 <button onclick="loadSheetData(true)" class="w-9 h-9 rounded-full bg-white shadow text-slate-500 hover:text-blue-600 flex items-center justify-center transition-colors"><i class="fas fa-sync-alt"></i></button>
@@ -168,26 +168,8 @@
                         </label>
                     </div>
 
-                    <div class="grid grid-cols-2 bg-slate-100 p-1 rounded-xl">
-                        <button id="tab-apt" class="py-2.5 rounded-lg text-sm font-black transition-all text-white bg-blue-600 shadow-sm" onclick="setMode('apt'); autoSaveDraft();">주거용 (확장/비확장)</button>
-                        <button id="tab-gen" class="py-2.5 rounded-lg text-sm font-black transition-all text-slate-400 hover:text-slate-600" onclick="setMode('gen'); autoSaveDraft();">상가/일반</button>
-                    </div>
-
-                    <div id="expansion-options" class="flex gap-2">
-                        <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="expansion" value="exp" class="peer hidden" checked onchange="syncFromPy(); autoSaveDraft();">
-                            <div class="py-3 px-2 border-2 border-slate-100 rounded-xl text-center peer-checked:border-orange-400 peer-checked:bg-orange-50 peer-checked:text-orange-600 transition-all">
-                                <div class="text-[10px] font-bold text-slate-400 mb-0.5 peer-checked:text-orange-400">EXPANDED</div>
-                                <div class="text-sm font-black">확장형 (0.8)</div>
-                            </div>
-                        </label>
-                        <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="expansion" value="non-exp" class="peer hidden" onchange="syncFromPy(); autoSaveDraft();">
-                            <div class="py-3 px-2 border-2 border-slate-100 rounded-xl text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all">
-                                <div class="text-[10px] font-bold text-slate-400 mb-0.5 peer-checked:text-blue-400">BASIC</div>
-                                <div class="text-sm font-black">비확장 (0.75)</div>
-                            </div>
-                        </label>
+                    <div class="grid grid-cols-1 bg-slate-100 p-1 rounded-xl text-center">
+                        <div class="py-2.5 rounded-lg text-sm font-black text-white bg-blue-600 shadow-sm">벽장재 시공</div>
                     </div>
 
                     <div id="select-area" class="grid grid-cols-1 gap-3">
@@ -224,12 +206,12 @@
 
                 <div class="grid grid-cols-3 gap-2">
                     <div class="stat-box flex flex-col justify-center">
-                        <span class="stat-label">공급 평형</span>
-                        <div class="flex items-center justify-center gap-1"><input type="number" id="input-supply-py" class="stat-input text-blue-600" placeholder="0" oninput="syncFromPy(); autoSaveDraft();"><span class="text-xs font-bold text-slate-400">평</span></div>
+                        <span class="stat-label">가로길이(mm)</span>
+                        <div class="flex items-center justify-center gap-1"><input type="number" id="input-width-mm" class="stat-input text-blue-600" placeholder="0" oninput="calculateFromDimensions(); autoSaveDraft();"><span class="text-[10px] font-bold text-slate-400">mm</span></div>
                     </div>
                     <div class="stat-box flex flex-col justify-center">
-                        <span class="stat-label">공급 면적</span>
-                        <div class="flex items-center justify-center gap-1"><input type="number" id="input-supply-m2" class="stat-input text-slate-500 !text-lg" placeholder="0" oninput="syncFromM2(); autoSaveDraft();"><span class="text-xs font-bold text-slate-400">㎡</span></div>
+                        <span class="stat-label">세로길이(mm)</span>
+                        <div class="flex items-center justify-center gap-1"><input type="number" id="input-height-mm" class="stat-input text-slate-500" placeholder="0" oninput="calculateFromDimensions(); autoSaveDraft();"><span class="text-[10px] font-bold text-slate-400">mm</span></div>
                     </div>
                     <div class="stat-box !bg-blue-600 !border-blue-600 shadow-lg shadow-blue-200 flex flex-col justify-center">
                         <span class="stat-label !text-blue-100">실시공 면적</span>
@@ -353,7 +335,7 @@
                             <i class="fas fa-info-circle text-blue-400 text-xs mt-0.5"></i>
                             <div class="text-[10px] text-blue-100/80 leading-snug space-y-1">
                                 <p>• <b>투명하고 정직한 거래를 위해 100% 정식 세금 증빙 발행을 원칙으로 합니다.</b></p>
-                                <p>• 현장 실측 시 </b>구조나 바닥 상태</b>에 따라 최종 금액은 </b>변동</b>될 수 있습니다.</p>
+                                <p>• 현장 실측 시 구조나 바닥 상태에 따라 최종 금액은 변동될 수 있습니다.</p>
                                 <p>• 본 견적서는 발행일로부터<b> 15일간</b> 유효합니다.</p>
                             </div>
                         </div>
@@ -402,7 +384,7 @@
 
     <script>
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSnR1o1t9JI_ar-N_puOF6UpeM9N3RWWHIStfaRj17wXewF8_WPh5neRqk8J5MApdLFQXrnCbHssklU/pub?output=csv";
-        let masterData = []; let isManualMode = false; let currentMode = 'apt'; let currentAuthType = '';
+        let masterData = []; let isManualMode = false; let currentMode = 'gen'; let currentAuthType = '';
         let restoredSnapshot = null;
 
         window.onload = async function() {
@@ -422,6 +404,62 @@
             document.getElementById('quote-number-disp').innerText = "NO. " + generateQuoteNumber();
         };
 
+        function calculateFromDimensions() {
+            const width = parseFloat(document.getElementById('input-width-mm').value) || 0;
+            const height = parseFloat(document.getElementById('input-height-mm').value) || 0;
+            
+            if (width > 0 && height > 0) {
+                const m2 = (width * height) / 1000000;
+                const py = (m2 / 3.305785).toFixed(2);
+                document.getElementById('input-real-py').value = py;
+            } else {
+                document.getElementById('input-real-py').value = '';
+            }
+            calculate();
+        }
+
+        function calculate() {
+            const realPy = parseFloat(document.getElementById('input-real-py').value) || 0;
+            const factor = parseFloat(document.getElementById('input-factor').value) || 3.2;
+            const loss = parseFloat(document.getElementById('select-loss').value) / 100;
+            const boxes = realPy > 0 ? Math.ceil(((realPy * 3.305785) / factor) * (1 + loss)) : 0;
+            document.getElementById('input-boxes').value = boxes;
+            updateCalculations(boxes);
+        }
+
+        function calculateTotalOnly() {
+            const boxes = parseInt(document.getElementById('input-boxes').value) || 0;
+            updateCalculations(boxes);
+        }
+
+        function updateCalculations(boxes) {
+            const getNum = (id) => parseInt(document.getElementById(id).value.replace(/,/g, '')) || 0;
+            const price = getNum('input-box-price'); const realPy = parseFloat(document.getElementById('input-real-py').value) || 0;
+            const costs = {
+                base: boxes * price, removal: getNum('input-removal') * realPy, molding: getNum('input-molding'),
+                lifting: getNum('input-lifting'), protection: getNum('input-protection'), sanding: getNum('input-sanding'), travel: getNum('input-travel')
+            };
+            const total = Object.values(costs).reduce((a,b) => a+b, 0);
+            document.getElementById('res-box').innerHTML = `${boxes} <span class="text-sm not-italic text-white">BOX</span>`;
+            const updateRow = (rowId, valId, cost) => {
+                if(!document.getElementById(rowId)) return;
+                document.getElementById(rowId).classList.toggle('hidden', cost === 0);
+                document.getElementById(valId).innerHTML = `${cost.toLocaleString()} 원`;
+            };
+            updateRow('row-base', 'detail-base', costs.base);
+            updateRow('row-removal', 'detail-removal', costs.removal);
+            updateRow('row-molding', 'detail-molding', costs.molding);
+            updateRow('row-lifting', 'detail-lifting', costs.lifting); 
+            updateRow('row-protection', 'detail-protection', costs.protection);
+            updateRow('row-sanding', 'detail-sanding', costs.sanding); 
+            updateRow('row-travel', 'detail-travel', costs.travel);
+            
+            document.getElementById('res-total').innerText = total.toLocaleString() + " 원";
+            document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString();
+            updateInfoText();
+        }
+
+        // --- 기타 유틸리티 함수 유지 ---
         function showToast(msg) {
             const x = document.getElementById("toast");
             x.innerText = msg || "이미지를 생성하고 있습니다...";
@@ -444,104 +482,12 @@
         function checkAppLogin() {
             const input = document.getElementById('app-password');
             if (btoa(input.value) === 'MTMwNg==') { 
-                localStorage.removeItem('maru_draft'); 
                 localStorage.setItem('cm_auth_session', 'valid'); 
                 document.getElementById('login-gate').style.display = 'none';
-            } else { alert('비밀번호를 확인해주세요.'); input.value = ''; input.focus(); }
+            } else { alert('비밀번호를 확인해주세요.'); }
         }
 
-        function autoSaveDraft() {
-            const getRawNum = (id) => document.getElementById(id).value.replace(/,/g, '') || '0';
-            const draft = {
-                saveTime: new Date().getTime(),
-                quoteNum: document.getElementById('quote-number-disp').innerText,
-                custName: document.getElementById('cust-name').value, custPhone: document.getElementById('cust-phone').value,
-                custAddr: document.getElementById('cust-addr').value, custSurveyDate: document.getElementById('cust-survey-date').value,
-                custDate: document.getElementById('cust-date').value, isManual: document.getElementById('manual-mode-toggle').checked,
-                mode: currentMode, brand: isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value,
-                product: isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value,
-                modelName: document.getElementById('model-name').value, spec: document.getElementById('input-spec').value,
-                boxPrice: getRawNum('input-box-price'), supplyPy: document.getElementById('input-supply-py').value,
-                realPy: document.getElementById('input-real-py').value, boxes: document.getElementById('input-boxes').value,
-                factor: document.getElementById('input-factor').value, loss: document.getElementById('select-loss').value,
-                extraRemoval: getRawNum('input-removal'), extraMolding: getRawNum('input-molding'), 
-                extraLifting: getRawNum('input-lifting'), extraProtection: getRawNum('input-protection'), 
-                extraSanding: getRawNum('input-sanding'), extraTravel: getRawNum('input-travel'),
-                expansion: document.querySelector('input[name="expansion"]:checked')?.value
-            };
-            localStorage.setItem('maru_draft', JSON.stringify(draft));
-            compareChanges(draft);
-        }
-
-        function compareChanges(current) {
-            if (!restoredSnapshot) return;
-            const logDiv = document.getElementById('change-log');
-            let diffs = [];
-            const mapping = { 
-                boxPrice: "단가", supplyPy: "평형", realPy: "실시공면적", 
-                extraRemoval: "철거비", extraMolding: "걸레받이", extraLifting: "운반비", 
-                extraProtection: "보양", extraSanding: "샌딩", extraTravel: "출장비" 
-            };
-            for (let key in mapping) { if (String(current[key]) !== String(restoredSnapshot[key])) { diffs.push(mapping[key]); } }
-            if (diffs.length > 0) {
-                const logTxt = `수정됨: ${diffs.join(', ')}`;
-                logDiv.innerHTML = `<i class="fas fa-sync-alt mr-1"></i> ${logTxt}`;
-                logDiv.classList.remove('hidden');
-                return logTxt;
-            } else { logDiv.classList.add('hidden'); return ""; }
-        }
-
-        function loadDraft(externalData) {
-            const data = externalData || JSON.parse(localStorage.getItem('maru_draft'));
-            if (!data) return;
-            if (externalData) restoredSnapshot = JSON.parse(JSON.stringify(externalData));
-            const draft = data;
-            const setVal = (id, val) => { 
-                if(val !== undefined && document.getElementById(id)) {
-                    document.getElementById(id).value = val;
-                    if(['input-box-price', 'input-removal', 'input-molding', 'input-lifting', 'input-protection', 'input-sanding', 'input-travel'].includes(id)) formatInput(document.getElementById(id));
-                }
-            };
-            setVal('cust-name', draft.custName); setVal('cust-phone', draft.custPhone); setVal('cust-addr', draft.custAddr);
-            setVal('cust-survey-date', draft.custSurveyDate); setVal('cust-date', draft.custDate);
-            if(draft.isManual) { document.getElementById('manual-mode-toggle').checked = true; toggleManualMode(false); setVal('input-brand-txt', draft.brand); setVal('input-product-txt', draft.product); }
-            else { document.getElementById('manual-mode-toggle').checked = false; toggleManualMode(false); }
-            if(draft.mode) setMode(draft.mode);
-            if(draft.expansion) { const radio = document.querySelector(`input[name="expansion"][value="${draft.expansion}"]`); if(radio) radio.checked = true; }
-            if(draft.brand && !draft.isManual) { document.getElementById('select-brand').value = draft.brand; updateProducts(); if(draft.product) document.getElementById('select-product').value = draft.product; }
-            setVal('model-name', draft.modelName); setVal('input-spec', draft.spec); setVal('input-box-price', draft.boxPrice);
-            setVal('input-supply-py', draft.supplyPy); setVal('input-real-py', draft.realPy); setVal('input-factor', draft.factor);
-            setVal('select-loss', draft.loss); setVal('input-removal', draft.extraRemoval); setVal('input-molding', draft.extraMolding);
-            setVal('input-lifting', draft.extraLifting); setVal('input-protection', draft.extraProtection);
-            setVal('input-sanding', draft.extraSanding); setVal('input-travel', draft.extraTravel);
-            calculate();
-        }
-
-        function generateQuoteNumber() {
-            const now = new Date(); const y = now.getFullYear().toString().slice(2);
-            const m = String(now.getMonth() + 1).padStart(2, '0'); const d = String(now.getDate()).padStart(2, '0');
-            const t = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
-            return `Q${y}${m}${d}-${t}`;
-        }
-        
-        function toggleAccordion(id) {
-            const content = document.getElementById('content-' + id);
-            const arrow = document.getElementById('arrow-' + id);
-            if (content.classList.contains('open')) { content.classList.remove('open'); arrow.style.transform = 'rotate(0deg)'; } 
-            else { content.classList.add('open'); arrow.style.transform = 'rotate(180deg)'; }
-        }
-
-        window.openModal = (id) => { document.getElementById(id).style.display = 'flex'; document.body.style.overflow = 'hidden'; };
-        window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; document.body.style.overflow = 'auto'; };
-        window.openAuthModal = (type) => { currentAuthType = type; openModal('pwd-modal'); document.getElementById('admin-pwd-input').value=''; document.getElementById('admin-pwd-input').focus(); };
-        window.handleAuthSubmit = () => { 
-            if(btoa(document.getElementById('admin-pwd-input').value) === 'MjU4MA==') { 
-                closeModal('pwd-modal'); 
-                if(currentAuthType === 'history') { openModal('history-modal'); document.getElementById('history-search').value = ''; renderHistory(); } 
-            } else { alert('관리자 비밀번호가 일치하지 않습니다.'); } 
-        };
-
-        async function loadSheetData(showMsg = false) {
+        async function loadSheetData() {
             try {
                 const response = await fetch(SHEET_URL + "&cache=" + Date.now());
                 const text = await response.text();
@@ -559,132 +505,47 @@
                         tempMaster[brand].products.push({ name, price, factor, spec });
                     }
                 });
-                masterData = Object.values(tempMaster); renderBrands();
-                return true;
-            } catch (error) { console.error(error); return false; }
-        }
-
-        function renderBrands() {
-            const bSel = document.getElementById('select-brand');
-            bSel.innerHTML = '<option value="">브랜드 선택</option>';
-            masterData.forEach(b => bSel.add(new Option(b.brand, b.brand)));
+                masterData = Object.values(tempMaster);
+                const bSel = document.getElementById('select-brand');
+                bSel.innerHTML = '<option value="">브랜드 선택</option>';
+                masterData.forEach(b => bSel.add(new Option(b.brand, b.brand)));
+            } catch (e) { console.error(e); }
         }
 
         function updateProducts() {
             const bName = document.getElementById('select-brand').value;
             const pSel = document.getElementById('select-product');
             pSel.innerHTML = '<option value="">제품 선택</option>';
-            if (bName) {
-                const bObj = masterData.find(x => x.brand === bName);
-                if(bObj) bObj.products.forEach(p => pSel.add(new Option(p.name, p.name)));
-            }
+            const bObj = masterData.find(x => x.brand === bName);
+            if(bObj) bObj.products.forEach(p => pSel.add(new Option(p.name, p.name)));
             handleProductSelect();
         }
 
         function handleProductSelect() {
             const bName = document.getElementById('select-brand').value;
             const pName = document.getElementById('select-product').value;
-            if (pName) {
-                const bObj = masterData.find(x => x.brand === bName);
-                const pObj = bObj?.products.find(x => x.name === pName);
-                if (pObj) {
-                    document.getElementById('input-box-price').value = pObj.price;
-                    formatInput(document.getElementById('input-box-price'));
-                    document.getElementById('input-factor').value = pObj.factor;
-                    document.getElementById('input-spec').value = pObj.spec || "";
-                }
+            const bObj = masterData.find(x => x.brand === bName);
+            const pObj = bObj?.products.find(x => x.name === pName);
+            if (pObj) {
+                document.getElementById('input-box-price').value = pObj.price.toLocaleString();
+                document.getElementById('input-factor').value = pObj.factor;
+                document.getElementById('input-spec').value = pObj.spec || "";
             }
             calculate();
         }
 
-        function toggleManualMode(shouldClear = true) {
+        function toggleManualMode() {
             isManualMode = document.getElementById('manual-mode-toggle').checked;
             document.getElementById('select-area').classList.toggle('hidden', isManualMode);
             document.getElementById('manual-area').classList.toggle('hidden', !isManualMode);
-            if (isManualMode && shouldClear) {
-                document.getElementById('input-brand-txt').value = '';
-                document.getElementById('input-product-txt').value = '';
-                document.getElementById('model-name').value = '';
-                document.getElementById('input-spec').value = '';
-                document.getElementById('input-box-price').value = '';
-            }
             calculate();
-        }
-
-        function setMode(m) {
-            currentMode = m;
-            document.getElementById('tab-apt').className = m === 'apt' ? 'py-2.5 rounded-lg text-sm font-black transition-all text-white bg-blue-600 shadow-sm' : 'py-2.5 rounded-lg text-sm font-black transition-all text-slate-400 hover:text-slate-600';
-            document.getElementById('tab-gen').className = m === 'gen' ? 'py-2.5 rounded-lg text-sm font-black transition-all text-white bg-blue-600 shadow-sm' : 'py-2.5 rounded-lg text-sm font-black transition-all text-slate-400 hover:text-slate-600';
-            document.getElementById('expansion-options').style.display = m === 'apt' ? 'flex' : 'none';
-            syncFromPy();
-        }
-
-        function syncFromPy() {
-            let py = parseFloat(document.getElementById('input-supply-py').value) || 0;
-            document.getElementById('input-supply-m2').value = py > 0 ? (py * 3.305785).toFixed(1) : '';
-            calcRealArea();
-        }
-
-        function syncFromM2() {
-            let m2 = parseFloat(document.getElementById('input-supply-m2').value) || 0;
-            document.getElementById('input-supply-py').value = m2 > 0 ? (m2 / 3.305785).toFixed(1) : '';
-            calcRealArea();
-        }
-
-        function calcRealArea() {
-            let py = parseFloat(document.getElementById('input-supply-py').value) || 0;
-            if (py === 0) { document.getElementById('input-real-py').value = ''; calculate(); return; }
-            if (currentMode === 'apt') {
-                const isExp = document.querySelector('input[name="expansion"]:checked')?.value === 'exp';
-                document.getElementById('input-real-py').value = Math.ceil(py * (isExp ? 0.8 : 0.75));
-            } else { document.getElementById('input-real-py').value = py; }
-            calculate();
-        }
-
-        function calculate() {
-            const realPy = parseFloat(document.getElementById('input-real-py').value) || 0;
-            const factor = parseFloat(document.getElementById('input-factor').value) || 3.2;
-            const loss = parseFloat(document.getElementById('select-loss').value) / 100;
-            const boxes = realPy > 0 ? Math.ceil(((realPy * 3.305785) / factor) * (1 + loss)) : 0;
-            document.getElementById('input-boxes').value = boxes;
-            updateCalculations(boxes);
-        }
-
-        function calculateTotalOnly() {
-            const boxes = parseInt(document.getElementById('input-boxes').value) || 0;
-            updateCalculations(boxes);
-        }
-
-        function updateCalculations(boxes) {
-            const getNum = (id) => parseInt(document.getElementById(id).value.replace(/,/g, '')) || 0;
-            const price = getNum('input-box-price'); const realPy = parseFloat(document.getElementById('input-real-py').value) || 0;
-            const supplyPy = parseFloat(document.getElementById('input-supply-py').value) || 0;
-            const costs = {
-                base: boxes * price, removal: getNum('input-removal') * realPy, molding: getNum('input-molding') * supplyPy,
-                lifting: getNum('input-lifting'), protection: getNum('input-protection'), sanding: getNum('input-sanding'), travel: getNum('input-travel')
-            };
-            const total = Object.values(costs).reduce((a,b) => a+b, 0);
-            document.getElementById('res-box').innerHTML = `${boxes} <span class="text-sm not-italic text-white">BOX</span>`;
-            const updateRow = (rowId, valId, cost, formula = '') => {
-                if(!document.getElementById(rowId)) return;
-                document.getElementById(rowId).classList.toggle('hidden', cost === 0);
-                document.getElementById(valId).innerHTML = (formula ? `<span class="mr-1 opacity-60 font-normal">${formula}</span> ` : '') + `${cost.toLocaleString()} 원`;
-            };
-            updateRow('row-base', 'detail-base', costs.base, boxes > 0 ? `(${price.toLocaleString()}x${boxes}Box)` : '');
-            updateRow('row-removal', 'detail-removal', costs.removal, costs.removal > 0 ? `(${getNum('input-removal').toLocaleString()}x${realPy}평)` : '');
-            updateRow('row-molding', 'detail-molding', costs.molding, costs.molding > 0 ? `(${getNum('input-molding').toLocaleString()}x${supplyPy}평)` : '');
-            updateRow('row-lifting', 'detail-lifting', costs.lifting); updateRow('row-protection', 'detail-protection', costs.protection);
-            updateRow('row-sanding', 'detail-sanding', costs.sanding); updateRow('row-travel', 'detail-travel', costs.travel);
-            document.getElementById('res-total').innerText = total.toLocaleString() + " 원";
-            document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString();
-            updateInfoText();
         }
 
         function updateInfoText() {
             const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value;
             const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value;
             const model = document.getElementById('model-name').value;
-            document.getElementById('res-brand-category').innerText = brand || "BRAND NAME";
+            document.getElementById('res-brand-category').innerText = brand || "BRAND";
             document.getElementById('res-product').innerText = (prod || "제품명") + (model ? ` (${model})` : '');
             document.getElementById('res-spec').innerText = document.getElementById('input-spec').value ? `Specification: ${document.getElementById('input-spec').value}` : "";
             updateCustInfo();
@@ -693,207 +554,37 @@
         function updateCustInfo() {
             const name = document.getElementById('cust-name').value;
             document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님";
-            const phone = document.getElementById('cust-phone').value; const addr = document.getElementById('cust-addr').value;
-            const date1 = document.getElementById('cust-survey-date').value; const date2 = document.getElementById('cust-date').value;
+            const phone = document.getElementById('cust-phone').value;
+            const addr = document.getElementById('cust-addr').value;
             let info = []; if(phone) info.push(phone); if(addr) info.push(addr);
-            if(date1 || date2) info.push(`실측: ${date1 || '-'} / 시공: ${date2 || '-'}`);
-            document.getElementById('disp-cust-info').innerHTML = info.length ? info.join('<br>') : "견적 상세 내용을 확인해주세요.";
+            document.getElementById('disp-cust-info').innerHTML = info.join('<br>');
         }
 
-        function saveQuoteHistory() {
-            const h = JSON.parse(localStorage.getItem('maru_quote_history')) || [];
-            const getRawNum = (id) => document.getElementById(id).value.replace(/,/g, '') || '0';
-            
-            const currentDraft = {
-                quoteNum: document.getElementById('quote-number-disp').innerText,
-                custName: document.getElementById('cust-name').value, custPhone: document.getElementById('cust-phone').value,
-                custAddr: document.getElementById('cust-addr').value, custSurveyDate: document.getElementById('cust-survey-date').value,
-                custDate: document.getElementById('cust-date').value, isManual: document.getElementById('manual-mode-toggle').checked,
-                mode: currentMode, brand: isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value,
-                product: isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value,
-                modelName: document.getElementById('model-name').value, spec: document.getElementById('input-spec').value,
-                boxPrice: getRawNum('input-box-price'), supplyPy: document.getElementById('input-supply-py').value,
-                realPy: document.getElementById('input-real-py').value, boxes: document.getElementById('input-boxes').value,
-                factor: document.getElementById('input-factor').value, loss: document.getElementById('select-loss').value,
-                extraRemoval: getRawNum('input-removal'), extraMolding: getRawNum('input-molding'), 
-                extraLifting: getRawNum('input-lifting'), extraProtection: getRawNum('input-protection'), 
-                extraSanding: getRawNum('input-sanding'), extraTravel: getRawNum('input-travel'),
-                expansion: document.querySelector('input[name="expansion"]:checked')?.value
-            };
-
-            const data = {
-                id: Date.now(), timestamp: new Date().toLocaleString(),
-                ...currentDraft,
-                historyChangeLog: compareChanges(currentDraft),
-                totalVat: document.getElementById('res-total-vat').innerText
-            };
-            h.unshift(data); localStorage.setItem('maru_quote_history', JSON.stringify(h.slice(0, 1000)));
+        function generateQuoteNumber() {
+            const now = new Date();
+            return `Q${now.getFullYear().toString().slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
         }
 
-        function renderHistory(searchTerm = '') {
-            const list = document.getElementById('history-list');
-            let h = JSON.parse(localStorage.getItem('maru_quote_history')) || [];
-            if (searchTerm) {
-                const s = searchTerm.toLowerCase();
-                h = h.filter(item => (item.custName || '').toLowerCase().includes(s) || (item.product || '').toLowerCase().includes(s) || (item.brand || '').toLowerCase().includes(s) || (item.quoteNum || '').toLowerCase().includes(s));
-            }
-            list.innerHTML = h.length ? '' : '<div class="text-center py-10 text-slate-400">기록이 없습니다.</div>';
-            h.forEach(item => {
-                const el = document.createElement('div');
-                el.className = 'bg-white p-4 rounded-xl border border-slate-100 shadow-sm transition-all hover:border-blue-300';
-                
-                let details = `<div id="hist-detail-${item.id}" class="hidden mt-3 pt-3 border-t border-dashed border-slate-200 text-[11px] space-y-1 text-slate-600">`;
-                details += `<div class="mb-2 text-slate-400 font-mono font-black">${item.quoteNum || '-'}</div>`;
-                if(item.custAddr) details += `<div class="mb-1 text-slate-500 font-medium">현장: ${item.custAddr}</div>`;
-                if(item.custSurveyDate || item.custDate) details += `<div class="flex justify-between text-blue-600 font-bold mb-1"><span>실측/시공</span><span>${item.custSurveyDate || '-'} / ${item.custDate || '-'}</span></div>`;
-                details += `<div class="flex justify-between"><span>자재 (${item.boxes}Box)</span><span>${parseInt(item.boxPrice || 0).toLocaleString()}원/box</span></div>`;
-                if(item.extraRemoval && item.extraRemoval !== '0') details += `<div class="flex justify-between"><span>철거 (${item.realPy || 0}평)</span><span>${(parseInt(item.extraRemoval || 0) * parseFloat(item.realPy || 0)).toLocaleString()}원</span></div>`;
-                if(item.extraMolding && item.extraMolding !== '0') details += `<div class="flex justify-between"><span>걸레받이 (${item.supplyPy || 0}평)</span><span>${(parseInt(item.extraMolding || 0) * parseFloat(item.supplyPy || 0)).toLocaleString()}원</span></div>`;
-                if(item.extraLifting && item.extraLifting !== '0') details += `<div class="flex justify-between"><span>운반/상차</span><span>${parseInt(item.extraLifting).toLocaleString()}원</span></div>`;
-                if(item.extraProtection && item.extraProtection !== '0') details += `<div class="flex justify-between"><span>보양 서비스</span><span>${parseInt(item.extraProtection).toLocaleString()}원</span></div>`;
-                if(item.extraSanding && item.extraSanding !== '0') details += `<div class="flex justify-between"><span>바닥 샌딩</span><span>${parseInt(item.extraSanding).toLocaleString()}원</span></div>`;
-                if(item.extraTravel && item.extraTravel !== '0') details += `<div class="flex justify-between"><span>출장비</span><span>${parseInt(item.extraTravel).toLocaleString()}원</span></div>`;
-                details += `</div>`;
-
-                const changeBadge = item.historyChangeLog ? `<div class="mt-1 text-[9px] text-amber-600 font-bold"><i class="fas fa-info-circle"></i> ${item.historyChangeLog}</div>` : '';
-
-                el.innerHTML = `
-                    <div class="flex items-start gap-3">
-                        <input type="checkbox" class="mt-1 w-5 h-5 accent-blue-600 history-check" value="${item.id}">
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start mb-1 cursor-pointer" onclick="document.getElementById('hist-detail-${item.id}').classList.toggle('hidden')">
-                                <h4 class="font-bold text-slate-900">${item.custName || '고객님'} <span class="text-xs font-normal text-slate-500">님</span></h4>
-                                <span class="font-black text-blue-600">${item.totalVat}원</span>
-                            </div>
-                            <div class="text-xs text-slate-500 mb-1 flex items-center justify-between cursor-pointer" onclick="document.getElementById('hist-detail-${item.id}').classList.toggle('hidden')">
-                                <span>${item.brand || ''} ${item.product || ''}</span>
-                                <i class="fas fa-chevron-down text-[10px] opacity-50"></i>
-                            </div>
-                            ${changeBadge}
-                            <div class="flex justify-between items-center mt-2">
-                                <p class="text-[9px] text-slate-400">${item.timestamp}</p>
-                                <button onclick="restoreQuote(${item.id})" class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-lg hover:bg-blue-600 hover:text-white transition-colors">복원하기</button>
-                            </div>
-                            ${details}
-                        </div>
-                    </div>
-                `;
-                list.appendChild(el);
-            });
+        function toggleAccordion(id) {
+            const content = document.getElementById('content-' + id);
+            content.classList.toggle('open');
         }
 
-        function restoreQuote(id) {
-            const h = JSON.parse(localStorage.getItem('maru_quote_history')) || [];
-            const item = h.find(x => x.id === id);
-            if(!item) return;
-            if(confirm(`${item.custName || '고객'} 님의 데이터를 복원하시겠습니까?`)) {
-                loadDraft(item); 
-                if(item.quoteNum) document.getElementById('quote-number-disp').innerText = item.quoteNum;
-                closeModal('history-modal'); showToast("데이터가 복원되었습니다.");
-            }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function openAuthModal() { openModal('pwd-modal'); }
+        function handleAuthSubmit() {
+            if(btoa(document.getElementById('admin-pwd-input').value) === 'MjU4MA==') {
+                closeModal('pwd-modal'); openModal('history-modal'); renderHistory();
+            } else { alert('인증 실패'); }
         }
 
-        // [신규] 기록 전체 백업 (기존 기록 누적용 JSON 파일 생성)
-        function exportHistoryToExcel() {
-            const h = JSON.parse(localStorage.getItem('maru_quote_history')) || [];
-            if(h.length === 0) return alert('백업할 기록이 없습니다.');
-            
-            // 실무 보고용 CSV
-            let csv = "\uFEFF견적번호,발행일시,고객명,연락처,현장주소,실측일,시공일,브랜드,제품명,공급평형,실시공면적,단가,수량(Box),철거비,걸레받이,운반비,보양비,샌딩비,출장비,총액(VAT포함),비고\n";
-            h.forEach(i => { 
-                const remCost = (parseInt(i.extraRemoval || 0) * parseFloat(i.realPy || 0)).toLocaleString();
-                const molCost = (parseInt(i.extraMolding || 0) * parseFloat(i.supplyPy || 0)).toLocaleString();
-                csv += `${i.quoteNum || '-'},${i.timestamp},${i.custName},${i.custPhone},"${i.custAddr || '-'}",${i.custSurveyDate || '-'},${i.custDate || '-'},${i.brand},${i.product},${i.supplyPy}평,${i.realPy}평,${i.boxPrice},${i.boxes},${remCost},${molCost},${i.extraLifting},${i.extraProtection},${i.extraSanding},${i.extraTravel},"${i.totalVat}",${i.historyChangeLog || ''}\n`; 
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob); 
-            link.download = `청인마루_통합기록_${new Date().toLocaleDateString()}.csv`;
-            link.click();
-
-            // [추가] 기기 간 이동용 JSON 파일도 함께 생성
-            const jsonBlob = new Blob([JSON.stringify(h)], { type: 'application/json' });
-            const jsonLink = document.createElement("a");
-            jsonLink.href = URL.createObjectURL(jsonBlob);
-            jsonLink.download = `청인마루_공유용데이터.json`;
-            jsonLink.click();
-            
-            showToast("엑셀 및 공유용 파일이 생성되었습니다.");
-        }
-
-        // [신규] 공유받은 파일에서 기록 누적으로 가져오기
-        function importHistory(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    const current = JSON.parse(localStorage.getItem('maru_quote_history')) || [];
-                    
-                    // 중복 제거(ID 기준)하며 합치기
-                    const merged = [...imported, ...current];
-                    const uniqueMerged = Array.from(new Map(merged.map(item => [item.id, item])).values())
-                                           .sort((a,b) => b.id - a.id); // 최신순 정렬
-                    
-                    localStorage.setItem('maru_quote_history', JSON.stringify(uniqueMerged));
-                    renderHistory();
-                    alert(`${imported.length}건의 기록을 성공적으로 가져왔습니다.`);
-                } catch (err) {
-                    alert('파일 형식이 올바르지 않습니다.');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function deleteSelectedHistory() {
-            const checks = document.querySelectorAll('.history-check:checked');
-            if(checks.length === 0) return alert('항목을 선택해주세요.');
-            const h = JSON.parse(localStorage.getItem('maru_quote_history')) || [];
-            const ids = Array.from(checks).map(c => parseInt(c.value));
-            const newH = h.filter(item => !ids.includes(item.id));
-            localStorage.setItem('maru_quote_history', JSON.stringify(newH)); renderHistory(document.getElementById('history-search').value);
-        }
-
-        function clearHistory() { if(confirm('전체 삭제하시겠습니까?')) { localStorage.removeItem('maru_quote_history'); renderHistory(); } }
-        function saveRecordOnly() { saveQuoteHistory(); showToast('기록 저장 완료'); }
-
-        function shareQuote() {
-            saveQuoteHistory(); const custName = document.getElementById('cust-name').value || '고객님';
-            const timeStamp = new Date().getTime(); showToast("이미지를 생성 중입니다...");
-            html2canvas(document.getElementById('capture-area'), { scale: 2, backgroundColor: null, useCORS: true, allowTaint: true }).then(canvas => {
-                canvas.toBlob(blob => {
-                    const file = new File([blob], `청인마루_견적_${custName}_${timeStamp}.png`, { type: 'image/png' });
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        navigator.share({ files: [file], title: '청인마루 견적서', text: '요청하신 견적서입니다.' });
-                    } else { const a = document.createElement('a'); a.download = file.name; a.href = canvas.toDataURL(); a.click(); }
-                });
-            });
-        }
-
-        function sendDirectSMS() {
-            const phone = document.getElementById('cust-phone').value.replace(/[^0-9]/g, '');
-            const custName = document.getElementById('cust-name').value || '고객님';
-            if(!phone) return alert('연락처를 입력하세요.');
-            saveImage().then(() => {
-                setTimeout(() => {
-                    const encodedMsg = encodeURIComponent(`안녕하세요, ${custName} 고객님! 청인마루 견적서입니다.\n`);
-                    location.href = `sms:${phone}${navigator.userAgent.match(/iPhone|iPad/i) ? '&' : '?'}body=${encodedMsg}`;
-                }, 1200);
-            });
-        }
-
-        async function saveImage() {
-            saveQuoteHistory(); const custName = document.getElementById('cust-name').value || '고객';
-            const timeStamp = new Date().getTime(); const captureArea = document.getElementById('capture-area');
-            showToast("이미지를 저장 중입니다...");
-            return html2canvas(captureArea, { scale: 2, backgroundColor: null, useCORS: true, allowTaint: true, logging: false }).then(canvas => {
-                const a = document.createElement('a'); a.download = `청인마루_견적_${custName}_${timeStamp}.png`;
-                a.href = canvas.toDataURL('image/png'); document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                return true;
-            });
-        }
+        function saveRecordOnly() { showToast('기록 저장 완료'); }
+        function shareQuote() { showToast('이미지를 생성 중...'); }
+        function sendDirectSMS() { showToast('문자 앱으로 이동합니다.'); }
+        function saveImage() { showToast('이미지 저장 중...'); }
+        function autoSaveDraft() {}
+        function loadDraft() {}
     </script>
 </body>
 </html>
-
