@@ -293,13 +293,22 @@
     <script>
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSnR1o1t9JI_ar-N_puOF6UpeM9N3RWWHIStfaRj17wXewF8_WPh5neRqk8J5MApdLFQXrnCbHssklU/pub?output=csv";
         let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'home';
-        let currentCosts = {}; // 전역 비용 동기화 변수
+        let currentCosts = {}; // 현재 계산된 비용 전체 저장 변수
 
         const spaceOptions = { home: ["거실 아트월", "거실 쇼파월", "복도 전체", "현관", "주방연결부분", "기타 직접입력"], shop: ["매장 메인벽", "카운터 배면", "홀 측면", "입구 파사드", "기타 직접입력"] };
-        window.onload = async function() { if (localStorage.getItem('cm_auth_session') === 'valid') { document.getElementById('login-gate').style.display = 'none'; await loadSheetData(); } setSpaceType('home'); document.getElementById('quote-number-disp').innerText = "NO. " + generateQuoteNumber(); };
+        
+        window.onload = async function() { 
+            if (localStorage.getItem('cm_auth_session') === 'valid') { 
+                document.getElementById('login-gate').style.display = 'none'; 
+                await loadSheetData(); 
+            } 
+            setSpaceType('home'); 
+            document.getElementById('quote-number-disp').innerText = "NO. " + generateQuoteNumber(); 
+        };
+
         function checkAppLogin() { if (btoa(document.getElementById('app-password').value) === 'MTMwNg==') { localStorage.setItem('cm_auth_session', 'valid'); location.reload(); } else { alert('오류'); } }
         
-        /* [중요] 모든 비용 계산 및 상태 업데이트 */
+        /* [중요] 모든 비용 계산 - 견적서 화면 갱신 */
         function calculate() { 
             if (!isManualMode) { 
                 let totalM2 = zoneList.reduce((sum, z) => sum + z.area, 0); 
@@ -327,20 +336,23 @@
             if(document.getElementById('chk-mold-15000').checked) moldingCost += getNum('qty-mold-15000') * 15000;
             if(document.getElementById('chk-mold-10000').checked) moldingCost += getNum('qty-mold-10000') * 10000;
 
+            // 상세 내역 객체화
             const costs = { 
                 base: boxes * price, 
+                labor: laborCost,
                 bond: bondQty * 10000, 
                 wood: woodQty * 5000, 
                 corner: moldingCost, 
-                labor: laborCost, 
                 removal: parseInt(document.getElementById('input-removal').value.replace(/,/g,'')) || 0, 
                 lifting: parseInt(document.getElementById('input-lifting').value.replace(/,/g,'')) || 0, 
                 protection: parseInt(document.getElementById('input-protection').value.replace(/,/g,'')) || 0, 
                 waste: parseInt(document.getElementById('input-waste').value.replace(/,/g,'')) || 0 
             };
-            currentCosts = costs; // 현재 시점의 계산 값을 전역에 저장
+            currentCosts = costs; // 저장용 전역 변수에 할당
 
             const total = Object.values(costs).reduce((a,b) => a+b, 0);
+            
+            // 견적서 화면 업데이트
             const updateRow = (rowId, valId, cost, qty, unitPrice) => { 
                 const el = document.getElementById(rowId); 
                 if (el) { 
@@ -359,12 +371,13 @@
             updateRow('row-lifting', 'detail-lifting', costs.lifting, 0, 0); 
             updateRow('row-protection', 'detail-protection', costs.protection, 0, 0); 
             updateRow('row-waste', 'detail-waste', costs.waste, 0, 0); 
+            
             document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; 
             document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString(); 
             updateInfoText();
         }
 
-        /* [수정] 기록 저장 - 견적서 화면과 100% 동일하게 저장 */
+        /* [수정] 기록 저장 - 견적서의 모든 세부 항목을 정확히 저장 */
         function saveRecord() {
             const data = {
                 id: Date.now(),
@@ -379,18 +392,26 @@
                 date: new Date().toLocaleString(),
                 sDate: document.getElementById('cust-survey-date').value || "-",
                 wDate: document.getElementById('cust-work-date').value || "-",
-                costs: {...currentCosts}, // 현재 계산된 비용 전체 백업
+                
+                // [핵심] 상세 비용 내역 그대로 백업
+                costs: {...currentCosts}, 
+                
                 fullData: {
                     zones: [...zoneList],
-                    bond: document.getElementById('qty-bond').value,
-                    wood: document.getElementById('qty-wood').value,
+                    bondQty: document.getElementById('qty-bond').value,
+                    woodQty: document.getElementById('qty-wood').value,
                     mold5: document.getElementById('qty-mold-5000').value,
                     mold15: document.getElementById('qty-mold-15000').value,
                     mold10: document.getElementById('qty-mold-10000').value,
-                    removal: document.getElementById('input-removal').value.replace(/,/g,''),
+                    removalInput: document.getElementById('input-removal').value.replace(/,/g,''),
+                    liftingInput: document.getElementById('input-lifting').value.replace(/,/g,''),
+                    protectionInput: document.getElementById('input-protection').value.replace(/,/g,''),
+                    wasteInput: document.getElementById('input-waste').value.replace(/,/g,''),
                     boxPrice: document.getElementById('input-box-price').value.replace(/,/g,''),
                     laborM2: document.getElementById('input-labor-m2').value.replace(/,/g,''),
-                    waste: document.getElementById('input-waste').value.replace(/,/g,'')
+                    boxCount: document.getElementById('input-boxes').value,
+                    factor: document.getElementById('input-factor').value,
+                    loss: document.getElementById('select-loss').value
                 }
             };
             let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
@@ -400,7 +421,7 @@
             renderRecords();
         }
 
-        /* [수정] 기록 보기 - 상세 내역 동기화 및 디자인 적용 */
+        /* [수정] 기록 보기 - 견적서와 똑같은 상세 항목들을 리스트에 출력 */
         function renderRecords() {
             const list = document.getElementById('record-list');
             const search = document.getElementById('record-search').value.toLowerCase();
@@ -410,7 +431,26 @@
             records.filter(r => (r.name || "").toLowerCase().includes(search) || (r.product || "").toLowerCase().includes(search))
                    .forEach(r => {
                 const costs = r.costs || {};
-                const extras = (costs.bond || 0) + (costs.wood || 0) + (costs.corner || 0);
+                
+                // 리스트에 보여줄 상세 내역 HTML 생성
+                let detailHtml = "";
+                const labels = {
+                    base: "기본 자재비", labor: "인건비", bond: "전용본드", wood: "시공목", 
+                    corner: "마감몰딩", removal: "기존벽재제거", lifting: "운반/양중", 
+                    protection: "보양/기타", waste: "폐기물처리비"
+                };
+
+                // 비용이 있는 항목만 리스트 상세 내역에 추가
+                Object.keys(labels).forEach(key => {
+                    if (costs[key] > 0) {
+                        detailHtml += `
+                            <div class="flex justify-between items-center text-[10px] py-0.5">
+                                <span class="text-slate-500 font-bold">${labels[key]}</span>
+                                <span class="text-slate-700 font-black">${costs[key].toLocaleString()}원</span>
+                            </div>
+                        `;
+                    }
+                });
 
                 const div = document.createElement('div');
                 div.className = 'record-card mb-4';
@@ -424,55 +464,72 @@
                     </div>
                     <div class="text-sm text-slate-500 font-bold mb-1">${r.product} (${r.spec})</div>
                     <div class="flex justify-between items-center mb-3">
-                        <span class="text-[10px] text-slate-400 font-medium">${r.date}</span>
+                        <span class="text-[10px] text-slate-400 font-medium tracking-tighter">${r.date}</span>
                         <button onclick="restoreRecord(${r.id})" class="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black italic">복원하기</button>
                     </div>
-                    <div class="border-t border-dashed border-slate-200 my-3"></div>
-                    <div class="space-y-1.5">
-                        <div class="flex text-[11px]"><span class="w-16 font-bold text-slate-400">NO.</span><span class="font-bold text-slate-600">${r.quoteNo}</span></div>
-                        <div class="flex text-[11px]"><span class="w-16 font-bold text-slate-400">현장:</span><span class="font-bold text-slate-700 truncate flex-1">${r.addr}</span></div>
-                        <div class="flex justify-between items-center text-[11px] mt-2"><span class="font-bold text-blue-500">실측/시공</span><span class="font-bold text-slate-700">${r.sDate} / ${r.wDate}</span></div>
-                        <div class="flex justify-between items-center text-[11px]"><span class="font-bold text-slate-500">자재 (1Box)</span><span class="font-bold text-slate-700">${parseInt(r.fullData.boxPrice || 0).toLocaleString()}원/box</span></div>
-                        <div class="flex justify-between items-center text-[11px]"><span class="font-bold text-slate-500">철거비</span><span class="font-bold text-slate-700">${parseInt(r.fullData.removal || 0).toLocaleString()}원</span></div>
-                        <div class="flex justify-between items-center text-[11px]"><span class="font-bold text-slate-500">걸레받이/부자재</span><span class="font-bold text-slate-700">${extras.toLocaleString()}원</span></div>
+                    
+                    <div class="border-t border-dashed border-slate-200 my-2"></div>
+                    
+                    <div class="space-y-1">
+                        <div class="flex text-[10px]"><span class="w-16 font-bold text-slate-400">NO.</span><span class="font-bold text-slate-600">${r.quoteNo}</span></div>
+                        <div class="flex text-[10px]"><span class="w-16 font-bold text-slate-400">현장:</span><span class="font-bold text-slate-700 truncate flex-1">${r.addr}</span></div>
+                        <div class="flex justify-between items-center text-[10px] mt-1 mb-2">
+                            <span class="font-bold text-blue-500">실측/시공</span>
+                            <span class="font-bold text-slate-700 tracking-tighter">${r.sDate} / ${r.wDate}</span>
+                        </div>
+                        
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                            ${detailHtml}
+                        </div>
                     </div>
                 `;
                 list.appendChild(div);
             });
         }
 
-        /* [수정] 복원 로직 */
+        /* [수정] 복원 로직 - 저장된 모든 입력값을 정확히 복구 */
         function restoreRecord(id) {
             let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]');
             const r = records.find(x => x.id === id);
             if(r) {
+                const f = r.fullData || {};
+                
                 document.getElementById('cust-name').value = r.name;
                 document.getElementById('cust-phone').value = r.phone;
                 document.getElementById('cust-addr').value = r.addr;
                 document.getElementById('cust-survey-date').value = r.sDate === "-" ? "" : r.sDate;
                 document.getElementById('cust-work-date').value = r.wDate === "-" ? "" : r.wDate;
                 document.getElementById('input-spec').value = r.spec;
-                document.getElementById('input-box-price').value = parseInt(r.fullData.boxPrice || 0).toLocaleString();
-                document.getElementById('input-labor-m2').value = parseInt(r.fullData.laborM2 || 0).toLocaleString();
                 
-                zoneList = r.fullData.zones || [];
-                document.getElementById('qty-bond').value = r.fullData.bond;
-                document.getElementById('qty-wood').value = r.fullData.wood;
-                document.getElementById('qty-mold-5000').value = r.fullData.mold5;
-                document.getElementById('qty-mold-15000').value = r.fullData.mold15;
-                document.getElementById('qty-mold-10000').value = r.fullData.mold10;
-                document.getElementById('input-removal').value = parseInt(r.fullData.removal || 0).toLocaleString();
+                // 모든 입력값 복구
+                document.getElementById('input-box-price').value = parseInt(f.boxPrice || 0).toLocaleString();
+                document.getElementById('input-labor-m2').value = parseInt(f.laborM2 || 0).toLocaleString();
+                document.getElementById('input-factor').value = f.factor || 3.2;
+                document.getElementById('select-loss').value = f.loss || 10;
                 
-                document.getElementById('chk-mold-5000').checked = !!r.fullData.mold5;
-                document.getElementById('chk-mold-15000').checked = !!r.fullData.mold15;
-                document.getElementById('chk-mold-10000').checked = !!r.fullData.mold10;
+                zoneList = f.zones || [];
+                document.getElementById('qty-bond').value = f.bondQty || "";
+                document.getElementById('qty-wood').value = f.woodQty || "";
+                document.getElementById('qty-mold-5000').value = f.mold5 || "";
+                document.getElementById('qty-mold-15000').value = f.mold15 || "";
+                document.getElementById('qty-mold-10000').value = f.mold10 || "";
+                
+                document.getElementById('chk-mold-5000').checked = !!f.mold5;
+                document.getElementById('chk-mold-15000').checked = !!f.mold15;
+                document.getElementById('chk-mold-10000').checked = !!f.mold10;
+                
+                document.getElementById('input-removal').value = parseInt(f.removalInput || 0).toLocaleString();
+                document.getElementById('input-lifting').value = parseInt(f.liftingInput || 0).toLocaleString();
+                document.getElementById('input-protection').value = parseInt(f.protectionInput || 0).toLocaleString();
+                document.getElementById('input-waste').value = parseInt(f.wasteInput || 0).toLocaleString();
 
                 document.getElementById('record-modal').style.display = 'none';
-                renderZones(); calculate(); updateCustInfo(); alert('데이터가 복원되었습니다.');
+                renderZones(); calculate(); updateCustInfo(); 
+                alert('데이터가 견적서 상세 내역과 완벽히 동일하게 복원되었습니다.');
             }
         }
 
-        /* 기타 기본 기능 유지 */
+        /* 유틸리티 및 기본 기능 */
         function generateQuoteNumber() { const now = new Date(); return `Q${now.getFullYear().toString().slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`; }
         function setSpaceType(type) { spaceType = type; document.getElementById('tab-home').className = type === 'home' ? 'tab-btn active' : 'tab-btn inactive'; document.getElementById('tab-shop').className = type === 'shop' ? 'tab-btn active' : 'tab-btn inactive'; resetZoneName(); }
         function handleZoneNameChange(el) { if (el.value === "기타 직접입력") { el.classList.add('hidden'); document.getElementById('zone-name-input').classList.remove('hidden'); document.getElementById('btn-reset-zone').classList.remove('hidden'); document.getElementById('zone-name-input').focus(); } }
