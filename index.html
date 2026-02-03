@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v19.4)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v19.5)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -15,16 +15,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f4f8; color: #1e293b; -webkit-tap-highlight-color: transparent; transition: transform 0.2s ease; transform-origin: top center; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f0f4f8; color: #1e293b; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .premium-shadow { box-shadow: 0 10px 40px -10px rgba(30, 41, 59, 0.15); }
         .report-gradient { background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%); color: white; position: relative; }
         .watermark-wrapper { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 0; pointer-events: none; overflow: hidden; opacity: 0.15; }
         .watermark-img { width: 120%; max-width: 800px; transform: rotate(-15deg); filter: grayscale(100%); }
-        #login-gate { display: flex; position: fixed; inset: 0; background: #0f172a; z-index: 99999; align-items: center; justify-content: center; transform: none !important; }
+        #login-gate { display: flex; position: fixed; inset: 0; background: #0f172a; z-index: 99999; align-items: center; justify-content: center; }
         
-        #record-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 15px; transform: none !important; }
+        #record-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 15px; }
         .record-container { background: #f8fafc; width: 100%; max-width: 500px; height: 90vh; border-radius: 32px; overflow: hidden; display: flex; flex-direction: column; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         .record-card { background: white; border-radius: 20px; padding: 16px; border: 1px solid #e2e8f0; transition: all 0.2s; position: relative; }
 
@@ -45,21 +45,9 @@
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 1.5s; }
         @keyframes fadein { from {bottom: 80px; opacity: 0;} to {bottom: 100px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 100px; opacity: 1;} to {bottom: 80px; opacity: 0;} }
-
-        /* Zoom UI */
-        .zoom-controls { position: fixed; bottom: 30px; right: 20px; z-index: 9998; display: flex; flex-direction: column; gap: 10px; transform: none !important; }
-        .zoom-btn { width: 45px; height: 45px; background: white; border-radius: 12px; display: flex; items-center: center; justify-content: center; font-size: 18px; color: #1e293b; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s; }
-        .zoom-btn:active { scale: 0.9; background: #f8fafc; }
-        .zoom-reset { font-size: 10px; font-weight: 900; background: #1e293b; color: white; border: none; }
     </style>
 </head>
 <body class="antialiased overflow-x-hidden">
-
-    <div class="zoom-controls" data-html2canvas-ignore="true">
-        <button onclick="changeZoom(0.1)" class="zoom-btn"><i class="fas fa-plus"></i></button>
-        <button onclick="changeZoom(-0.1)" class="zoom-btn"><i class="fas fa-minus"></i></button>
-        <button onclick="resetZoom()" class="zoom-btn zoom-reset">100%</button>
-    </div>
 
     <div id="toast">이미지를 생성하고 있습니다...</div>
 
@@ -68,7 +56,7 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v19.4</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v19.5</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500 transition-all placeholder-slate-400" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -103,13 +91,13 @@
     </div>
     <input type="file" id="file-input" class="hidden" accept=".json" onchange="handleFileImport(event)">
 
-    <div id="main-content-wrapper" class="max-w-7xl mx-auto p-4 md:p-8">
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
         <header class="flex flex-col items-center justify-center mb-8 relative pt-4">
             <div class="absolute top-0 right-0 opacity-80 z-0"><img src="icon.jpg" class="w-16 h-16 rounded-2xl shadow-md rotate-12"></div>
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm"><i class="fas fa-star text-yellow-300 text-[8px]"></i> PREMIUM SYSTEM</div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v19.4</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v19.5</p>
                 <div class="flex gap-2 justify-center">
                     <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="showRecordModal()" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2">
@@ -335,19 +323,6 @@
         
         let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'home';
         let currentCosts = {}; 
-        let currentZoom = 1.0;
-
-        // Zoom Functions
-        function changeZoom(delta) {
-            currentZoom = Math.min(Math.max(currentZoom + delta, 0.5), 2.0);
-            document.body.style.transform = `scale(${currentZoom})`;
-            document.body.style.width = (100 / currentZoom) + "%"; // 확대 시 가로 스크롤 방지 보정
-        }
-        function resetZoom() {
-            currentZoom = 1.0;
-            document.body.style.transform = `scale(1.0)`;
-            document.body.style.width = "100%";
-        }
 
         const spaceOptions = { 
             home: ["거실 아트월", "거실 쇼파월", "복도 전체", "현관", "주방연결부분", "거실샤시(커튼박스)", "기타 직접입력"], 
@@ -639,26 +614,8 @@
         function importFromFile() { document.getElementById('file-input').click(); }
         function handleFileImport(e) { const file = e.target.files[0]; const reader = new FileReader(); reader.onload = function(e) { const imported = JSON.parse(e.target.result); localStorage.setItem('chungin_v18_records', JSON.stringify(imported)); renderRecords(); alert('가져오기 성공'); }; reader.readAsText(file); }
         
-        function shareQuote() { 
-            const oldZoom = currentZoom;
-            resetZoom(); // 이미지 캡처 전 줌 리셋
-            showToast(); 
-            html2canvas(document.getElementById('capture-area'), { scale: 2 }).then(canvas => { 
-                canvas.toBlob(blob => { 
-                    if(navigator.share) navigator.share({ files: [new File([blob], "견적.png", {type:"image/png"})] }); 
-                }); 
-                if(oldZoom !== 1.0) changeZoom(oldZoom - 1.0); // 캡처 후 원래 줌 복구
-            }); 
-        }
-        function saveImage() { 
-            const oldZoom = currentZoom;
-            resetZoom();
-            showToast(); 
-            html2canvas(document.getElementById('capture-area'), { scale: 2 }).then(canvas => { 
-                const a = document.createElement('a'); a.href = canvas.toDataURL(); a.download = "견적.png"; a.click(); 
-                if(oldZoom !== 1.0) changeZoom(oldZoom - 1.0);
-            }); 
-        }
+        function shareQuote() { showToast(); html2canvas(document.getElementById('capture-area'), { scale: 2 }).then(canvas => { canvas.toBlob(blob => { if(navigator.share) navigator.share({ files: [new File([blob], "견적.png", {type:"image/png"})] }); }); }); }
+        function saveImage() { showToast(); html2canvas(document.getElementById('capture-area'), { scale: 2 }).then(canvas => { const a = document.createElement('a'); a.href = canvas.toDataURL(); a.download = "견적.png"; a.click(); }); }
         function sendSms() { const phone = document.getElementById('cust-phone').value.replace(/-/g, ""); const msg = `[청인마루 견적]\n제품: ${document.getElementById('res-product').innerText}\n합계: ${document.getElementById('res-total-vat').innerText}원`; window.location.href = `sms:${phone}${navigator.userAgent.match(/iPhone/i) ? '&' : '?'}body=${encodeURIComponent(msg)}`; }
     </script>
 </body>
