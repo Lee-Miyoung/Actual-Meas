@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v18.5)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v18.6)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -56,7 +56,7 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v18.5</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v18.6</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500 transition-all placeholder-slate-400" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -97,7 +97,7 @@
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm"><i class="fas fa-star text-yellow-300 text-[8px]"></i> PREMIUM SYSTEM</div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v18.5</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v18.6</p>
                 <div class="flex gap-2 justify-center">
                     <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="showRecordModal()" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2">
@@ -154,12 +154,16 @@
                     <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5 mb-3"><i class="fas fa-ruler-combined text-blue-500"></i> 공간별 상세 견적 (mm 단위)</h3>
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-4 shadow-inner">
                         <div class="flex gap-2 mb-3">
-                            <div id="zone-name-wrapper" class="flex-1 flex gap-1">
-                                <select id="zone-name-select" class="flex-1 p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 outline-none" onchange="handleZoneNameChange(this)"></select>
-                                <input type="text" id="zone-name-input" class="hidden flex-1 p-2 bg-blue-50 rounded-lg text-sm font-bold border border-blue-200 outline-none" placeholder="공간 이름">
+                            <div id="zone-name-wrapper" class="flex-none w-32">
+                                <select id="zone-name-select" class="w-full p-2 bg-white rounded-lg text-xs font-bold border border-slate-200 outline-none h-10" onchange="handleZoneNameChange(this)"></select>
+                                <input type="text" id="zone-name-input" class="hidden w-full p-2 bg-blue-50 rounded-lg text-xs font-bold border border-blue-200 outline-none h-10" placeholder="공간 이름">
+                            </div>
+                            <div class="flex-1 flex gap-1">
+                                <div class="relative flex-1"><input type="number" id="zone-deduct-w" class="w-full h-10 p-2 bg-white rounded-lg text-xs font-black border border-slate-200 text-center outline-none" placeholder="0"><span class="absolute left-1 top-0.5 text-[7px] text-slate-300 uppercase">D-W</span></div>
+                                <span class="text-slate-300 self-center">×</span>
+                                <div class="relative flex-1"><input type="number" id="zone-deduct-h" class="w-full h-10 p-2 bg-white rounded-lg text-xs font-black border border-slate-200 text-center outline-none" placeholder="0"><span class="absolute left-1 top-0.5 text-[7px] text-slate-300 uppercase">D-H</span></div>
                                 <button id="btn-reset-zone" onclick="resetZoneName()" class="hidden w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center text-slate-500"><i class="fas fa-undo"></i></button>
                             </div>
-                            <div class="relative w-24"><input type="number" id="zone-deduct-input" class="w-full p-2 bg-white rounded-lg text-sm font-bold border border-slate-200 text-center outline-none" placeholder="공제(㎡)"><span class="absolute right-1 top-2 text-[7px] text-slate-300">공제</span></div>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="flex-1"><span class="text-[9px] font-black text-slate-400 block mb-1 uppercase ml-1">가로(W)</span><input type="number" id="zone-width-input" class="w-full p-3 bg-white rounded-xl text-center font-black text-slate-700 border border-slate-200 outline-none" placeholder="0"></div>
@@ -291,13 +295,15 @@
     </div>
 
     <script>
-        // 🚀 실장님의 최종 보안 통로(API) 주소
         const SHEET_URL = "https://script.google.com/macros/s/AKfycbz1-xED4gTgT2SW1aAWfGkChXd2MtCmLWw8iM5YVIAg4bmMdfXIGfT5ZrzY-QiZmJ3y-w/exec";
         
         let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'home';
-        let currentCosts = {}; 
+        let currentCosts = {};
 
-        const spaceOptions = { home: ["거실 아트월", "거실 쇼파월", "복도 전체", "현관", "주방연결부분", "기타 직접입력"], shop: ["매장 메인벽", "카운터 배면", "홀 측면", "입구 파사드", "기타 직접입력"] };
+        const spaceOptions = { 
+            home: ["거실 아트월", "거실 쇼파월", "복도 전체", "현관", "주방연결부분", "거실샤시(커튼박스)", "기타 직접입력"], 
+            shop: ["매장 메인벽", "카운터 배면", "홀 측면", "입구 파사드", "기타 직접입력"] 
+        };
         
         window.onload = async function() { 
             if (localStorage.getItem('cm_auth_session') === 'valid') { 
@@ -310,32 +316,24 @@
 
         function checkAppLogin() { if (btoa(document.getElementById('app-password').value) === 'MTMwNg==') { localStorage.setItem('cm_auth_session', 'valid'); location.reload(); } else { alert('오류'); } }
         
-        // 🛡️ [v18.4 핵심 수정] 규격(spec)과 인건비 데이터를 어떤 헤더 이름에서도 찾아내는 로직
         async function loadSheetData() { 
             try { 
                 const res = await fetch(SHEET_URL); 
                 const jsonData = await res.json(); 
-                
                 const tempMaster = {}; 
                 jsonData.forEach(item => {
                     const brand = String(item['brand'] || '').trim();
                     const name = String(item['name'] || '').trim();
                     const price = parseInt(String(item['price'] || '0').replace(/[^0-9]/g,'')) || 0;
                     const factor = parseFloat(item['factor']) || 0;
-                    
-                    // 👉 시트 제목이 'spec'이든 '규격'이든 모두 허용
                     const spec = String(item['spec'] || item['규격'] || '').trim();
-                    
-                    // 👉 시트 제목이 'labor'이든 '시공비(헤베당)'이든 모두 허용
                     const laborVal = item['labor'] || item['시공비(헤베당)'] || '0';
                     const labor = parseInt(String(laborVal).replace(/[^0-9]/g,'')) || 0;
-
                     if (brand && name) {
                         if (!tempMaster[brand]) tempMaster[brand] = { brand, products: [] };
                         tempMaster[brand].products.push({ name, price, factor, spec, labor });
                     }
                 });
-
                 masterData = Object.values(tempMaster); 
                 const bSel = document.getElementById('select-brand'); 
                 bSel.innerHTML = '<option value="">브랜드 선택</option>'; 
@@ -345,7 +343,6 @@
 
         function updateProducts() { const bName = document.getElementById('select-brand').value; const pSel = document.getElementById('select-product'); pSel.innerHTML = '<option value="">제품 선택</option>'; const bObj = masterData.find(x => x.brand === bName); if(bObj) bObj.products.forEach(p => pSel.add(new Option(p.name, p.name))); handleProductSelect(); }
         
-        // 👉 제품 선택 시 규격과 인건비가 화면의 입력칸에 쏙 들어갑니다!
         function handleProductSelect() { 
             const bName = document.getElementById('select-brand').value; 
             const pName = document.getElementById('select-product').value; 
@@ -360,7 +357,6 @@
             calculate(); 
         }
 
-        /* 이하 기존 기능 (calculate, save, record 등) 100% 동일하게 유지 */
         function calculate() { 
             if (!isManualMode) { 
                 let totalM2 = zoneList.reduce((sum, z) => sum + z.area, 0); 
@@ -441,8 +437,29 @@
         function setSpaceType(type) { spaceType = type; document.getElementById('tab-home').className = type === 'home' ? 'tab-btn active' : 'tab-btn inactive'; document.getElementById('tab-shop').className = type === 'shop' ? 'tab-btn active' : 'tab-btn inactive'; resetZoneName(); }
         function handleZoneNameChange(el) { if (el.value === "기타 직접입력") { el.classList.add('hidden'); document.getElementById('zone-name-input').classList.remove('hidden'); document.getElementById('btn-reset-zone').classList.remove('hidden'); document.getElementById('zone-name-input').focus(); } }
         function resetZoneName() { const sel = document.getElementById('zone-name-select'); sel.innerHTML = ''; spaceOptions[spaceType].forEach(opt => { const o = document.createElement('option'); o.value = opt; o.innerText = opt; sel.appendChild(o); }); sel.classList.remove('hidden'); document.getElementById('zone-name-input').classList.add('hidden'); document.getElementById('zone-name-input').value = ''; document.getElementById('btn-reset-zone').classList.add('hidden'); }
-        function addZone() { let name = document.getElementById('zone-name-select').classList.contains('hidden') ? document.getElementById('zone-name-input').value : document.getElementById('zone-name-select').value; if (!name || name === "기타 직접입력") { alert("공간명을 입력하세요."); return; } const w = parseFloat(document.getElementById('zone-width-input').value) || 0; const h = parseFloat(document.getElementById('zone-height-input').value) || 2300; const deduct = parseFloat(document.getElementById('zone-deduct-input').value) || 0; if (w === 0) return; let area = (w * h) / 1000000 - deduct; zoneList.push({ name, w, h, deduct, area: area < 0 ? 0 : area }); document.getElementById('zone-width-input').value = ''; document.getElementById('zone-deduct-input').value = ''; resetZoneName(); renderZones(); }
-        function renderZones() { const container = document.getElementById('zone-list-container'); container.innerHTML = ''; zoneList.forEach((z, i) => { const div = document.createElement('div'); div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm'; div.innerHTML = `<div><span class="text-xs font-black text-slate-700 block">${z.name}</span><span class="text-[10px] text-slate-400">W:${z.w} / H:${z.h}mm (-${z.deduct}㎡)</span></div><div class="flex items-center gap-3"><span class="text-sm font-black text-blue-600">${z.area.toFixed(2)}㎡</span><button onclick="removeZone(${i})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></div>`; container.appendChild(div); }); calculate(); }
+        
+        // 🛡️ [v18.6] 공제 가로/세로 자동 계산 로직 적용
+        function addZone() { 
+            let name = document.getElementById('zone-name-select').classList.contains('hidden') ? document.getElementById('zone-name-input').value : document.getElementById('zone-name-select').value; 
+            if (!name || name === "기타 직접입력") { alert("공간명을 입력하세요."); return; } 
+            const w = parseFloat(document.getElementById('zone-width-input').value) || 0; 
+            const h = parseFloat(document.getElementById('zone-height-input').value) || 2300; 
+            
+            // 공제용 가로/세로 값 가져오기
+            const dw = parseFloat(document.getElementById('zone-deduct-w').value) || 0;
+            const dh = parseFloat(document.getElementById('zone-deduct-h').value) || 0;
+            const deductArea = (dw * dh) / 1000000; // 가로*세로 계산하여 ㎡로 변환
+
+            if (w === 0) return; 
+            let area = (w * h) / 1000000 - deductArea; 
+            zoneList.push({ name, w, h, deduct: deductArea.toFixed(2), area: area < 0 ? 0 : area }); 
+            document.getElementById('zone-width-input').value = ''; 
+            document.getElementById('zone-deduct-w').value = ''; 
+            document.getElementById('zone-deduct-h').value = ''; 
+            resetZoneName(); renderZones(); 
+        }
+
+        function renderZones() { const container = document.getElementById('zone-list-container'); container.innerHTML = ''; zoneList.forEach((z, i) => { const div = document.createElement('div'); div.className = 'bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm'; div.innerHTML = `<div><span class="text-xs font-black text-slate-700 block">${z.name}</span><span class="text-[10px] text-slate-400">W:${z.w} / H:${z.h}mm (공제:${z.deduct}㎡)</span></div><div class="flex items-center gap-3"><span class="text-sm font-black text-blue-600">${z.area.toFixed(2)}㎡</span><button onclick="removeZone(${i})" class="text-slate-300 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></div>`; container.appendChild(div); }); calculate(); }
         function removeZone(i) { zoneList.splice(i, 1); renderZones(); }
         function formatPhone(el) { el.value = el.value.replace(/[^0-9]/g, "").replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, "$1-$2-$3").replace("--", "-"); }
         function formatInput(el) { let val = el.value.replace(/[^0-9]/g, ''); el.value = val ? parseInt(val).toLocaleString() : ''; }
@@ -453,7 +470,7 @@
         function showToast() { const t = document.getElementById('toast'); t.className = "show"; setTimeout(() => { t.className = t.className.replace("show", ""); }, 2000); }
         function showRecordModal() { document.getElementById('record-modal').style.display = 'flex'; renderRecords(); }
         function closeRecordModal(e) { if(e.target.id === 'record-modal') e.target.style.display = 'none'; }
-        function clearAllRecords() { if(confirm('전체 삭제하시겠습니까?')) { localStorage.removeItem('chungin_v18_records'); renderRecords(); } }
+        function clearAllRecords() { if(confirm('모든 기록을 삭제하시겠습니까?')) { localStorage.removeItem('chungin_v18_records'); renderRecords(); } }
         function deleteSelectedRecords() { let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); const checkedIds = Array.from(document.querySelectorAll('.record-check:checked')).map(el => parseInt(el.dataset.id)); records = records.filter(r => !checkedIds.includes(r.id)); localStorage.setItem('chungin_v18_records', JSON.stringify(records)); renderRecords(); }
         function exportToCSV() { let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); let csv = "\uFEFF날짜,고객명,제품명,합계\n"; records.forEach(r => { csv += `${r.date},${r.name},${r.product},${r.total}\n`; }); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `견적백업_${new Date().toLocaleDateString()}.csv`; link.click(); }
         function importFromFile() { document.getElementById('file-input').click(); }
