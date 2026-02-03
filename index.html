@@ -592,7 +592,62 @@
         function closeRecordModal(e) { if(e.target.id === 'record-modal') e.target.style.display = 'none'; }
         function clearAllRecords() { if(confirm('모든 기록을 삭제하시겠습니까?')) { localStorage.removeItem('chungin_v18_records'); renderRecords(); } }
         function deleteSelectedRecords() { let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); const checkedIds = Array.from(document.querySelectorAll('.record-check:checked')).map(el => parseInt(el.dataset.id)); records = records.filter(r => !checkedIds.includes(r.id)); localStorage.setItem('chungin_v18_records', JSON.stringify(records)); renderRecords(); }
-        function exportToCSV() { let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); let csv = "\uFEFF날짜,고객명,제품명,합계\n"; records.forEach(r => { csv += `${r.date},${r.name},${r.product},${r.total}\n`; }); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `견적백업_${new Date().toLocaleDateString()}.csv`; link.click(); }
+
+        // [업데이트된 엑셀 백업 함수]
+        function exportToCSV() { 
+            let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); 
+            
+            // 엑셀 헤더(첫 줄) 정의 - 모든 정보를 포함
+            let csv = "\uFEFF견적번호,견적일시,고객명,연락처,현장주소,실측일,시공일,제품명,모델명,규격,실면적(㎡),필요박스(BOX),박스당단가,기본자재비,인건비(㎡당),인건비총액,전용본드(개),전용본드금액,시공목(개),시공목금액,일반몰딩(개),표준몰딩(개),프리미엄몰딩(개),몰딩총금액,기존벽재제거,운반양중비,보양기타비,폐기물처리비,최종합계금액(VAT포함)\n"; 
+            
+            records.forEach(r => { 
+                const f = r.fullData || {};
+                const c = r.costs || {};
+
+                // 콤마(,)가 포함된 데이터를 엑셀에서 한 칸에 넣기 위한 안전 처리 함수
+                const safe = (str) => `"${String(str || '').replace(/"/g, '""')}"`;
+
+                // 모든 데이터를 CSV 행으로 결합
+                csv += [
+                    safe(r.quoteNo), // 견적번호
+                    safe(r.date),    // 견적일시
+                    safe(r.name),    // 고객명
+                    safe(r.phone),   // 연락처
+                    safe(r.addr),    // 현장주소
+                    safe(r.sDate),   // 실측일
+                    safe(r.wDate),   // 시공일
+                    safe(r.product), // 제품명
+                    safe(f.modelName),// 모델명
+                    safe(r.spec),    // 규격
+                    safe(r.m2),      // 실면적
+                    safe(f.boxCount),// 필요박스
+                    safe(f.boxPrice),// 박스당단가
+                    safe(c.base),    // 기본자재비
+                    safe(f.laborM2), // 인건비(m2당)
+                    safe(c.labor),   // 인건비총액
+                    safe(f.bondQty), // 본드수량
+                    safe(c.bond),    // 본드금액
+                    safe(f.woodQty), // 시공목수량
+                    safe(c.wood),    // 시공목금액
+                    safe(f.mold5),   // 일반몰딩수량
+                    safe(f.mold10),  // 표준몰딩수량
+                    safe(f.mold15),  // 프리미엄몰딩수량
+                    safe(c.corner),  // 몰딩총금액
+                    safe(c.removal), // 기존벽재제거
+                    safe(c.lifting), // 운반양중비
+                    safe(c.protection), // 보양기타비
+                    safe(c.waste),   // 폐기물처리비
+                    safe(r.total)    // 최종합계금액
+                ].join(',') + '\n';
+            }); 
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); 
+            const link = document.createElement("a"); 
+            link.href = URL.createObjectURL(blob); 
+            link.download = `청인마루_전체견적백업_${new Date().toLocaleDateString()}.csv`; 
+            link.click(); 
+        }
+
         function importFromFile() { document.getElementById('file-input').click(); }
         function handleFileImport(e) { const file = e.target.files[0]; const reader = new FileReader(); reader.onload = function(e) { const imported = JSON.parse(e.target.result); localStorage.setItem('chungin_v18_records', JSON.stringify(imported)); renderRecords(); alert('가져오기 성공'); }; reader.readAsText(file); }
         function shareQuote() { showToast(); html2canvas(document.getElementById('capture-area'), { scale: 2 }).then(canvas => { canvas.toBlob(blob => { if(navigator.share) navigator.share({ files: [new File([blob], "견적.png", {type:"image/png"})] }); }); }); }
