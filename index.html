@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v18.6)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v18.9)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -56,7 +56,7 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v18.6</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v18.9</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500 transition-all placeholder-slate-400" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -97,7 +97,7 @@
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm"><i class="fas fa-star text-yellow-300 text-[8px]"></i> PREMIUM SYSTEM</div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v18.6</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v18.9</p>
                 <div class="flex gap-2 justify-center">
                     <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="showRecordModal()" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2">
@@ -132,21 +132,28 @@
                         <div id="tab-home" onclick="setSpaceType('home')" class="tab-btn active">주거용 공간</div>
                         <div id="tab-shop" onclick="setSpaceType('shop')" class="tab-btn inactive">상가/일반 공간</div>
                     </div>
+
                     <div id="select-area" class="grid grid-cols-2 gap-3">
-                        <div class="input-group"><select id="select-brand" class="input-premium" onchange="updateProducts();"></select><span class="input-label">브랜드 선택</span></div>
-                        <div class="input-group"><select id="select-product" class="input-premium" onchange="handleProductSelect();"></select><span class="input-label">제품명 선택</span></div>
+                        <div class="input-group"><select id="select-brand" class="input-premium" onchange="updateProducts();"></select><span class="input-label">브랜드</span></div>
+                        <div class="input-group"><select id="select-product" class="input-premium" onchange="handleProductSelect();"></select><span class="input-label">제품명</span></div>
                     </div>
                     <div id="manual-area" class="grid grid-cols-2 gap-3 hidden">
                         <div class="input-group"><input type="text" id="input-brand-txt" class="input-premium" placeholder="브랜드명" oninput="calculate();"><span class="input-label">브랜드명</span></div>
                         <div class="input-group"><input type="text" id="input-product-txt" class="input-premium" placeholder="제품명" oninput="calculate();"><span class="input-label">제품명</span></div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="input-group"><input type="text" id="input-spec" class="input-premium" placeholder="규격 입력" oninput="updateInfoText();"><span class="input-label">규격</span></div>
-                        <div class="input-group"><input type="text" id="input-labor-m2" class="input-premium text-right" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">인건비(㎡당)</span></div>
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="input-group"><input type="text" id="model-name" class="input-premium" placeholder="ex) 오크" oninput="updateInfoText();"><span class="input-label">모델명</span></div>
+                        <div class="input-group"><input type="text" id="input-spec" class="input-premium" placeholder="규격" oninput="updateInfoText();"><span class="input-label">규격</span></div>
+                        <div class="input-group"><input type="text" id="input-box-qty" class="input-premium text-center" placeholder="0" oninput="updateInfoText();"><span class="input-label">박스당 매수</span></div>
                     </div>
-                    <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex items-center justify-between">
-                        <span class="text-xs font-black text-amber-700 uppercase">Box 당 단가</span>
-                        <div class="flex items-center gap-1"><input type="text" id="input-box-price" class="bg-transparent font-black text-2xl text-right text-amber-600 outline-none w-32" placeholder="0" oninput="formatInput(this); calculate();"><span class="text-sm font-bold text-amber-600">원</span></div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="input-group"><input type="text" id="input-labor-m2" class="input-premium text-right" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">인건비(㎡당)</span></div>
+                        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-100 flex items-center justify-between">
+                            <span class="text-[10px] font-black text-amber-700 uppercase">Box 당 단가</span>
+                            <div class="flex items-center gap-1"><input type="text" id="input-box-price" class="bg-transparent font-black text-lg text-right text-amber-600 outline-none w-full" placeholder="0" oninput="formatInput(this); calculate();"><span class="text-xs font-bold text-amber-600">원</span></div>
+                        </div>
                     </div>
                 </div>
                 <hr class="border-slate-100">
@@ -298,7 +305,7 @@
         const SHEET_URL = "https://script.google.com/macros/s/AKfycbz1-xED4gTgT2SW1aAWfGkChXd2MtCmLWw8iM5YVIAg4bmMdfXIGfT5ZrzY-QiZmJ3y-w/exec";
         
         let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'home';
-        let currentCosts = {};
+        let currentCosts = {}; 
 
         const spaceOptions = { 
             home: ["거실 아트월", "거실 쇼파월", "복도 전체", "현관", "주방연결부분", "거실샤시(커튼박스)", "기타 직접입력"], 
@@ -327,11 +334,12 @@
                     const price = parseInt(String(item['price'] || '0').replace(/[^0-9]/g,'')) || 0;
                     const factor = parseFloat(item['factor']) || 0;
                     const spec = String(item['spec'] || item['규격'] || '').trim();
+                    const boxQty = String(item['box_qty'] || item['박스당매수'] || '').trim();
                     const laborVal = item['labor'] || item['시공비(헤베당)'] || '0';
                     const labor = parseInt(String(laborVal).replace(/[^0-9]/g,'')) || 0;
                     if (brand && name) {
                         if (!tempMaster[brand]) tempMaster[brand] = { brand, products: [] };
-                        tempMaster[brand].products.push({ name, price, factor, spec, labor });
+                        tempMaster[brand].products.push({ name, price, factor, spec, labor, boxQty });
                     }
                 });
                 masterData = Object.values(tempMaster); 
@@ -353,61 +361,21 @@
                 document.getElementById('input-factor').value = pObj.factor; 
                 document.getElementById('input-spec').value = pObj.spec || "";
                 document.getElementById('input-labor-m2').value = pObj.labor ? pObj.labor.toLocaleString() : "0";
+                document.getElementById('input-box-qty').value = pObj.boxQty || "";
             } 
             calculate(); 
         }
 
-        function calculate() { 
-            if (!isManualMode) { 
-                let totalM2 = zoneList.reduce((sum, z) => sum + z.area, 0); 
-                document.getElementById('input-real-m2').value = totalM2.toFixed(2); 
-                const factor = parseFloat(document.getElementById('input-factor').value) || 3.2; 
-                const loss = parseFloat(document.getElementById('select-loss').value) / 100; 
-                const boxes = totalM2 > 0 ? Math.ceil((totalM2 / factor) * (1 + loss)) : 0; 
-                document.getElementById('input-boxes').value = boxes; 
-            } 
-            const curM2 = parseFloat(document.getElementById('input-real-m2').value) || 0; 
-            const curBoxes = parseInt(document.getElementById('input-boxes').value) || 0; 
-            document.getElementById('res-total-area').innerHTML = `${curM2.toFixed(2)} <span class="text-sm not-italic text-white">㎡</span>`; 
-            updateCalculations(curBoxes, curM2); 
-        }
-
-        function updateCalculations(boxes, realM2) {
-            const getNum = (id) => parseInt(document.getElementById(id).value) || 0;
-            const price = parseInt(document.getElementById('input-box-price').value.replace(/,/g,'')) || 0;
-            const laborM2 = parseInt(document.getElementById('input-labor-m2').value.replace(/,/g,'')) || 0;
-            const bondQty = getNum('qty-bond');
-            const woodQty = getNum('qty-wood');
-            const laborCost = Math.round(realM2 * laborM2);
-            let moldingCost = 0;
-            if(document.getElementById('chk-mold-5000').checked) moldingCost += getNum('qty-mold-5000') * 5000;
-            if(document.getElementById('chk-mold-15000').checked) moldingCost += getNum('qty-mold-15000') * 15000;
-            if(document.getElementById('chk-mold-10000').checked) moldingCost += getNum('qty-mold-10000') * 10000;
-
-            const costs = { 
-                base: boxes * price, labor: laborCost, bond: bondQty * 10000, wood: woodQty * 5000, corner: moldingCost, 
-                removal: parseInt(document.getElementById('input-removal').value.replace(/,/g,'')) || 0, 
-                lifting: parseInt(document.getElementById('input-lifting').value.replace(/,/g,'')) || 0, 
-                protection: parseInt(document.getElementById('input-protection').value.replace(/,/g,'')) || 0, 
-                waste: parseInt(document.getElementById('input-waste').value.replace(/,/g,'')) || 0 
-            };
-            currentCosts = costs;
-            const total = Object.values(costs).reduce((a,b) => a+b, 0);
-            
-            const updateRow = (rowId, valId, cost, qty, unitPrice) => { 
-                const el = document.getElementById(rowId); 
-                if (el) { el.classList.toggle('hidden', cost === 0); const label = qty > 0 ? `(${qty.toLocaleString()}개 x ${unitPrice.toLocaleString()}원) ` : ""; document.getElementById(valId).innerText = label + cost.toLocaleString() + " 원"; } 
-            };
-            updateRow('row-base', 'detail-base', costs.base, 0, 0); updateRow('row-labor', 'detail-labor', costs.labor, 0, 0); updateRow('row-bond', 'detail-bond', costs.bond, bondQty, 10000); updateRow('row-wood', 'detail-wood', costs.wood, woodQty, 5000); 
-            document.getElementById('row-corner').classList.toggle('hidden', moldingCost === 0); document.getElementById('detail-corner').innerText = moldingCost.toLocaleString() + " 원"; 
-            updateRow('row-removal', 'detail-removal', costs.removal, 0, 0); updateRow('row-lifting', 'detail-lifting', costs.lifting, 0, 0); updateRow('row-protection', 'detail-protection', costs.protection, 0, 0); updateRow('row-waste', 'detail-waste', costs.waste, 0, 0); 
-            
-            document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString(); updateInfoText();
-        }
-
-        function saveRecord() {
-            const data = { id: Date.now(), quoteNo: document.getElementById('quote-number-disp').innerText, name: document.getElementById('cust-name').value || "미지정", phone: document.getElementById('cust-phone').value || "-", addr: document.getElementById('cust-addr').value || "-", product: document.getElementById('res-product').innerText, spec: document.getElementById('input-spec').value || "-", m2: document.getElementById('input-real-m2').value, total: document.getElementById('res-total-vat').innerText, date: new Date().toLocaleString(), sDate: document.getElementById('cust-survey-date').value || "-", wDate: document.getElementById('cust-work-date').value || "-", costs: {...currentCosts}, fullData: { zones: [...zoneList], bondQty: document.getElementById('qty-bond').value, woodQty: document.getElementById('qty-wood').value, mold5: document.getElementById('qty-mold-5000').value, mold15: document.getElementById('qty-mold-15000').value, mold10: document.getElementById('qty-mold-10000').value, removalInput: document.getElementById('input-removal').value.replace(/,/g,''), liftingInput: document.getElementById('input-lifting').value.replace(/,/g,''), protectionInput: document.getElementById('input-protection').value.replace(/,/g,''), wasteInput: document.getElementById('input-waste').value.replace(/,/g,''), boxPrice: document.getElementById('input-box-price').value.replace(/,/g,''), laborM2: document.getElementById('input-labor-m2').value.replace(/,/g,''), boxCount: document.getElementById('input-boxes').value, factor: document.getElementById('input-factor').value, loss: document.getElementById('select-loss').value } };
-            let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); records.unshift(data); localStorage.setItem('chungin_v18_records', JSON.stringify(records)); alert('저장되었습니다.'); renderRecords();
+        function toggleRecordDetail(id) {
+            const detailBox = document.getElementById(`detail-box-${id}`);
+            const arrow = document.getElementById(`arrow-${id}`);
+            if (detailBox.classList.contains('hidden')) {
+                detailBox.classList.remove('hidden');
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                detailBox.classList.add('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+            }
         }
 
         function renderRecords() {
@@ -416,7 +384,34 @@
                 const costs = r.costs || {}; let detailHtml = ""; const labels = { base: "기본 자재비", labor: "인건비", bond: "전용본드", wood: "시공목", corner: "마감몰딩", removal: "기존벽재제거", lifting: "운반/양중", protection: "보양/기타", waste: "폐기물처리비" };
                 Object.keys(labels).forEach(key => { if (costs[key] > 0) detailHtml += `<div class="flex justify-between items-center text-[10px] py-0.5"><span class="text-slate-500 font-bold">${labels[key]}</span><span class="text-slate-700 font-black">${costs[key].toLocaleString()}원</span></div>`; });
                 const div = document.createElement('div'); div.className = 'record-card mb-4';
-                div.innerHTML = `<div class="flex justify-between items-start mb-1"><div class="flex items-center gap-2"><input type="checkbox" class="record-check w-4 h-4" data-id="${r.id}"><span class="font-black text-slate-900 text-lg">${r.name} 님</span></div><span class="text-blue-600 font-black text-xl">${r.total}원</span></div><div class="text-sm text-slate-500 font-bold mb-1">${r.product} (${r.spec})</div><div class="flex justify-between items-center mb-3"><span class="text-[10px] text-slate-400 font-medium tracking-tighter">${r.date}</span><button onclick="restoreRecord(${r.id})" class="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black italic">복원하기</button></div><div class="border-t border-dashed border-slate-200 my-2"></div><div class="space-y-1"><div class="flex text-[10px]"><span class="w-16 font-bold text-slate-400">NO.</span><span class="font-bold text-slate-600">${r.quoteNo}</span></div><div class="flex text-[10px]"><span class="w-16 font-bold text-slate-400">현장:</span><span class="font-bold text-slate-700 truncate flex-1">${r.addr}</span></div><div class="flex justify-between items-center text-[10px] mt-1 mb-2"><span class="font-bold text-blue-500">실측/시공</span><span class="font-bold text-slate-700 tracking-tighter">${r.sDate} / ${r.wDate}</span></div><div class="bg-slate-50 p-2 rounded-lg border border-slate-100">${detailHtml}</div></div>`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <div class="flex items-center gap-2"><input type="checkbox" class="record-check w-4 h-4" data-id="${r.id}"><span class="font-black text-slate-900 text-lg">${r.name} 님</span></div>
+                        <span class="text-blue-600 font-black text-xl">${r.total}원</span>
+                    </div>
+                    <div class="text-sm text-slate-500 font-bold mb-1">${r.product} (${r.spec})</div>
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[10px] text-slate-400 font-medium tracking-tighter">${r.date}</span>
+                        <button onclick="restoreRecord(${r.id})" class="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black italic">복원하기</button>
+                    </div>
+                    <div class="border-t border-dashed border-slate-200 my-2"></div>
+                    <div class="space-y-1">
+                        <div class="flex text-[10px]"><span class="w-16 font-bold text-slate-400">NO.</span><span class="font-bold text-slate-600">${r.quoteNo}</span></div>
+                        <div class="flex text-[10px]"><span class="w-16 font-bold text-slate-400">현장:</span><span class="font-bold text-slate-700 truncate flex-1">${r.addr}</span></div>
+                        
+                        <div class="flex justify-between items-center cursor-pointer mt-2" onclick="toggleRecordDetail(${r.id})">
+                            <span class="font-bold text-blue-500 text-[10px]">상세 내역 확인 (실측/비용)</span>
+                            <i id="arrow-${r.id}" class="fas fa-chevron-down text-[10px] text-slate-300 transition-transform"></i>
+                        </div>
+                        
+                        <div id="detail-box-${r.id}" class="hidden mt-2">
+                            <div class="flex justify-between items-center text-[10px] mb-2">
+                                <span class="font-bold text-slate-400">실측/시공</span>
+                                <span class="font-bold text-slate-700 tracking-tighter">${r.sDate} / ${r.wDate}</span>
+                            </div>
+                            <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">${detailHtml}</div>
+                        </div>
+                    </div>`;
                 list.appendChild(div);
             });
         }
@@ -424,7 +419,10 @@
         function restoreRecord(id) {
             let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); const r = records.find(x => x.id === id);
             if(r) {
-                const f = r.fullData || {}; document.getElementById('cust-name').value = r.name; document.getElementById('cust-phone').value = r.phone; document.getElementById('cust-addr').value = r.addr; document.getElementById('cust-survey-date').value = r.sDate === "-" ? "" : r.sDate; document.getElementById('cust-work-date').value = r.wDate === "-" ? "" : r.wDate; document.getElementById('input-spec').value = r.spec;
+                const f = r.fullData || {}; document.getElementById('cust-name').value = r.name; document.getElementById('cust-phone').value = r.phone; document.getElementById('cust-addr').value = r.addr; document.getElementById('cust-survey-date').value = r.sDate === "-" ? "" : r.sDate; document.getElementById('cust-work-date').value = r.wDate === "-" ? "" : r.wDate; 
+                document.getElementById('model-name').value = f.modelName || "";
+                document.getElementById('input-spec').value = r.spec;
+                document.getElementById('input-box-qty').value = f.boxQty || "";
                 document.getElementById('input-box-price').value = parseInt(f.boxPrice || 0).toLocaleString(); document.getElementById('input-labor-m2').value = parseInt(f.laborM2 || 0).toLocaleString(); document.getElementById('input-factor').value = f.factor || 3.2; document.getElementById('select-loss').value = f.loss || 10;
                 zoneList = f.zones || []; document.getElementById('qty-bond').value = f.bondQty || ""; document.getElementById('qty-wood').value = f.woodQty || ""; document.getElementById('qty-mold-5000').value = f.mold5 || ""; document.getElementById('qty-mold-15000').value = f.mold15 || ""; document.getElementById('qty-mold-10000').value = f.mold10 || "";
                 document.getElementById('chk-mold-5000').checked = !!f.mold5; document.getElementById('chk-mold-15000').checked = !!f.mold15; document.getElementById('chk-mold-10000').checked = !!f.mold10;
@@ -438,18 +436,14 @@
         function handleZoneNameChange(el) { if (el.value === "기타 직접입력") { el.classList.add('hidden'); document.getElementById('zone-name-input').classList.remove('hidden'); document.getElementById('btn-reset-zone').classList.remove('hidden'); document.getElementById('zone-name-input').focus(); } }
         function resetZoneName() { const sel = document.getElementById('zone-name-select'); sel.innerHTML = ''; spaceOptions[spaceType].forEach(opt => { const o = document.createElement('option'); o.value = opt; o.innerText = opt; sel.appendChild(o); }); sel.classList.remove('hidden'); document.getElementById('zone-name-input').classList.add('hidden'); document.getElementById('zone-name-input').value = ''; document.getElementById('btn-reset-zone').classList.add('hidden'); }
         
-        // 🛡️ [v18.6] 공제 가로/세로 자동 계산 로직 적용
         function addZone() { 
             let name = document.getElementById('zone-name-select').classList.contains('hidden') ? document.getElementById('zone-name-input').value : document.getElementById('zone-name-select').value; 
             if (!name || name === "기타 직접입력") { alert("공간명을 입력하세요."); return; } 
             const w = parseFloat(document.getElementById('zone-width-input').value) || 0; 
             const h = parseFloat(document.getElementById('zone-height-input').value) || 2300; 
-            
-            // 공제용 가로/세로 값 가져오기
             const dw = parseFloat(document.getElementById('zone-deduct-w').value) || 0;
             const dh = parseFloat(document.getElementById('zone-deduct-h').value) || 0;
-            const deductArea = (dw * dh) / 1000000; // 가로*세로 계산하여 ㎡로 변환
-
+            const deductArea = (dw * dh) / 1000000;
             if (w === 0) return; 
             let area = (w * h) / 1000000 - deductArea; 
             zoneList.push({ name, w, h, deduct: deductArea.toFixed(2), area: area < 0 ? 0 : area }); 
@@ -463,7 +457,16 @@
         function removeZone(i) { zoneList.splice(i, 1); renderZones(); }
         function formatPhone(el) { el.value = el.value.replace(/[^0-9]/g, "").replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/, "$1-$2-$3").replace("--", "-"); }
         function formatInput(el) { let val = el.value.replace(/[^0-9]/g, ''); el.value = val ? parseInt(val).toLocaleString() : ''; }
-        function updateInfoText() { const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value; const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value; const spec = document.getElementById('input-spec').value; document.getElementById('res-brand-category').innerText = brand || "BRAND"; document.getElementById('res-product').innerText = prod || "제품명"; document.getElementById('res-spec').innerText = spec ? `규격: ${spec}` : "-"; updateCustInfo(); }
+        function updateInfoText() { 
+            const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value; 
+            const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value; 
+            const model = document.getElementById('model-name').value;
+            const spec = document.getElementById('input-spec').value; 
+            document.getElementById('res-brand-category').innerText = brand || "BRAND"; 
+            document.getElementById('res-product').innerText = (prod || "제품명") + (model ? ` (${model})` : ""); 
+            document.getElementById('res-spec').innerText = spec ? `규격: ${spec}` : "-"; 
+            updateCustInfo(); 
+        }
         function updateCustInfo() { const name = document.getElementById('cust-name').value; const phone = document.getElementById('cust-phone').value; const addr = document.getElementById('cust-addr').value; const sDate = document.getElementById('cust-survey-date').value; const wDate = document.getElementById('cust-work-date').value; document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님"; document.getElementById('disp-phone').innerText = phone || "-"; document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : ""; document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : ""; document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : ""; }
         function toggleManualMode() { isManualMode = document.getElementById('manual-mode-toggle').checked; document.getElementById('select-area').classList.toggle('hidden', isManualMode); document.getElementById('manual-area').classList.toggle('hidden', !isManualMode); document.getElementById('input-real-m2').readOnly = !isManualMode; document.getElementById('input-boxes').readOnly = !isManualMode; calculate(); }
         function toggleAccordion(id) { document.getElementById('content-' + id).classList.toggle('open'); }
