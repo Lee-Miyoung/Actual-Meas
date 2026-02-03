@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v19.0)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v19.1)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -56,7 +56,7 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v19.0</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v19.1</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500 transition-all placeholder-slate-400" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -97,7 +97,7 @@
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm"><i class="fas fa-star text-yellow-300 text-[8px]"></i> PREMIUM SYSTEM</div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v19.0</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v19.1</p>
                 <div class="flex gap-2 justify-center">
                     <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="showRecordModal()" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2">
@@ -126,7 +126,7 @@
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
                         <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5"><i class="fas fa-layer-group text-blue-500"></i> 자재 선택</h3>
-                        <div class="flex items-center gap-2"><span class="text-[10px] font-bold text-slate-400">직접 입력</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="manual-mode-toggle" class="sr-only peer" onchange="toggleManualMode();"><div class="w-8 h-4 bg-slate-200 rounded-full peer peer-checked:bg-blue-500 relative transition-all"><div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-all peer-checked:left-4.5"></div></div></label></div>
+                        <div class="flex items-center gap-2"><span class="text-[10px] font-bold text-slate-400">수기 입력</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" id="manual-mode-toggle" class="sr-only peer" onchange="toggleManualMode();"><div class="w-8 h-4 bg-slate-200 rounded-full peer peer-checked:bg-blue-500 relative transition-all"><div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-all peer-checked:left-4.5"></div></div></label></div>
                     </div>
                     <div class="flex bg-slate-100 p-1 rounded-xl gap-1">
                         <div id="tab-home" onclick="setSpaceType('home')" class="tab-btn active">주거용 공간</div>
@@ -138,14 +138,14 @@
                         <div class="input-group"><select id="select-product" class="input-premium" onchange="handleProductSelect();"></select><span class="input-label">제품명</span></div>
                     </div>
                     <div id="manual-area" class="grid grid-cols-2 gap-3 hidden">
-                        <div class="input-group"><input type="text" id="input-brand-txt" class="input-premium" placeholder="브랜드명" oninput="calculate();"><span class="input-label">브랜드명</span></div>
-                        <div class="input-group"><input type="text" id="input-product-txt" class="input-premium" placeholder="제품명" oninput="calculate();"><span class="input-label">제품명</span></div>
+                        <div class="input-group"><input type="text" id="input-brand-txt" class="input-premium" placeholder="브랜드명" oninput="updateInfoText();"><span class="input-label">브랜드명</span></div>
+                        <div class="input-group"><input type="text" id="input-product-txt" class="input-premium" placeholder="제품명" oninput="updateInfoText();"><span class="input-label">제품명</span></div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-3">
-                        <div class="input-group"><input type="text" id="model-name" class="input-premium" placeholder="ex) 오크" oninput="updateInfoText();"><span class="input-label">모델명</span></div>
+                        <div class="input-group"><input type="text" id="model-name" class="input-premium" placeholder="모델명" oninput="updateInfoText();"><span class="input-label">모델명</span></div>
                         <div class="input-group"><input type="text" id="input-spec" class="input-premium" placeholder="규격" oninput="updateInfoText();"><span class="input-label">규격</span></div>
-                        <div class="input-group"><input type="text" id="input-box-qty" class="input-premium text-center" placeholder="0" oninput="updateInfoText();"><span class="input-label">박스당 매수</span></div>
+                        <div class="input-group"><input type="text" id="input-box-qty" class="input-premium text-center" placeholder="0" oninput="calculate();"><span class="input-label">박스당 매수</span></div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
@@ -157,14 +157,13 @@
                     </div>
                 </div>
                 <hr class="border-slate-100">
-                
                 <div>
                     <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5 mb-3"><i class="fas fa-ruler-combined text-blue-500"></i> 공간별 상세 견적 (mm 단위)</h3>
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-4 shadow-inner">
                         <div class="flex gap-2 mb-3">
                             <div id="zone-name-wrapper" class="flex-[2] min-w-0">
-                                <select id="zone-name-select" class="w-full p-2 bg-white rounded-lg text-xs font-bold border border-slate-200 outline-none h-10" onchange="handleZoneNameChange(this)"></select>
-                                <input type="text" id="zone-name-input" class="hidden w-full p-2 bg-blue-50 rounded-lg text-xs font-bold border border-blue-200 outline-none h-10" placeholder="공간 이름">
+                                <select id="zone-name-select" class="w-full p-2 bg-white rounded-lg text-[11px] font-bold border border-slate-200 outline-none h-10" onchange="handleZoneNameChange(this)"></select>
+                                <input type="text" id="zone-name-input" class="hidden w-full p-2 bg-blue-50 rounded-lg text-[11px] font-bold border border-blue-200 outline-none h-10" placeholder="공간 이름">
                             </div>
                             <div class="flex-1 relative">
                                 <input type="number" id="zone-deduct-w" class="w-full h-10 p-2 pt-4 bg-white rounded-lg text-[10px] font-black border border-slate-200 text-center outline-none" placeholder="0">
@@ -193,6 +192,7 @@
                         <div class="stat-box !bg-slate-50 flex flex-col justify-center"><span class="stat-label">로스율(%)</span><select id="select-loss" class="w-full bg-transparent font-bold text-center outline-none text-slate-600" onchange="calculate();"><option value="5">5%</option><option value="10" selected>10%</option><option value="15">15%</option><option value="20">20%</option></select></div>
                     </div>
                 </div>
+
                 <div class="border border-slate-200 rounded-2xl overflow-hidden">
                     <button onclick="toggleAccordion('extra-cost')" class="w-full flex justify-between items-center p-4 bg-slate-50"><span class="text-xs font-black text-slate-600 uppercase flex items-center gap-2"><i class="fas fa-tools"></i> 부자재 및 기타 시공비</span><i id="arrow-extra-cost" class="fas fa-chevron-down text-slate-400 transition-transform"></i></button>
                     <div id="content-extra-cost" class="accordion-content bg-white">
@@ -295,10 +295,6 @@
                             <button onclick="saveImage()" class="btn-action bg-white text-blue-900"><i class="fas fa-download mr-2"></i> 이미지 저장</button>
                         </div>
                     </div>
-                    <div class="mt-4 bg-white/5 p-3 rounded-2xl flex items-center justify-between border border-white/10 text-left">
-                        <div class="flex items-center gap-3"><img src="maruni.png" class="w-10 h-10 rounded-lg bg-white/10 p-1" onerror="this.src='icon.jpg'"><div><p class="text-xs font-black text-white">시공 사례 보기</p><p class="text-[9px] text-slate-400">유튜브 '마루아빠' / 블로그 '청인마루'</p></div></div>
-                        <div class="bg-white p-1.5 rounded-lg"><img src="https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=https%3A%2F%2Fblog.naver.com%2Fflooring_dad" class="w-8 h-8"></div>
-                    </div>
                 </div>
             </div>
         </main>
@@ -326,6 +322,7 @@
 
         function checkAppLogin() { if (btoa(document.getElementById('app-password').value) === 'MTMwNg==') { localStorage.setItem('cm_auth_session', 'valid'); location.reload(); } else { alert('오류'); } }
         
+        // 🛡️ [v19.1] 데이터 추출 로직에 모델명(model) 추가
         async function loadSheetData() { 
             try { 
                 const res = await fetch(SHEET_URL); 
@@ -334,6 +331,7 @@
                 jsonData.forEach(item => {
                     const brand = String(item['brand'] || '').trim();
                     const name = String(item['name'] || '').trim();
+                    const model = String(item['model'] || item['모델명'] || '').trim(); // 👉 모델명 데이터 확보
                     const price = parseInt(String(item['price'] || '0').replace(/[^0-9]/g,'')) || 0;
                     const factor = parseFloat(item['factor']) || 0;
                     const spec = String(item['spec'] || item['규격'] || '').trim();
@@ -342,7 +340,7 @@
                     const labor = parseInt(String(laborVal).replace(/[^0-9]/g,'')) || 0;
                     if (brand && name) {
                         if (!tempMaster[brand]) tempMaster[brand] = { brand, products: [] };
-                        tempMaster[brand].products.push({ name, price, factor, spec, labor, boxQty });
+                        tempMaster[brand].products.push({ name, model, price, factor, spec, labor, boxQty });
                     }
                 });
                 masterData = Object.values(tempMaster); 
@@ -354,12 +352,14 @@
 
         function updateProducts() { const bName = document.getElementById('select-brand').value; const pSel = document.getElementById('select-product'); pSel.innerHTML = '<option value="">제품 선택</option>'; const bObj = masterData.find(x => x.brand === bName); if(bObj) bObj.products.forEach(p => pSel.add(new Option(p.name, p.name))); handleProductSelect(); }
         
+        // 🛡️ [v19.1] 제품 선택 시 모델명(model-name) 칸에 자동 입력되도록 수정
         function handleProductSelect() { 
             const bName = document.getElementById('select-brand').value; 
             const pName = document.getElementById('select-product').value; 
             const bObj = masterData.find(x => x.brand === bName); 
             const pObj = bObj?.products.find(x => x.name === pName); 
             if (pObj) { 
+                document.getElementById('model-name').value = pObj.model || ""; // 👉 모델명 동기화 핵심 코드
                 document.getElementById('input-box-price').value = pObj.price.toLocaleString(); 
                 document.getElementById('input-factor').value = pObj.factor; 
                 document.getElementById('input-spec').value = pObj.spec || "";
