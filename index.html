@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v19.1)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v19.3)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -56,7 +56,7 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v19.1</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v19.3</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500 transition-all placeholder-slate-400" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -97,7 +97,7 @@
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm"><i class="fas fa-star text-yellow-300 text-[8px]"></i> PREMIUM SYSTEM</div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v19.1</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v19.3</p>
                 <div class="flex gap-2 justify-center">
                     <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="showRecordModal()" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2">
@@ -135,7 +135,7 @@
 
                     <div id="select-area" class="grid grid-cols-2 gap-3">
                         <div class="input-group"><select id="select-brand" class="input-premium" onchange="updateProducts();"></select><span class="input-label">브랜드</span></div>
-                        <div class="input-group"><select id="select-product" class="input-premium" onchange="handleProductSelect();"></select><span class="input-label">제품명</span></div>
+                        <div class="input-group"><select id="select-product" class="input-premium" onchange="updateModels();"></select><span class="input-label">제품명</span></div>
                     </div>
                     <div id="manual-area" class="grid grid-cols-2 gap-3 hidden">
                         <div class="input-group"><input type="text" id="input-brand-txt" class="input-premium" placeholder="브랜드명" oninput="updateInfoText();"><span class="input-label">브랜드명</span></div>
@@ -143,7 +143,14 @@
                     </div>
 
                     <div class="grid grid-cols-3 gap-3">
-                        <div class="input-group"><input type="text" id="model-name" class="input-premium" placeholder="모델명" oninput="updateInfoText();"><span class="input-label">모델명</span></div>
+                        <div id="model-select-wrapper" class="input-group">
+                            <select id="model-name" class="input-premium" onchange="handleModelSelect();"></select>
+                            <span class="input-label">모델명</span>
+                        </div>
+                        <div id="model-input-wrapper" class="input-group hidden">
+                            <input type="text" id="model-name-txt" class="input-premium" placeholder="모델명" oninput="updateInfoText();">
+                            <span class="input-label">모델명</span>
+                        </div>
                         <div class="input-group"><input type="text" id="input-spec" class="input-premium" placeholder="규격" oninput="updateInfoText();"><span class="input-label">규격</span></div>
                         <div class="input-group"><input type="text" id="input-box-qty" class="input-premium text-center" placeholder="0" oninput="calculate();"><span class="input-label">박스당 매수</span></div>
                     </div>
@@ -157,13 +164,14 @@
                     </div>
                 </div>
                 <hr class="border-slate-100">
+                
                 <div>
                     <h3 class="text-sm font-black text-slate-800 flex items-center gap-1.5 mb-3"><i class="fas fa-ruler-combined text-blue-500"></i> 공간별 상세 견적 (mm 단위)</h3>
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-4 shadow-inner">
                         <div class="flex gap-2 mb-3">
                             <div id="zone-name-wrapper" class="flex-[2] min-w-0">
-                                <select id="zone-name-select" class="w-full p-2 bg-white rounded-lg text-[11px] font-bold border border-slate-200 outline-none h-10" onchange="handleZoneNameChange(this)"></select>
-                                <input type="text" id="zone-name-input" class="hidden w-full p-2 bg-blue-50 rounded-lg text-[11px] font-bold border border-blue-200 outline-none h-10" placeholder="공간 이름">
+                                <select id="zone-name-select" class="w-full p-2 bg-white rounded-lg text-xs font-bold border border-slate-200 outline-none h-10" onchange="handleZoneNameChange(this)"></select>
+                                <input type="text" id="zone-name-input" class="hidden w-full p-2 bg-blue-50 rounded-lg text-xs font-bold border border-blue-200 outline-none h-10" placeholder="공간 이름">
                             </div>
                             <div class="flex-1 relative">
                                 <input type="number" id="zone-deduct-w" class="w-full h-10 p-2 pt-4 bg-white rounded-lg text-[10px] font-black border border-slate-200 text-center outline-none" placeholder="0">
@@ -295,6 +303,10 @@
                             <button onclick="saveImage()" class="btn-action bg-white text-blue-900"><i class="fas fa-download mr-2"></i> 이미지 저장</button>
                         </div>
                     </div>
+                    <div class="mt-4 bg-white/5 p-3 rounded-2xl flex items-center justify-between border border-white/10 text-left">
+                        <div class="flex items-center gap-3"><img src="maruni.png" class="w-10 h-10 rounded-lg bg-white/10 p-1" onerror="this.src='icon.jpg'"><div><p class="text-xs font-black text-white">시공 사례 보기</p><p class="text-[9px] text-slate-400">유튜브 '마루아빠' / 블로그 '청인마루'</p></div></div>
+                        <div class="bg-white p-1.5 rounded-lg"><img src="https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=https%3A%2F%2Fblog.naver.com%2Fflooring_dad" class="w-8 h-8"></div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -322,7 +334,7 @@
 
         function checkAppLogin() { if (btoa(document.getElementById('app-password').value) === 'MTMwNg==') { localStorage.setItem('cm_auth_session', 'valid'); location.reload(); } else { alert('오류'); } }
         
-        // 🛡️ [v19.1] 데이터 추출 로직에 모델명(model) 추가
+        // 🛡️ [v19.3 버그 해결] bObj(브랜드 객체)가 로드되지 않았을 때의 JS 에러를 완벽하게 차단했습니다.
         async function loadSheetData() { 
             try { 
                 const res = await fetch(SHEET_URL); 
@@ -331,7 +343,7 @@
                 jsonData.forEach(item => {
                     const brand = String(item['brand'] || '').trim();
                     const name = String(item['name'] || '').trim();
-                    const model = String(item['model'] || item['모델명'] || '').trim(); // 👉 모델명 데이터 확보
+                    const model = String(item['model'] || item['모델명'] || '').trim();
                     const price = parseInt(String(item['price'] || '0').replace(/[^0-9]/g,'')) || 0;
                     const factor = parseFloat(item['factor']) || 0;
                     const spec = String(item['spec'] || item['규격'] || '').trim();
@@ -350,16 +362,43 @@
             } catch (e) { console.error("데이터 로드 실패:", e); } 
         }
 
-        function updateProducts() { const bName = document.getElementById('select-brand').value; const pSel = document.getElementById('select-product'); pSel.innerHTML = '<option value="">제품 선택</option>'; const bObj = masterData.find(x => x.brand === bName); if(bObj) bObj.products.forEach(p => pSel.add(new Option(p.name, p.name))); handleProductSelect(); }
+        function updateProducts() { 
+            const bName = document.getElementById('select-brand').value; 
+            const pSel = document.getElementById('select-product'); 
+            pSel.innerHTML = '<option value="">제품 선택</option>'; 
+            const bObj = masterData.find(x => x.brand === bName); 
+            if(bObj) {
+                const uniqueNames = [...new Set(bObj.products.map(p => p.name))];
+                uniqueNames.forEach(name => pSel.add(new Option(name, name)));
+            }
+            updateModels();
+        }
+
+        function updateModels() {
+            const bName = document.getElementById('select-brand').value;
+            const pName = document.getElementById('select-product').value;
+            const mSel = document.getElementById('model-name');
+            mSel.innerHTML = '<option value="">모델명 선택</option>';
+            
+            if (bName && pName) {
+                const bObj = masterData.find(x => x.brand === bName);
+                if(bObj) { // 🛡️ 방어 코드: bObj가 있을 때만 실행
+                    const models = bObj.products.filter(p => p.name === pName);
+                    models.forEach(m => mSel.add(new Option(m.model, m.model)));
+                }
+            }
+            handleModelSelect();
+        }
         
-        // 🛡️ [v19.1] 제품 선택 시 모델명(model-name) 칸에 자동 입력되도록 수정
-        function handleProductSelect() { 
+        function handleModelSelect() { 
             const bName = document.getElementById('select-brand').value; 
             const pName = document.getElementById('select-product').value; 
+            const mName = document.getElementById('model-name').value;
+            
             const bObj = masterData.find(x => x.brand === bName); 
-            const pObj = bObj?.products.find(x => x.name === pName); 
+            const pObj = bObj?.products.find(x => x.name === pName && x.model === mName); 
+            
             if (pObj) { 
-                document.getElementById('model-name').value = pObj.model || ""; // 👉 모델명 동기화 핵심 코드
                 document.getElementById('input-box-price').value = pObj.price.toLocaleString(); 
                 document.getElementById('input-factor').value = pObj.factor; 
                 document.getElementById('input-spec').value = pObj.spec || "";
@@ -367,6 +406,68 @@
                 document.getElementById('input-box-qty').value = pObj.boxQty || "";
             } 
             calculate(); 
+        }
+
+        // 🛡️ [계산/저장 로직 정상화] 모든 숫자는 안전하게 파싱됩니다.
+        function calculate() { 
+            if (!isManualMode) { 
+                let totalM2 = zoneList.reduce((sum, z) => sum + z.area, 0); 
+                document.getElementById('input-real-m2').value = totalM2.toFixed(2); 
+                const factor = parseFloat(document.getElementById('input-factor').value) || 3.2; 
+                const loss = parseFloat(document.getElementById('select-loss').value) / 100; 
+                const boxes = totalM2 > 0 ? Math.ceil((totalM2 / factor) * (1 + loss)) : 0; 
+                document.getElementById('input-boxes').value = boxes; 
+            } 
+            const curM2 = parseFloat(document.getElementById('input-real-m2').value) || 0; 
+            const curBoxes = parseInt(document.getElementById('input-boxes').value) || 0; 
+            document.getElementById('res-total-area').innerHTML = `${curM2.toFixed(2)} <span class="text-sm not-italic text-white">㎡</span>`; 
+            updateCalculations(curBoxes, curM2); 
+        }
+
+        function updateCalculations(boxes, realM2) {
+            const getNum = (id) => parseInt(document.getElementById(id).value.replace(/,/g,'')) || 0;
+            const price = parseInt(document.getElementById('input-box-price').value.replace(/,/g,'')) || 0;
+            const laborM2 = parseInt(document.getElementById('input-labor-m2').value.replace(/,/g,'')) || 0;
+            const bondQty = getNum('qty-bond');
+            const woodQty = getNum('qty-wood');
+            const laborCost = Math.round(realM2 * laborM2);
+            let moldingCost = 0;
+            if(document.getElementById('chk-mold-5000').checked) moldingCost += getNum('qty-mold-5000') * 5000;
+            if(document.getElementById('chk-mold-15000').checked) moldingCost += getNum('qty-mold-15000') * 15000;
+            if(document.getElementById('chk-mold-10000').checked) moldingCost += getNum('qty-mold-10000') * 10000;
+
+            const costs = { 
+                base: boxes * price, labor: laborCost, bond: bondQty * 10000, wood: woodQty * 5000, corner: moldingCost, 
+                removal: parseInt(document.getElementById('input-removal').value.replace(/,/g,'')) || 0, 
+                lifting: parseInt(document.getElementById('input-lifting').value.replace(/,/g,'')) || 0, 
+                protection: parseInt(document.getElementById('input-protection').value.replace(/,/g,'')) || 0, 
+                waste: parseInt(document.getElementById('input-waste').value.replace(/,/g,'')) || 0 
+            };
+            currentCosts = costs;
+            const total = Object.values(costs).reduce((a,b) => a+b, 0);
+            
+            const updateRow = (rowId, valId, cost, qty, unitPrice) => { 
+                const el = document.getElementById(rowId); 
+                if (el) { el.classList.toggle('hidden', cost === 0); const label = qty > 0 ? `(${qty.toLocaleString()}개 x ${unitPrice.toLocaleString()}원) ` : ""; document.getElementById(valId).innerText = label + cost.toLocaleString() + " 원"; } 
+            };
+            updateRow('row-base', 'detail-base', costs.base, 0, 0); updateRow('row-labor', 'detail-labor', costs.labor, 0, 0); updateRow('row-bond', 'detail-bond', costs.bond, bondQty, 10000); updateRow('row-wood', 'detail-wood', costs.wood, woodQty, 5000); 
+            document.getElementById('row-corner').classList.toggle('hidden', moldingCost === 0); document.getElementById('detail-corner').innerText = moldingCost.toLocaleString() + " 원"; 
+            updateRow('row-removal', 'detail-removal', costs.removal, 0, 0); updateRow('row-lifting', 'detail-lifting', costs.lifting, 0, 0); updateRow('row-protection', 'detail-protection', costs.protection, 0, 0); updateRow('row-waste', 'detail-waste', costs.waste, 0, 0); 
+            
+            document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString(); updateInfoText();
+        }
+
+        // 🛡️ [저장 로직 복구] 기록 저장 시 모든 값이 정상적으로 저장됩니다.
+        function saveRecord() {
+            const data = {
+                id: Date.now(), quoteNo: document.getElementById('quote-number-disp').innerText, name: document.getElementById('cust-name').value || "미지정", phone: document.getElementById('cust-phone').value || "-", addr: document.getElementById('cust-addr').value || "-", product: document.getElementById('res-product').innerText, spec: document.getElementById('input-spec').value || "-", m2: document.getElementById('input-real-m2').value, total: document.getElementById('res-total-vat').innerText, date: new Date().toLocaleString(), sDate: document.getElementById('cust-survey-date').value || "-", wDate: document.getElementById('cust-work-date').value || "-", costs: {...currentCosts}, 
+                fullData: { 
+                    zones: [...zoneList], 
+                    bondQty: document.getElementById('qty-bond').value, woodQty: document.getElementById('qty-wood').value, mold5: document.getElementById('qty-mold-5000').value, mold15: document.getElementById('qty-mold-15000').value, mold10: document.getElementById('qty-mold-10000').value, removalInput: document.getElementById('input-removal').value.replace(/,/g,''), liftingInput: document.getElementById('input-lifting').value.replace(/,/g,''), protectionInput: document.getElementById('input-protection').value.replace(/,/g,''), wasteInput: document.getElementById('input-waste').value.replace(/,/g,''), boxPrice: document.getElementById('input-box-price').value.replace(/,/g,''), laborM2: document.getElementById('input-labor-m2').value.replace(/,/g,''), boxCount: document.getElementById('input-boxes').value, factor: document.getElementById('input-factor').value, loss: document.getElementById('select-loss').value,
+                    modelName: isManualMode ? document.getElementById('model-name-txt').value : document.getElementById('model-name').value // 👉 모델명 저장
+                } 
+            };
+            let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); records.unshift(data); localStorage.setItem('chungin_v18_records', JSON.stringify(records)); alert('견적 기록이 저장되었습니다.'); renderRecords();
         }
 
         function toggleRecordDetail(id) {
@@ -401,17 +502,11 @@
                     <div class="space-y-1">
                         <div class="flex text-[10px]"><span class="w-16 font-bold text-slate-400">NO.</span><span class="font-bold text-slate-600">${r.quoteNo}</span></div>
                         <div class="flex text-[10px]"><span class="w-16 font-bold text-slate-400">현장:</span><span class="font-bold text-slate-700 truncate flex-1">${r.addr}</span></div>
-                        
                         <div class="flex justify-between items-center cursor-pointer mt-2" onclick="toggleRecordDetail(${r.id})">
-                            <span class="font-bold text-blue-500 text-[10px]">상세 내역 확인 (실측/비용)</span>
-                            <i id="arrow-${r.id}" class="fas fa-chevron-down text-[10px] text-slate-300 transition-transform"></i>
+                            <span class="font-bold text-blue-500 text-[10px]">상세 내역 확인 (실측/비용)</span><i id="arrow-${r.id}" class="fas fa-chevron-down text-[10px] text-slate-300 transition-transform"></i>
                         </div>
-                        
                         <div id="detail-box-${r.id}" class="hidden mt-2">
-                            <div class="flex justify-between items-center text-[10px] mb-2">
-                                <span class="font-bold text-slate-400">실측/시공</span>
-                                <span class="font-bold text-slate-700 tracking-tighter">${r.sDate} / ${r.wDate}</span>
-                            </div>
+                            <div class="flex justify-between items-center text-[10px] mb-2"><span class="font-bold text-slate-400">실측/시공</span><span class="font-bold text-slate-700 tracking-tighter">${r.sDate} / ${r.wDate}</span></div>
                             <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">${detailHtml}</div>
                         </div>
                     </div>`;
@@ -423,6 +518,7 @@
             let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); const r = records.find(x => x.id === id);
             if(r) {
                 const f = r.fullData || {}; document.getElementById('cust-name').value = r.name; document.getElementById('cust-phone').value = r.phone; document.getElementById('cust-addr').value = r.addr; document.getElementById('cust-survey-date').value = r.sDate === "-" ? "" : r.sDate; document.getElementById('cust-work-date').value = r.wDate === "-" ? "" : r.wDate; 
+                document.getElementById('manual-mode-toggle').checked = false; toggleManualMode(); 
                 document.getElementById('model-name').value = f.modelName || "";
                 document.getElementById('input-spec').value = r.spec;
                 document.getElementById('input-box-qty').value = f.boxQty || "";
@@ -430,7 +526,7 @@
                 zoneList = f.zones || []; document.getElementById('qty-bond').value = f.bondQty || ""; document.getElementById('qty-wood').value = f.woodQty || ""; document.getElementById('qty-mold-5000').value = f.mold5 || ""; document.getElementById('qty-mold-15000').value = f.mold15 || ""; document.getElementById('qty-mold-10000').value = f.mold10 || "";
                 document.getElementById('chk-mold-5000').checked = !!f.mold5; document.getElementById('chk-mold-15000').checked = !!f.mold15; document.getElementById('chk-mold-10000').checked = !!f.mold10;
                 document.getElementById('input-removal').value = parseInt(f.removalInput || 0).toLocaleString(); document.getElementById('input-lifting').value = parseInt(f.liftingInput || 0).toLocaleString(); document.getElementById('input-protection').value = parseInt(f.protectionInput || 0).toLocaleString(); document.getElementById('input-waste').value = parseInt(f.wasteInput || 0).toLocaleString();
-                document.getElementById('record-modal').style.display = 'none'; renderZones(); calculate(); updateCustInfo(); alert('복원되었습니다.');
+                document.getElementById('record-modal').style.display = 'none'; renderZones(); calculate(); updateCustInfo(); alert('데이터가 복원되었습니다.');
             }
         }
 
@@ -463,7 +559,7 @@
         function updateInfoText() { 
             const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value; 
             const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value; 
-            const model = document.getElementById('model-name').value;
+            const model = isManualMode ? document.getElementById('model-name-txt').value : document.getElementById('model-name').value;
             const spec = document.getElementById('input-spec').value; 
             document.getElementById('res-brand-category').innerText = brand || "BRAND"; 
             document.getElementById('res-product').innerText = (prod || "제품명") + (model ? ` (${model})` : ""); 
@@ -471,7 +567,16 @@
             updateCustInfo(); 
         }
         function updateCustInfo() { const name = document.getElementById('cust-name').value; const phone = document.getElementById('cust-phone').value; const addr = document.getElementById('cust-addr').value; const sDate = document.getElementById('cust-survey-date').value; const wDate = document.getElementById('cust-work-date').value; document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님"; document.getElementById('disp-phone').innerText = phone || "-"; document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : ""; document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : ""; document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : ""; }
-        function toggleManualMode() { isManualMode = document.getElementById('manual-mode-toggle').checked; document.getElementById('select-area').classList.toggle('hidden', isManualMode); document.getElementById('manual-area').classList.toggle('hidden', !isManualMode); document.getElementById('input-real-m2').readOnly = !isManualMode; document.getElementById('input-boxes').readOnly = !isManualMode; calculate(); }
+        function toggleManualMode() { 
+            isManualMode = document.getElementById('manual-mode-toggle').checked; 
+            document.getElementById('select-area').classList.toggle('hidden', isManualMode); 
+            document.getElementById('manual-area').classList.toggle('hidden', !isManualMode); 
+            document.getElementById('model-select-wrapper').classList.toggle('hidden', isManualMode);
+            document.getElementById('model-input-wrapper').classList.toggle('hidden', !isManualMode);
+            document.getElementById('input-real-m2').readOnly = !isManualMode; 
+            document.getElementById('input-boxes').readOnly = !isManualMode; 
+            calculate(); 
+        }
         function toggleAccordion(id) { document.getElementById('content-' + id).classList.toggle('open'); }
         function showToast() { const t = document.getElementById('toast'); t.className = "show"; setTimeout(() => { t.className = t.className.replace("show", ""); }, 2000); }
         function showRecordModal() { document.getElementById('record-modal').style.display = 'flex'; renderRecords(); }
