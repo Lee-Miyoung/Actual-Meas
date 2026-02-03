@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 벽장재 스마트 견적 시스템 (v19.3)</title>
+    <title>청인마루 벽장재 스마트 견적 시스템 (v19.4)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -56,7 +56,7 @@
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v19.3</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">벽장재 견적 시스템 v19.4</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500 transition-all placeholder-slate-400" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -97,7 +97,7 @@
             <div class="z-10 text-center">
                 <div class="inline-flex items-center gap-1 bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 shadow-sm"><i class="fas fa-star text-yellow-300 text-[8px]"></i> PREMIUM SYSTEM</div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v19.3</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Quote System <span class="text-slate-300">|</span> v19.4</p>
                 <div class="flex gap-2 justify-center">
                     <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="showRecordModal()" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2">
@@ -155,11 +155,17 @@
                         <div class="input-group"><input type="text" id="input-box-qty" class="input-premium text-center" placeholder="0" oninput="calculate();"><span class="input-label">박스당 매수</span></div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="input-group"><input type="text" id="input-labor-m2" class="input-premium text-right" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">인건비(㎡당)</span></div>
-                        <div class="bg-amber-50 p-3 rounded-2xl border border-amber-100 flex items-center justify-between">
-                            <span class="text-[10px] font-black text-amber-700 uppercase">Box 당 단가</span>
-                            <div class="flex items-center gap-1"><input type="text" id="input-box-price" class="bg-transparent font-black text-lg text-right text-amber-600 outline-none w-full" placeholder="0" oninput="formatInput(this); calculate();"><span class="text-xs font-bold text-amber-600">원</span></div>
+                    <div class="grid grid-cols-2 gap-3 items-stretch">
+                        <div class="input-group h-full">
+                            <input type="text" id="input-labor-m2" class="input-premium text-right text-lg font-black h-full" placeholder="0" oninput="formatInput(this); calculate();">
+                            <span class="input-label">인건비(㎡당)</span>
+                        </div>
+                        <div class="relative bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between h-full px-4">
+                            <span class="absolute top-[-8px] left-[12px] bg-amber-50 px-1.5 text-[11px] font-extrabold text-amber-700 rounded-sm">BOX 당 단가</span>
+                            <div class="flex items-center gap-1 w-full justify-end mt-0.5">
+                                <input type="text" id="input-box-price" class="bg-transparent font-black text-lg text-right text-amber-600 outline-none w-full" placeholder="0" oninput="formatInput(this); calculate();">
+                                <span class="text-sm font-bold text-amber-600">원</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -170,17 +176,17 @@
                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-4 shadow-inner">
                         <div class="flex gap-2 mb-3">
                             <div id="zone-name-wrapper" class="flex-[2] min-w-0">
-                                <select id="zone-name-select" class="w-full p-2 bg-white rounded-lg text-xs font-bold border border-slate-200 outline-none h-10" onchange="handleZoneNameChange(this)"></select>
-                                <input type="text" id="zone-name-input" class="hidden w-full p-2 bg-blue-50 rounded-lg text-xs font-bold border border-blue-200 outline-none h-10" placeholder="공간 이름">
+                                <select id="zone-name-select" class="w-full p-2 bg-white rounded-lg text-xs font-bold border border-slate-200 outline-none h-11" onchange="handleZoneNameChange(this)"></select>
+                                <input type="text" id="zone-name-input" class="hidden w-full p-2 bg-blue-50 rounded-lg text-xs font-bold border border-blue-200 outline-none h-11" placeholder="공간 이름">
                             </div>
                             <div class="flex-1 relative">
-                                <input type="number" id="zone-deduct-w" class="w-full h-10 p-2 pt-4 bg-white rounded-lg text-[10px] font-black border border-slate-200 text-center outline-none" placeholder="0">
-                                <span class="absolute left-1 top-0.5 text-[7px] text-slate-400 font-black">공제 가로(mm)</span>
+                                <input type="number" id="zone-deduct-w" class="w-full h-11 p-2 pt-5 bg-white rounded-lg text-base font-black border border-slate-200 text-center outline-none" placeholder="0">
+                                <span class="absolute left-1.5 top-1 text-[9px] text-slate-400 font-black">공제 가로(mm)</span>
                             </div>
                             <div class="flex-1 relative">
-                                <input type="number" id="zone-deduct-h" class="w-full h-10 p-2 pt-4 bg-white rounded-lg text-[10px] font-black border border-slate-200 text-center outline-none" placeholder="0">
-                                <span class="absolute left-1 top-0.5 text-[7px] text-slate-400 font-black">공제 세로(mm)</span>
-                                <button id="btn-reset-zone" onclick="resetZoneName()" class="hidden absolute -right-1 -top-1 w-4 h-4 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 z-20"><i class="fas fa-undo text-[8px]"></i></button>
+                                <input type="number" id="zone-deduct-h" class="w-full h-11 p-2 pt-5 bg-white rounded-lg text-base font-black border border-slate-200 text-center outline-none" placeholder="0">
+                                <span class="absolute left-1.5 top-1 text-[9px] text-slate-400 font-black">공제 세로(mm)</span>
+                                <button id="btn-reset-zone" onclick="resetZoneName()" class="hidden absolute -right-1.5 -top-1.5 w-5 h-5 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 z-20"><i class="fas fa-undo text-[9px]"></i></button>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -334,7 +340,6 @@
 
         function checkAppLogin() { if (btoa(document.getElementById('app-password').value) === 'MTMwNg==') { localStorage.setItem('cm_auth_session', 'valid'); location.reload(); } else { alert('오류'); } }
         
-        // 🛡️ [v19.3 버그 해결] bObj(브랜드 객체)가 로드되지 않았을 때의 JS 에러를 완벽하게 차단했습니다.
         async function loadSheetData() { 
             try { 
                 const res = await fetch(SHEET_URL); 
@@ -382,7 +387,7 @@
             
             if (bName && pName) {
                 const bObj = masterData.find(x => x.brand === bName);
-                if(bObj) { // 🛡️ 방어 코드: bObj가 있을 때만 실행
+                if(bObj) { 
                     const models = bObj.products.filter(p => p.name === pName);
                     models.forEach(m => mSel.add(new Option(m.model, m.model)));
                 }
@@ -408,7 +413,6 @@
             calculate(); 
         }
 
-        // 🛡️ [계산/저장 로직 정상화] 모든 숫자는 안전하게 파싱됩니다.
         function calculate() { 
             if (!isManualMode) { 
                 let totalM2 = zoneList.reduce((sum, z) => sum + z.area, 0); 
@@ -457,14 +461,13 @@
             document.getElementById('res-total').innerText = total.toLocaleString() + " 원"; document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString(); updateInfoText();
         }
 
-        // 🛡️ [저장 로직 복구] 기록 저장 시 모든 값이 정상적으로 저장됩니다.
         function saveRecord() {
             const data = {
                 id: Date.now(), quoteNo: document.getElementById('quote-number-disp').innerText, name: document.getElementById('cust-name').value || "미지정", phone: document.getElementById('cust-phone').value || "-", addr: document.getElementById('cust-addr').value || "-", product: document.getElementById('res-product').innerText, spec: document.getElementById('input-spec').value || "-", m2: document.getElementById('input-real-m2').value, total: document.getElementById('res-total-vat').innerText, date: new Date().toLocaleString(), sDate: document.getElementById('cust-survey-date').value || "-", wDate: document.getElementById('cust-work-date').value || "-", costs: {...currentCosts}, 
                 fullData: { 
                     zones: [...zoneList], 
                     bondQty: document.getElementById('qty-bond').value, woodQty: document.getElementById('qty-wood').value, mold5: document.getElementById('qty-mold-5000').value, mold15: document.getElementById('qty-mold-15000').value, mold10: document.getElementById('qty-mold-10000').value, removalInput: document.getElementById('input-removal').value.replace(/,/g,''), liftingInput: document.getElementById('input-lifting').value.replace(/,/g,''), protectionInput: document.getElementById('input-protection').value.replace(/,/g,''), wasteInput: document.getElementById('input-waste').value.replace(/,/g,''), boxPrice: document.getElementById('input-box-price').value.replace(/,/g,''), laborM2: document.getElementById('input-labor-m2').value.replace(/,/g,''), boxCount: document.getElementById('input-boxes').value, factor: document.getElementById('input-factor').value, loss: document.getElementById('select-loss').value,
-                    modelName: isManualMode ? document.getElementById('model-name-txt').value : document.getElementById('model-name').value // 👉 모델명 저장
+                    modelName: isManualMode ? document.getElementById('model-name-txt').value : document.getElementById('model-name').value 
                 } 
             };
             let records = JSON.parse(localStorage.getItem('chungin_v18_records') || '[]'); records.unshift(data); localStorage.setItem('chungin_v18_records', JSON.stringify(records)); alert('견적 기록이 저장되었습니다.'); renderRecords();
@@ -502,11 +505,17 @@
                     <div class="space-y-1">
                         <div class="flex text-[10px]"><span class="w-16 font-bold text-slate-400">NO.</span><span class="font-bold text-slate-600">${r.quoteNo}</span></div>
                         <div class="flex text-[10px]"><span class="w-16 font-bold text-slate-400">현장:</span><span class="font-bold text-slate-700 truncate flex-1">${r.addr}</span></div>
+                        
                         <div class="flex justify-between items-center cursor-pointer mt-2" onclick="toggleRecordDetail(${r.id})">
-                            <span class="font-bold text-blue-500 text-[10px]">상세 내역 확인 (실측/비용)</span><i id="arrow-${r.id}" class="fas fa-chevron-down text-[10px] text-slate-300 transition-transform"></i>
+                            <span class="font-bold text-blue-500 text-[10px]">상세 내역 확인 (실측/비용)</span>
+                            <i id="arrow-${r.id}" class="fas fa-chevron-down text-[10px] text-slate-300 transition-transform"></i>
                         </div>
+                        
                         <div id="detail-box-${r.id}" class="hidden mt-2">
-                            <div class="flex justify-between items-center text-[10px] mb-2"><span class="font-bold text-slate-400">실측/시공</span><span class="font-bold text-slate-700 tracking-tighter">${r.sDate} / ${r.wDate}</span></div>
+                            <div class="flex justify-between items-center text-[10px] mb-2">
+                                <span class="font-bold text-slate-400">실측/시공</span>
+                                <span class="font-bold text-slate-700 tracking-tighter">${r.sDate} / ${r.wDate}</span>
+                            </div>
                             <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">${detailHtml}</div>
                         </div>
                     </div>`;
