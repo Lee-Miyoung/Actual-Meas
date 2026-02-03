@@ -291,7 +291,9 @@
     </div>
 
     <script>
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSnR1o1t9JI_ar-N_puOF6UpeM9N3RWWHIStfaRj17wXewF8_WPh5neRqk8J5MApdLFQXrnCbHssklU/pub?output=csv";
+        // 🚀 실장님이 새로 발급하신 '접근 권한(Anyone) 허용된 비밀 주소'가 적용되었습니다!
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycbz1-xED4gTgT2SW1aAWfGkChXd2MtCmLWw8iM5YVIAg4bmMdfXIGfT5ZrzY-QiZmJ3y-w/exec";
+        
         let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'home';
         let currentCosts = {}; // 현재 계산된 비용 전체 저장 변수
 
@@ -542,7 +544,33 @@
         function updateInfoText() { const brand = isManualMode ? document.getElementById('input-brand-txt').value : document.getElementById('select-brand').value; const prod = isManualMode ? document.getElementById('input-product-txt').value : document.getElementById('select-product').value; const spec = document.getElementById('input-spec').value; document.getElementById('res-brand-category').innerText = brand || "BRAND"; document.getElementById('res-product').innerText = prod || "제품명"; document.getElementById('res-spec').innerText = spec ? `규격: ${spec}` : "-"; updateCustInfo(); }
         function updateCustInfo() { const name = document.getElementById('cust-name').value; const phone = document.getElementById('cust-phone').value; const addr = document.getElementById('cust-addr').value; const sDate = document.getElementById('cust-survey-date').value; const wDate = document.getElementById('cust-work-date').value; document.getElementById('disp-cust-name').innerText = name ? name + " 님" : "고객님"; document.getElementById('disp-phone').innerText = phone || "-"; document.getElementById('disp-addr').innerText = addr ? "현장: " + addr : ""; document.getElementById('disp-survey-date').innerText = sDate ? "실측: " + sDate : ""; document.getElementById('disp-work-date').innerText = wDate ? "시공: " + wDate : ""; }
         function toggleManualMode() { isManualMode = document.getElementById('manual-mode-toggle').checked; document.getElementById('select-area').classList.toggle('hidden', isManualMode); document.getElementById('manual-area').classList.toggle('hidden', !isManualMode); document.getElementById('input-real-m2').readOnly = !isManualMode; document.getElementById('input-boxes').readOnly = !isManualMode; calculate(); }
-        async function loadSheetData() { try { const res = await fetch(SHEET_URL + "&cache=" + Date.now()); const text = await res.text(); const rows = text.split('\n').slice(1); const tempMaster = {}; rows.forEach(row => { const cols = row.match(/(".*?"|[^",\s\r\n]+)(?=\s*,|\s*$)/g); if (cols && cols.length >= 4) { const brand = cols[0].replace(/"/g, '').trim(); const name = cols[1].replace(/"/g, '').trim(); if (!tempMaster[brand]) tempMaster[brand] = { brand, products: [] }; tempMaster[brand].products.push({ name, price: parseInt(cols[2].replace(/[^0-9]/g,'')), factor: parseFloat(cols[3]) }); } }); masterData = Object.values(tempMaster); const bSel = document.getElementById('select-brand'); bSel.innerHTML = '<option value="">브랜드 선택</option>'; masterData.forEach(b => bSel.add(new Option(b.brand, b.brand))); } catch (e) {} }
+        
+        // 🛡️ [수정] 보안 API 적용: 기존 CSV 파싱을 제거하고 JSON 데이터를 불러오는 방식으로 변경했습니다.
+        async function loadSheetData() { 
+            try { 
+                const res = await fetch(SHEET_URL); 
+                const jsonData = await res.json(); 
+                
+                const tempMaster = {}; 
+                jsonData.forEach(item => {
+                    const brand = String(item['brand'] || '').trim();
+                    const name = String(item['name'] || '').trim();
+                    const price = parseInt(String(item['price'] || '0').replace(/[^0-9]/g,'')) || 0;
+                    const factor = parseFloat(item['factor']) || 0;
+
+                    if (brand && name) {
+                        if (!tempMaster[brand]) tempMaster[brand] = { brand, products: [] };
+                        tempMaster[brand].products.push({ name, price, factor });
+                    }
+                });
+
+                masterData = Object.values(tempMaster); 
+                const bSel = document.getElementById('select-brand'); 
+                bSel.innerHTML = '<option value="">브랜드 선택</option>'; 
+                masterData.forEach(b => bSel.add(new Option(b.brand, b.brand))); 
+            } catch (e) { console.error("데이터 로드 실패:", e); } 
+        }
+
         function updateProducts() { const bName = document.getElementById('select-brand').value; const pSel = document.getElementById('select-product'); pSel.innerHTML = '<option value="">제품 선택</option>'; const bObj = masterData.find(x => x.brand === bName); if(bObj) bObj.products.forEach(p => pSel.add(new Option(p.name, p.name))); handleProductSelect(); }
         function handleProductSelect() { const bName = document.getElementById('select-brand').value; const pName = document.getElementById('select-product').value; const bObj = masterData.find(x => x.brand === bName); const pObj = bObj?.products.find(x => x.name === pName); if (pObj) { document.getElementById('input-box-price').value = pObj.price.toLocaleString(); document.getElementById('input-factor').value = pObj.factor; } calculate(); }
         function toggleAccordion(id) { document.getElementById('content-' + id).classList.toggle('open'); }
