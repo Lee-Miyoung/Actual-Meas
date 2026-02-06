@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 스마트 실측 시스템 (v19.7)</title>
+    <title>청인마루 스마트 실측 시스템 (v19.8)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -23,7 +23,6 @@
         .watermark-wrapper { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 0; pointer-events: none; overflow: hidden; opacity: 0.15; }
         .watermark-img { width: 120%; max-width: 800px; transform: rotate(-15deg); filter: grayscale(100%); }
         
-        /* Bluetooth Styles */
         .btn-bluetooth { background: #3b82f6; color: white; border-radius: 12px; padding: 8px 14px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px; transition: all 0.2s; border: none; cursor: pointer; }
         .btn-bluetooth.connected { background: #10b981; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
@@ -58,11 +57,11 @@
     <div id="toast">이미지를 생성하고 있습니다...</div>
 
     <div id="login-gate">
-        <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-sm text-center mx-4 relative overflow-hidden">
+        <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-sm text-center mx-4 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">견적 시스템 v19.7</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">스마트 실측 시스템 v19.8</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500 transition-all placeholder-slate-400" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -84,7 +83,7 @@
         <header class="flex flex-col items-center justify-center mb-8 relative pt-4">
             <div class="z-10 text-center">
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Measurement v19.7</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Measurement v19.8</p>
                 <div class="flex gap-2 justify-center">
                     <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="showRecordModal()" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2"><i class="fas fa-list-ul text-blue-500"></i> 기록 보기</button>
@@ -178,8 +177,7 @@
                         <div class="stat-box !bg-slate-900 border-slate-900 flex flex-col justify-center"><span class="stat-label !text-slate-400">최종 필요</span><div class="flex items-baseline justify-center gap-1"><input type="number" id="input-boxes" class="stat-input !text-white !text-2xl w-16 text-right" placeholder="0" readonly oninput="calculate();"><span class="text-[10px] font-bold text-slate-500">BOX</span></div></div>
                     </div>
                 </div>
-
-                </div>
+            </div>
 
             <div id="capture-area" class="report-gradient rounded-[2rem] p-6 md:p-8 flex flex-col justify-between premium-shadow lg:sticky lg:top-6 relative min-h-[750px] text-white overflow-hidden">
                 <div class="watermark-wrapper"><img src="maruni.png" class="watermark-img" onerror="this.src='icon.jpg'"></div>
@@ -202,15 +200,9 @@
                     </div>
                 </div>
                 <div class="relative z-10 mt-auto">
-                    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-[2rem] shadow-2xl">
-                        <div class="text-center mb-6">
-                            <span class="bg-white/20 px-2 py-0.5 rounded text-[9px] font-black text-white uppercase mb-1 inline-block">TOTAL AMOUNT (VAT INC.)</span>
-                            <div class="flex items-baseline justify-center gap-1.5"><span id="res-total-vat" class="text-4xl md:text-5xl font-black text-white">0</span><span class="text-xl font-bold text-blue-200">원</span></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2" data-html2canvas-ignore="true">
-                            <button onclick="shareQuote()" class="btn-action bg-[#FEE500] text-[#3c1e1e]"><i class="fas fa-comment mr-2"></i> 카톡 공유</button>
-                            <button onclick="saveImage()" class="btn-action bg-white text-blue-900"><i class="fas fa-download mr-2"></i> 이미지 저장</button>
-                        </div>
+                    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-[2rem] shadow-2xl text-center">
+                        <span class="bg-white/20 px-2 py-0.5 rounded text-[9px] font-black text-white uppercase mb-1 inline-block">TOTAL AMOUNT (VAT INC.)</span>
+                        <div class="flex items-baseline justify-center gap-1.5"><span id="res-total-vat" class="text-4xl md:text-5xl font-black text-white">0</span><span class="text-xl font-bold text-blue-200">원</span></div>
                     </div>
                 </div>
             </div>
@@ -222,11 +214,11 @@
         let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'home';
         let bluetoothDevice; let currentTargetInput = 'width';
 
-        // 공간별 옵션 데이터 (바닥 추가)
+        // 텍스트 명칭 실무형으로 업데이트 (v19.8)
         const spaceOptions = { 
-            home: ["거실 아트월", "거실 쇼파월", "복도 전체", "현관", "주방연결부분", "거실샤시(커튼박스)", "기타 직접입력"], 
-            shop: ["매장 메인벽", "카운터 배면", "홀 측면", "입구 파사드", "기타 직접입력"],
-            floor: ["거실", "주방", "복도", "침실1(안방)", "침실2", "침실3", "드레스룸", "현관입구", "기타 직접입력"]
+            home: ["거실 아트월", "거실 쇼파월", "주방 포인트벽", "복도 벽면", "침실 포인트벽", "현관/전실", "커튼박스/샤시상단", "기타 직접입력"], 
+            shop: ["카운터 배면", "메인 로비벽", "개별 룸 벽면", "복도 포인트", "창가 하부장", "외부 파사드", "기타 직접입력"],
+            floor: ["거실 전체", "주방/식당", "복도", "침실 1 (안방)", "침실 2", "침실 3", "드레스룸/펜트리", "현관 입구", "기타 직접입력"]
         };
         
         window.onload = async function() { 
@@ -258,43 +250,31 @@
             } catch (e) { console.error(e); } 
         }
 
-        // 탭 변경 로직 (바닥 처리 추가)
         function setSpaceType(type) { 
             spaceType = type;
-            // 탭 스타일 변경
             ['home', 'shop', 'floor'].forEach(t => {
                 document.getElementById('tab-' + t).className = (t === type) ? 'tab-btn active' : 'tab-btn inactive';
             });
-
-            // 레이블 및 기본값 변경
             const labelH = document.getElementById('label-h');
             const labelDeductH = document.getElementById('label-deduct-h');
             const hInput = document.getElementById('zone-height-input');
             const title = document.getElementById('measurement-title');
-
             if (type === 'floor') {
                 labelH.innerText = "세로(L)";
                 labelH.className = "text-[9px] font-black text-emerald-500 block mb-1 uppercase ml-1 text-center";
                 labelDeductH.innerText = "공제 세로(mm)";
-                hInput.value = ""; // 바닥은 높이가 고정이 아니므로 비움
-                hInput.classList.replace('bg-blue-50', 'bg-emerald-50');
-                hInput.classList.replace('text-blue-700', 'text-emerald-700');
-                hInput.classList.replace('border-blue-200', 'border-emerald-200');
-                title.innerText = "바닥 실측 데이터";
+                hInput.value = ""; hInput.classList.replace('bg-blue-50', 'bg-emerald-50'); hInput.classList.replace('text-blue-700', 'text-emerald-700'); hInput.classList.replace('border-blue-200', 'border-emerald-200');
+                title.innerText = "마루/바닥 실측 데이터";
             } else {
                 labelH.innerText = "높이(H)";
                 labelH.className = "text-[9px] font-black text-blue-500 block mb-1 uppercase ml-1 text-center";
                 labelDeductH.innerText = "공제 세로(mm)";
-                hInput.value = "2300";
-                hInput.classList.replace('bg-emerald-50', 'bg-blue-50');
-                hInput.classList.replace('text-emerald-700', 'text-blue-700');
-                hInput.classList.replace('border-emerald-200', 'border-blue-200');
+                hInput.value = "2300"; hInput.classList.replace('bg-emerald-50', 'bg-blue-50'); hInput.classList.replace('text-emerald-700', 'text-blue-700'); hInput.classList.replace('border-emerald-200', 'border-blue-200');
                 title.innerText = "벽장재 실측 데이터";
             }
             resetZoneName(); 
         }
 
-        // 블루투스 로직 (v19.6 유지)
         async function connectBluetooth() {
             try {
                 const device = await navigator.bluetooth.requestDevice({
@@ -306,7 +286,6 @@
                 document.getElementById('btn-bt-connect').classList.add('connected');
                 document.getElementById('bt-status-text').innerText = "연결됨";
                 document.getElementById('bt-guide').classList.remove('hidden');
-                
                 const services = await server.getPrimaryServices();
                 for (const service of services) {
                     const chars = await service.getCharacteristics();
@@ -317,24 +296,20 @@
                         }
                     }
                 }
-            } catch (e) { console.log("BT 연결 취소"); }
+            } catch (e) { console.log("BT 취소"); }
         }
 
         function handleBluetoothData(event) {
             const value = event.target.value;
             let distance = Math.round(value.getFloat32(1, true) * 1000);
             if (distance < 10) return;
-
             const wInp = document.getElementById('zone-width-input');
             const hInp = document.getElementById('zone-height-input');
-
             if (currentTargetInput === 'width') {
-                wInp.value = distance;
-                currentTargetInput = 'height';
+                wInp.value = distance; currentTargetInput = 'height';
                 document.getElementById('bt-guide-text').innerText = "마루니: 세로(L)를 측정해 주세요!";
             } else {
-                hInp.value = distance;
-                currentTargetInput = 'width';
+                hInp.value = distance; currentTargetInput = 'width';
                 document.getElementById('bt-guide-text').innerText = "마루니: 측정 완료! + 버튼을 누르세요.";
             }
             updateTargetFocus();
@@ -345,23 +320,16 @@
             document.getElementById('zone-height-input').classList.toggle('measuring-focus', currentTargetInput === 'height');
         }
 
-        // 실측 추가
         function addZone() { 
             let name = document.getElementById('zone-name-select').classList.contains('hidden') ? document.getElementById('zone-name-input').value : document.getElementById('zone-name-select').value; 
-            if (!name) return;
             const w = parseFloat(document.getElementById('zone-width-input').value) || 0; 
             const h = parseFloat(document.getElementById('zone-height-input').value) || 0; 
-            const dw = parseFloat(document.getElementById('zone-deduct-w').value) || 0;
-            const dh = parseFloat(document.getElementById('zone-deduct-h').value) || 0;
             if (w === 0 || h === 0) return; 
-
-            let area = (w * h) / 1000000 - (dw * dh) / 1000000; 
-            zoneList.push({ name, w, h, area: area < 0 ? 0 : area }); 
+            let area = (w * h) / 1000000; 
+            zoneList.push({ name, w, h, area }); 
             document.getElementById('zone-width-input').value = ''; 
             if(spaceType === 'floor') document.getElementById('zone-height-input').value = ''; 
-            currentTargetInput = 'width';
-            updateTargetFocus();
-            renderZones(); 
+            currentTargetInput = 'width'; updateTargetFocus(); renderZones(); 
         }
 
         function renderZones() { 
@@ -378,8 +346,7 @@
             let totalM2 = zoneList.reduce((sum, z) => sum + z.area, 0); 
             document.getElementById('input-real-m2').value = totalM2.toFixed(2); 
             const factor = parseFloat(document.getElementById('input-factor').value) || 3.2; 
-            const loss = parseFloat(document.getElementById('select-loss').value) / 100; 
-            const boxes = Math.ceil((totalM2 / factor) * (1 + loss)); 
+            const boxes = Math.ceil((totalM2 / factor) * 1.1); 
             document.getElementById('input-boxes').value = boxes || 0; 
             updateSummary();
         }
@@ -387,9 +354,8 @@
         function updateSummary() {
             const boxes = parseInt(document.getElementById('input-boxes').value) || 0;
             const price = parseInt(String(document.getElementById('input-box-price')?.value || 0).replace(/,/g,'')) || 0;
-            const total = boxes * price;
             document.getElementById('res-total-area').innerText = document.getElementById('input-real-m2').value + " ㎡";
-            document.getElementById('res-total-vat').innerText = Math.round(total * 1.1).toLocaleString();
+            document.getElementById('res-total-vat').innerText = Math.round(boxes * price * 1.1).toLocaleString();
         }
 
         function generateQuoteNumber() { const now = new Date(); return `Q${now.getFullYear().toString().slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`; }
