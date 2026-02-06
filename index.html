@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-title" content="청인마루">
     <link rel="apple-touch-icon" href="icon.jpg">
     <link rel="icon" type="image/jpeg" href="icon.jpg">
-    <title>청인마루 스마트 실측 시스템 (v20.0)</title>
+    <title>청인마루 스마트 실측 시스템 (v20.1)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -57,11 +57,11 @@
     <div id="toast">이미지를 생성하고 있습니다...</div>
 
     <div id="login-gate">
-        <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-sm text-center mx-4 relative overflow-hidden">
+        <div class="bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-sm text-center mx-4 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
             <img src="icon.jpg" class="w-24 h-24 rounded-2xl mx-auto mb-6 shadow-lg" onerror="this.src='https://via.placeholder.com/100?text=ChungIn'">
             <h2 class="text-2xl font-black text-slate-900 mb-1">청인마루 Partner</h2>
-            <p class="text-xs text-slate-500 font-bold mb-8">스마트 실측 시스템 v20.0</p>
+            <p class="text-xs text-slate-500 font-bold mb-8">스마트 실측 시스템 v20.1</p>
             <div class="relative mb-4">
                 <input type="password" id="app-password" class="w-full p-4 bg-slate-100 rounded-xl text-center text-lg font-black outline-none focus:ring-2 ring-blue-500 transition-all placeholder-slate-400" placeholder="PASSWORD" onkeyup="if(window.event.keyCode==13){checkAppLogin()}">
             </div>
@@ -92,7 +92,7 @@
         <header class="flex flex-col items-center justify-center mb-8 relative pt-4">
             <div class="z-10 text-center">
                 <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-1">청인마루<span class="text-blue-600">.</span></h1>
-                <p class="text-sm text-slate-500 font-bold mb-4">Smart Measurement v20.0</p>
+                <p class="text-sm text-slate-500 font-bold mb-4">Smart Measurement v20.1</p>
                 <div class="flex gap-2 justify-center">
                     <button onclick="location.reload()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="showRecordModal()" class="bg-white px-4 py-2 rounded-full shadow-sm text-xs font-black text-slate-600 flex items-center gap-2">
@@ -149,11 +149,11 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-3 items-stretch">
-                        <div class="input-group h-full">
+                        <div id="labor-cost-group" class="input-group h-full">
                             <input type="text" id="input-labor-m2" class="input-premium text-right text-lg font-black h-full" placeholder="0" oninput="formatInput(this); calculate();">
                             <span class="input-label">인건비(㎡당)</span>
                         </div>
-                        <div class="relative bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between h-full px-4">
+                        <div id="price-box-group" class="relative bg-amber-50 rounded-xl border border-amber-200 flex items-center justify-between h-full px-4">
                             <span class="absolute top-[-8px] left-[12px] bg-amber-50 px-1.5 text-[11px] font-extrabold text-amber-700 rounded-sm">BOX 당 단가</span>
                             <div class="flex items-center gap-1 w-full justify-end mt-0.5">
                                 <input type="text" id="input-box-price" class="bg-transparent font-black text-lg text-right text-amber-600 outline-none w-full" placeholder="0" oninput="formatInput(this); calculate();">
@@ -237,7 +237,7 @@
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-3 pt-2">
-                                <div class="input-group"><input type="text" id="input-removal" class="input-premium text-right" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">기존벽재/마루제거</span></div>
+                                <div class="input-group"><input type="text" id="input-removal" class="input-premium text-right" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">기존 제거비용</span></div>
                                 <div class="input-group"><input type="text" id="input-waste" class="input-premium text-right" placeholder="0" oninput="formatInput(this); calculate();"><span class="input-label">폐기물처리비</span></div>
                             </div>
                             <div class="grid grid-cols-2 gap-3">
@@ -332,7 +332,7 @@
                 document.getElementById('login-gate').style.display = 'none'; 
                 await loadSheetData(); 
             } 
-            setSpaceType('floor'); // 마루/바닥 탭을 초기값으로 설정
+            setSpaceType('floor'); 
             document.getElementById('quote-number-disp').innerText = "NO. " + generateQuoteNumber(); 
         };
 
@@ -436,7 +436,7 @@
 
             const getNum = (id) => parseInt(document.getElementById(id).value.replace(/,/g,'')) || 0;
             const boxPrice = getNum('input-box-price');
-            const laborM2 = getNum('input-labor-m2');
+            const laborM2 = (spaceType === 'floor') ? 0 : getNum('input-labor-m2'); // 마루 탭은 강제로 0
             const bondQty = getNum('qty-bond');
             const woodQty = getNum('qty-wood');
             
@@ -524,22 +524,36 @@
         function setSpaceType(type) { 
             spaceType = type;
             ['floor', 'home', 'shop'].forEach(t => document.getElementById('tab-' + t).className = (t === type) ? 'tab-btn active' : 'tab-btn inactive');
+            
+            const laborGroup = document.getElementById('labor-cost-group');
+            const priceGroup = document.getElementById('price-box-group');
             const labelDeductH = document.getElementById('label-deduct-h');
             const labelH = document.getElementById('label-h');
             const hInput = document.getElementById('zone-height-input');
             const title = document.getElementById('measurement-title');
+
             if (type === 'floor') {
+                // 마루 탭일 때 인건비 숨김 및 단가 확장
+                laborGroup.style.display = 'none';
+                priceGroup.classList.add('col-span-2');
+                document.getElementById('input-labor-m2').value = '0'; // 값 초기화
+
                 labelH.innerText = "세로(L)"; labelH.className = "text-[9px] font-black text-emerald-500 block mb-1 uppercase ml-1 text-center";
                 labelDeductH.innerText = "공제 세로(mm)";
                 hInput.value = ""; hInput.classList.replace('bg-blue-50', 'bg-emerald-50'); hInput.classList.replace('text-blue-700', 'text-emerald-700'); hInput.classList.replace('border-blue-200', 'border-emerald-200');
                 title.innerText = "마루/바닥 실측 데이터";
             } else {
+                // 벽장재 탭일 때 인건비 다시 보이기
+                laborGroup.style.display = 'block';
+                priceGroup.classList.remove('col-span-2');
+
                 labelH.innerText = "높이(H)"; labelH.className = "text-[9px] font-black text-blue-500 block mb-1 uppercase ml-1 text-center";
                 labelDeductH.innerText = "공제 높이(mm)";
                 hInput.value = "2300"; hInput.classList.replace('bg-emerald-50', 'bg-blue-50'); hInput.classList.replace('text-emerald-700', 'text-blue-700'); hInput.classList.replace('border-emerald-200', 'border-blue-200');
                 title.innerText = "벽장재 실측 데이터";
             }
-            resetZoneName(); 
+            resetZoneName();
+            calculate();
         }
 
         function generateQuoteNumber() { const now = new Date(); return `Q${now.getFullYear().toString().slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`; }
@@ -580,7 +594,7 @@
 
         function updateProducts() { const bName = document.getElementById('select-brand').value; const pSel = document.getElementById('select-product'); pSel.innerHTML = '<option value="">제품 선택</option>'; const bObj = masterData.find(x => x.brand === bName); if(bObj) { const uniqueNames = [...new Set(bObj.products.map(p => p.name))]; uniqueNames.forEach(name => pSel.add(new Option(name, name))); } updateModels(); }
         function updateModels() { const bName = document.getElementById('select-brand').value; const pName = document.getElementById('select-product').value; const mSel = document.getElementById('model-name'); mSel.innerHTML = '<option value="">모델 선택</option>'; if (bName && pName) { const bObj = masterData.find(x => x.brand === bName); if(bObj) { bObj.products.filter(p => p.name === pName).forEach(m => mSel.add(new Option(m.model, m.model))); } } handleModelSelect(); }
-        function handleModelSelect() { const bName = document.getElementById('select-brand').value; const pName = document.getElementById('select-product').value; const mName = document.getElementById('model-name').value; const bObj = masterData.find(x => x.brand === bName); const pObj = bObj?.products.find(x => x.name === pName && x.model === mName); if (pObj) { document.getElementById('input-box-price').value = pObj.price.toLocaleString(); document.getElementById('input-factor').value = pObj.factor; document.getElementById('input-spec').value = pObj.spec || ""; document.getElementById('input-labor-m2').value = (pObj.labor || 0).toLocaleString(); document.getElementById('input-box-qty').value = pObj.box_qty || ""; } calculate(); }
+        function handleModelSelect() { const bName = document.getElementById('select-brand').value; const pName = document.getElementById('select-product').value; const mName = document.getElementById('model-name').value; const bObj = masterData.find(x => x.brand === bName); const pObj = bObj?.products.find(x => x.name === pName && x.model === mName); if (pObj) { document.getElementById('input-box-price').value = pObj.price.toLocaleString(); document.getElementById('input-factor').value = pObj.factor; document.getElementById('input-spec').value = pObj.spec || ""; document.getElementById('input-labor-m2').value = (spaceType === 'floor') ? '0' : (pObj.labor || 0).toLocaleString(); document.getElementById('input-box-qty').value = pObj.box_qty || ""; } calculate(); }
     </script>
 </body>
 </html>
