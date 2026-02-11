@@ -71,12 +71,6 @@
                 <h3 class="text-xl font-black text-slate-900 flex items-center gap-2"><i class="fas fa-history text-blue-500"></i> 견적 기록</h3>
                 <button onclick="document.getElementById('record-modal').style.display='none'" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"><i class="fas fa-times"></i></button>
             </div>
-            <div class="p-4 bg-white">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-4 top-3.5 text-slate-400"></i>
-                    <input type="text" id="record-search" class="w-full pl-11 pr-4 py-3 bg-slate-100 rounded-2xl text-sm font-bold outline-none focus:ring-2 ring-blue-500" placeholder="고객명 검색" oninput="renderRecords()">
-                </div>
-            </div>
             <div id="record-list" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
             <div class="p-4 bg-white border-t border-slate-100">
                 <button onclick="clearAllRecords()" class="w-full py-3 bg-red-50 text-red-600 rounded-xl font-black text-xs">전체 삭제</button>
@@ -245,8 +239,8 @@
 
     <script>
         const SHEET_URL = "https://script.google.com/macros/s/AKfycbz1-xED4gTgT2SW1aAWfGkChXd2MtCmLWw8iM5YVIAg4bmMdfXIGfT5ZrzY-QiZmJ3y-w/exec";
-        let masterData = []; let isManualMode = false; let zoneList = []; let spaceType = 'floor';
-        let currentCosts = {}; let bluetoothDevice; let currentTargetInput = 'width';
+        let masterData = []; let zoneList = []; let spaceType = 'floor';
+        let currentCosts = {}; let currentTargetInput = 'width';
 
         const spaceOptions = { 
             floor: ["거실 전체", "주방/식당", "복도", "침실 1 (안방)", "침실 2", "침실 3", "드레스룸", "현관 입구", "기타"],
@@ -282,41 +276,49 @@
             } catch (e) { console.error("데이터 로드 실패"); } 
         }
 
-        /* 보쉬 GLM 50-27 CG 블루투스 연동 핵심 로직 */
+        /* 보쉬 GLM 50-27 CG 최적화 연결 로직 */
         async function connectBoschGLM() {
+            const BOSCH_SERVICE = '232e51d8-9020-4b3f-95fa-4460f9919f1b';
+            const BOSCH_DATA = '232e51d8-9021-4b3f-95fa-4460f9919f1b';
+
             try {
                 const device = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'Bosch GLM' }],
-                    optionalServices: ['0000170d-0000-1000-8000-00805f9b34fb', '232e51d8-9020-4b3f-95fa-4460f9919f1b']
+                    optionalServices: [BOSCH_SERVICE]
                 });
+
                 const server = await device.gatt.connect();
+                const service = await server.getPrimaryService(BOSCH_SERVICE);
+                const characteristic = await service.getCharacteristic(BOSCH_DATA);
+
                 document.getElementById('btn-bt-connect').classList.add('connected');
-                document.getElementById('bt-status-text').innerText = "연결됨";
+                document.getElementById('bt-status-text').innerText = "보쉬 연결됨";
                 document.getElementById('bt-guide').classList.remove('hidden');
-                
-                const services = await server.getPrimaryServices();
-                for (const service of services) {
-                    const chars = await service.getCharacteristics();
-                    for (const char of chars) {
-                        // 보쉬 측정값 전송 특성 (보통 notify 지원)
-                        if (char.properties.notify) {
-                            await char.startNotifications();
-                            char.addEventListener('characteristicvaluechanged', (event) => {
-                                const value = event.target.value;
-                                // 보쉬 GLM 표준 패킷 파싱 (거리 데이터 추출)
-                                // 보통 패킷의 특정 바이트에 Float32 또는 Int32로 거리(m)가 들어있음
-                                try {
-                                    let distance = value.getFloat32(1, true); // 보쉬 표준 오프셋
-                                    if (distance > 0) {
-                                        let mmVal = Math.round(distance * 1000);
-                                        inputFromBluetooth(mmVal);
-                                    }
-                                } catch(e) { console.log("Parsing error", e); }
-                            });
+                document.getElementById('bt-guide-text').innerText = "마루니: 연결 성공! 가로(W)를 측정하세요.";
+
+                await characteristic.startNotifications();
+                characteristic.addEventListener('characteristicvaluechanged', (event) => {
+                    const value = event.target.value;
+                    try {
+                        let distance = value.getFloat32(1, true); 
+                        if (distance > 0 && distance < 100) {
+                            let mmVal = Math.round(distance * 1000);
+                            inputFromBluetooth(mmVal);
+                            if (navigator.vibrate) navigator.vibrate(50);
                         }
-                    }
-                }
-            } catch (e) { console.log("BT 연결 취소", e); }
+                    } catch(e) { console.error("Parsing error", e); }
+                });
+
+                device.addEventListener('gattserverdisconnected', () => {
+                    document.getElementById('btn-bt-connect').classList.remove('connected');
+                    document.getElementById('bt-status-text').innerText = "재연결 필요";
+                    alert("보쉬 연결이 끊겼습니다.");
+                });
+
+            } catch (e) {
+                console.error("BT Error:", e);
+                if (e.name !== 'NotFoundError') alert("블루투스 오류: " + e.message);
+            }
         }
 
         function inputFromBluetooth(mmVal) {
@@ -353,18 +355,16 @@
             const title = document.getElementById('measurement-title');
 
             if (type === 'floor') {
-                laborGroup.style.display = 'none';
-                laborRow.style.display = 'none';
+                laborGroup.style.display = 'none'; laborRow.style.display = 'none';
                 priceGroup.classList.add('col-span-2');
                 labelH.innerText = "세로(L)"; labelH.className = "text-[9px] font-black text-emerald-500 block mb-1 uppercase ml-1 text-center";
-                hInput.value = ""; hInput.classList.replace('bg-blue-50', 'bg-emerald-50'); hInput.classList.replace('text-blue-700', 'text-emerald-700'); hInput.classList.replace('border-blue-200', 'border-emerald-200');
+                hInput.value = ""; hInput.className = "w-full p-3 bg-emerald-50 rounded-xl text-center font-black text-emerald-700 border border-emerald-200 outline-none transition-all";
                 title.innerText = "마루/바닥 실측 데이터";
             } else {
-                laborGroup.style.display = 'block';
-                laborRow.style.display = 'flex';
+                laborGroup.style.display = 'block'; laborRow.style.display = 'flex';
                 priceGroup.classList.remove('col-span-2');
                 labelH.innerText = "높이(H)"; labelH.className = "text-[9px] font-black text-blue-500 block mb-1 uppercase ml-1 text-center";
-                hInput.value = "2300"; hInput.classList.replace('bg-emerald-50', 'bg-blue-50'); hInput.classList.replace('text-emerald-700', 'text-blue-700'); hInput.classList.replace('border-emerald-200', 'border-blue-200');
+                hInput.value = "2300"; hInput.className = "w-full p-3 bg-blue-50 rounded-xl text-center font-black text-blue-700 border border-blue-200 outline-none transition-all";
                 title.innerText = "벽장재 실측 데이터";
             }
             resetZoneName();
@@ -425,19 +425,18 @@
         function saveRecord() {
             const data = {
                 id: Date.now(), name: document.getElementById('cust-name').value || "미지정", 
-                total: document.getElementById('res-total-vat').innerText, date: new Date().toLocaleString(),
-                zones: [...zoneList]
+                total: document.getElementById('res-total-vat').innerText, date: new Date().toLocaleString()
             };
-            let records = JSON.parse(localStorage.getItem('chungin_v19_records') || '[]');
+            let records = JSON.parse(localStorage.getItem('cm_v20_records') || '[]');
             records.unshift(data);
-            localStorage.setItem('chungin_v19_records', JSON.stringify(records));
-            alert('저장되었습니다.');
+            localStorage.setItem('cm_v20_records', JSON.stringify(records));
+            alert('기록되었습니다.');
         }
 
         function showRecordModal() { 
             const list = document.getElementById('record-list');
-            let records = JSON.parse(localStorage.getItem('chungin_v19_records') || '[]');
-            list.innerHTML = records.map(r => `<div class="record-card border p-3 rounded-lg"><div class="flex justify-between font-black"><span>${r.name}</span><span>${r.total}원</span></div><div class="text-[10px] text-slate-400">${r.date}</div></div>`).join('');
+            let records = JSON.parse(localStorage.getItem('cm_v20_records') || '[]');
+            list.innerHTML = records.map(r => `<div class="record-card border p-3 rounded-lg flex justify-between"><div><b>${r.name}</b><br><small>${r.date}</small></div><b>${r.total}원</b></div>`).join('');
             document.getElementById('record-modal').style.display = 'flex'; 
         }
 
@@ -450,10 +449,9 @@
         function shareQuote() { html2canvas(document.getElementById('capture-area'), {scale:2}).then(canvas => canvas.toBlob(blob => navigator.share({files:[new File([blob], "견적.png", {type:"image/png"})]}))); }
         function saveImage() { html2canvas(document.getElementById('capture-area'), {scale:2}).then(canvas => { const a = document.createElement('a'); a.href = canvas.toDataURL(); a.download = "청인마루견적.png"; a.click(); }); }
         function toggleAccordion(id) { document.getElementById('content-' + id).classList.toggle('open'); }
-
         function updateProducts() { const bName = document.getElementById('select-brand').value; const pSel = document.getElementById('select-product'); pSel.innerHTML = '<option value="">제품 선택</option>'; const bObj = masterData.find(x => x.brand === bName); if(bObj) { const uniqueNames = [...new Set(bObj.products.map(p => p.name))]; uniqueNames.forEach(name => pSel.add(new Option(name, name))); } updateModels(); }
         function updateModels() { const bName = document.getElementById('select-brand').value; const pName = document.getElementById('select-product').value; const mSel = document.getElementById('model-name'); mSel.innerHTML = '<option value="">모델 선택</option>'; if (bName && pName) { const bObj = masterData.find(x => x.brand === bName); if(bObj) { bObj.products.filter(p => p.name === pName).forEach(m => mSel.add(new Option(m.model, m.model))); } } handleModelSelect(); }
-        function handleModelSelect() { const bName = document.getElementById('select-brand').value; const pName = document.getElementById('select-product').value; const mName = document.getElementById('model-name').value; const bObj = masterData.find(x => x.brand === bName); const pObj = bObj?.products.find(x => x.name === pName && x.model === mName); if (pObj) { document.getElementById('input-box-price').value = pObj.price.toLocaleString(); document.getElementById('input-factor').value = pObj.factor; document.getElementById('input-spec').value = pObj.spec || ""; document.getElementById('input-labor-m2').value = (spaceType === 'floor') ? '0' : (pObj.labor || 0).toLocaleString(); document.getElementById('input-box-qty').value = pObj.box_qty || ""; } calculate(); }
+        function handleModelSelect() { const bName = document.getElementById('select-brand').value; const pName = document.getElementById('select-product').value; const mName = document.getElementById('model-name').value; const bObj = masterData.find(x => x.brand === bName); const pObj = bObj?.products.find(x => x.name === pName && x.model === mName); if (pObj) { document.getElementById('input-box-price').value = pObj.price.toLocaleString(); document.getElementById('input-factor').value = pObj.factor; document.getElementById('input-spec').value = pObj.spec || ""; document.getElementById('input-box-qty').value = pObj.box_qty || ""; } calculate(); }
     </script>
 </body>
 </html>
