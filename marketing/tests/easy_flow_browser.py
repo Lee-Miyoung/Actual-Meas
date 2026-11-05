@@ -12,7 +12,7 @@ with sync_playwright() as p:
  browser=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox','--disable-dev-shm-usage'])
  context=browser.new_context(viewport={'width':1440,'height':1000},accept_downloads=True)
  page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
- page.goto('http://127.0.0.1:8000/marketing/');page.wait_for_function('easyReady',timeout=30000)
+ page.goto('http://127.0.0.1:8000/marketing/');page.wait_for_function('easyReady',timeout=30000);page.locator('[data-tab="studio"]').click()
  assert page.evaluate('state.catalog.length')==91
  # Empty-state button opens the actual file picker instead of an invisible prerequisite toast.
  with page.expect_file_chooser() as chooser:page.locator('#generate').click()
@@ -57,7 +57,7 @@ with sync_playwright() as p:
  empty=context.new_page();empty_errors=[];empty.on('pageerror',lambda e:empty_errors.append(str(e)))
  # A new isolated context avoids the existing project's IndexedDB.
  empty.close();isolated=browser.new_context(accept_downloads=True);empty=isolated.new_page();empty.on('pageerror',lambda e:empty_errors.append(str(e)))
- empty.goto('http://127.0.0.1:8000/marketing/');empty.wait_for_function('easyReady')
+ empty.goto('http://127.0.0.1:8000/marketing/');empty.wait_for_function('easyReady');empty.locator('[data-tab="studio"]').click()
  with empty.expect_download(timeout=120000) as saved:
   with empty.expect_file_chooser() as chooser:empty.locator('#export-photo').click()
   chooser.value.set_files(str(out/'photo-0.jpg'))

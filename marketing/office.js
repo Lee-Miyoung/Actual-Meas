@@ -707,7 +707,18 @@ function postSelect(id, includeUnknown = false) {
     value = sel.value;
   sel.replaceChildren();
   if (includeUnknown) sel.add(new Option("미확인 / 직접 유입", ""));
-  for (const p of state.posts) sel.add(new Option(p.title, p.id));
+  for (const p of state.posts)
+    sel.add(
+      new Option(
+        p.channel +
+          " · " +
+          p.date +
+          " · " +
+          p.title +
+          (p.workflowRevision ? " / r" + p.workflowRevision : ""),
+        p.id,
+      ),
+    );
   if ([...sel.options].some((o) => o.value === value)) sel.value = value;
 }
 function renderCalendar() {
@@ -1075,6 +1086,9 @@ async function renderProjects() {
         records: state.records,
         settings: state.settings,
         target: state.target,
+        workflowVersion: state.workflowVersion,
+        channelJobs: state.channelJobs,
+        projectIndex: state.projectIndex,
         providedCatalogueVersion: state.providedCatalogueVersion,
         catalog: state.catalog,
         contentHistory: state.contentHistory,
@@ -1110,6 +1124,9 @@ $("new-project").onclick = async () => {
       records: state.records,
       settings: state.settings,
       target: state.target,
+      workflowVersion: state.workflowVersion,
+      channelJobs: state.channelJobs,
+      projectIndex: state.projectIndex,
       providedCatalogueVersion: state.providedCatalogueVersion,
       catalog: state.catalog,
       contentHistory: state.contentHistory,
@@ -1156,7 +1173,11 @@ backup = async function () {
     const projects = [];
     for (const key of keys.filter((k) => String(k).startsWith("project:")))
       projects.push({ key, state: await dbGet(key) });
+    const workflowAssets = [];
+    for (const key of keys.filter((k) => String(k).startsWith("wf-photo:")))
+      workflowAssets.push({ key, value: await dbGet(key) });
     const data = {
+      workflowAssets,
       bundleVersion: 1,
       current: state,
       projects,
@@ -1192,6 +1213,51 @@ $("restore").onchange = async (e) => {
     }
     for (const s of [bundle.current, ...bundle.projects.map((x) => x.state)])
       await Promise.all(s.photos.map((p) => loadImage(p.src)));
+    const assets = bundle.workflowAssets || [];
+    if (!Array.isArray(assets) || assets.length > 5000)
+      throw Error("원본 사진 보관함 형식 오류");
+    for (const a of assets) {
+      if (
+        typeof a.key !== "string" ||
+        !a.key.startsWith("wf-photo:") ||
+        typeof a.value?.src !== "string" ||
+        !/^data:image\/(jpeg|png|webp);base64,/.test(a.value.src)
+      )
+        throw Error("원본 사진 형식 오류");
+      await loadImage(a.value.src);
+      const existing = await dbGet(a.key);
+      if (existing && existing.src !== a.value.src)
+        throw Error("원본 사진 식별자 충돌: 기존 자료를 보존했습니다.");
+    }
+    const requiredAssetKeys = new Set();
+    for (const snapshot of [
+      bundle.current,
+      ...bundle.projects.map((p) => p.state),
+    ])
+      for (const job of snapshot.channelJobs || [])
+        for (const content of [
+          job.draft,
+          job.approved,
+          job.pendingDraft,
+          ...(job.versions || []).map((v) => v.content),
+        ].filter(Boolean))
+          for (const ref of content.photoRefs || []) {
+            requiredAssetKeys.add(ref.key);
+            if (ref.originalKey) requiredAssetKeys.add(ref.originalKey);
+          }
+    for (const snapshot of [
+      bundle.current,
+      ...bundle.projects.map((p) => p.state),
+    ])
+      for (const job of snapshot.channelJobs || [])
+        for (const version of job.generatedVersions || [])
+          for (const file of version.files) requiredAssetKeys.add(file.key);
+    const incomingKeys = new Set(assets.map((a) => a.key));
+    for (const key of requiredAssetKeys)
+      if (!incomingKeys.has(key) && !(await dbGet(key)))
+        throw Error(
+          "백업에 필요한 현장 원본 사진이 빠져 있습니다. 기존 자료를 보존했습니다.",
+        );
     await backup();
     if (!confirm("현재 전체 백업을 내려받았습니다. 선택한 자료를 복원할까요?"))
       return;
@@ -1207,6 +1273,7 @@ $("restore").onchange = async (e) => {
           "imported-pre-content-engine:" + Date.now(),
         );
       for (const item of bundle.projects) store.put(item.state, item.key);
+      for (const a of assets) store.put(a.value, a.key);
       if (bundle.preUpgrade)
         store.put(
           validate(bundle.preUpgrade),

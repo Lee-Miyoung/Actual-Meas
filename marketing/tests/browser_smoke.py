@@ -14,6 +14,7 @@ with sync_playwright() as p:
  page.reload();page.wait_for_function('officeReady && writingReady && easyReady && !easyBusy',timeout=120000);assert page.evaluate('state.officeVersion')==2
  old=page.evaluate("dbGet('pre-office-v2')");assert old==legacy
  assert page.locator('#title').input_value()==legacy['title']
+ page.locator('[data-tab="studio"]').click()
  # All photos analysed; recommendations stay separate until applied.
  page.locator('#advanced-edit summary').click();page.locator('#analyze-all').click();page.wait_for_function('state.photos.every(p=>p.analysis)')
  assert page.evaluate('state.photos.every(p=>p.autoPrepared)')

@@ -213,7 +213,11 @@ async function easyGenerate(force = false) {
     $("photos").click();
     return;
   }
-  if (easyBusy) { clearTimeout(easyTimer); easyTimer=setTimeout(()=>easyGenerate(force),250); return; }
+  if (easyBusy) {
+    clearTimeout(easyTimer);
+    easyTimer = setTimeout(() => easyGenerate(force), 250);
+    return;
+  }
   easyBusy = true;
   try {
     await preparePhotos();
@@ -245,6 +249,11 @@ async function easyGenerate(force = false) {
     persist();
     easyStatus(
       `사진 ${state.photos.length}장 · 기본 보정과 디자인 3안 준비 완료. 원하는 시안을 골라 한 번에 저장하세요.`,
+    );
+    window.dispatchEvent(
+      new CustomEvent("marketing:ready", {
+        detail: { projectId: state.projectId },
+      }),
     );
     if (pendingPhotoSave) {
       pendingPhotoSave = false;
