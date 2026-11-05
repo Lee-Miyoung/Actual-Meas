@@ -14,6 +14,7 @@ const officeDefaults = () => ({
   insights: [],
   leads: [],
   questions: [],
+  copyDrafts: {},
   settings: { kakao: "", instagram: "", website: "", aiUrl: "" },
   target: { baseline: 1500, month: localDate().slice(0, 7), monthly: 100 },
 });
@@ -67,6 +68,7 @@ function safeUrl(value) {
 const originalValidate = validate;
 validate = function (s) {
   originalValidate(s);
+  if(s.copyDrafts !== undefined && (!s.copyDrafts || typeof s.copyDrafts !== 'object' || Array.isArray(s.copyDrafts) || Object.values(s.copyDrafts).some(v => !v || typeof v.source !== 'string' || typeof v.text !== 'string'))) throw Error('콘텐츠 초안 형식 오류');
   for (const p of s.photos) {
     if (
       p.originalSrc &&
@@ -560,8 +562,14 @@ renderCopy = function () {
   for (const [heading, text] of entries) {
     const l = node("label", heading),
       t = node("textarea");
-    t.value = text;
+    const savedDraft = state.copyDrafts?.[heading];
+    t.value = savedDraft?.source === text ? savedDraft.text : text;
     t.readOnly = false;
+    t.oninput = () => {
+      state.copyDrafts ||= {};
+      state.copyDrafts[heading] = {source: text, text: t.value};
+      persist();
+    };
     const b = node("button", "문구 복사");
     b.onclick = async () => {
       try {
