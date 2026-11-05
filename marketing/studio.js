@@ -55,7 +55,19 @@ function loadImage(src) {
   });
 }
 async function photoImage(p) {
-  if (!images.has(p.id)) images.set(p.id, await loadImage(p.src));
+  if (!images.has(p.id)) {
+    const source = await loadImage(p.src);
+    p.sourceWidth = source.width;
+    p.sourceHeight = source.height;
+    const scale = Math.min(1, 2200 / Math.max(source.width, source.height));
+    const working = document.createElement("canvas");
+    working.width = Math.round(source.width * scale);
+    working.height = Math.round(source.height * scale);
+    working
+      .getContext("2d")
+      .drawImage(source, 0, 0, working.width, working.height);
+    images.set(p.id, working);
+  }
   return images.get(p.id);
 }
 function persist() {
@@ -222,8 +234,9 @@ for (const [key, label, min, max, step] of controls) {
 $("photos").onchange = async (e) => {
   try {
     const files = [...e.target.files];
-    if (files.length < 4 || files.length > 10)
-      throw Error("사진을 4–10장 선택하세요.");
+    if (!files.length) return;
+    if (files.length < 1 || files.length > 10)
+      throw Error("사진을 1–10장 선택하세요.");
     if (
       files.some(
         (f) =>
@@ -239,28 +252,29 @@ $("photos").onchange = async (e) => {
       )
     )
       return;
-    const photos = await Promise.all(
-      files.map(async (f) => {
-        const src = await new Promise((resolve, reject) => {
-          const r = new FileReader();
-          r.onload = () => resolve(r.result);
-          r.onerror = reject;
-          r.readAsDataURL(f);
-        });
-        const decoded = await loadImage(src);
-        if (
-          decoded.width * decoded.height > 48000000 ||
-          Math.max(decoded.width, decoded.height) > 12000
-        )
-          throw Error("사진은 4800만 화소, 한 변 12000px 이하로 줄여 주세요.");
-        return {
-          id: crypto.randomUUID(),
-          name: f.name,
-          src,
-          adjust: defaults(),
-        };
-      }),
-    );
+    const photos = [];
+    for (const f of files) {
+      const src = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(f);
+      });
+      const decoded = await loadImage(src);
+      if (
+        decoded.width * decoded.height > 48000000 ||
+        Math.max(decoded.width, decoded.height) > 12000
+      )
+        throw Error("사진은 4800만 화소, 한 변 12000px 이하로 줄여 주세요.");
+      photos.push({
+        id: crypto.randomUUID(),
+        name: f.name,
+        src,
+        adjust: defaults(),
+        sourceWidth: decoded.width,
+        sourceHeight: decoded.height,
+      });
+    }
     state.photos = photos;
     images.clear();
     selected = 0;
@@ -272,6 +286,7 @@ $("photos").onchange = async (e) => {
     toast("사진을 불러왔습니다. 한 장씩 원본과 비교해 보정하세요.");
   } catch (err) {
     toast(err.message);
+    if(typeof easyStatus === "function") easyStatus("사진을 불러오지 못했습니다: "+err.message,true);
   } finally {
     e.target.value = "";
   }
@@ -486,7 +501,7 @@ async function card(theme, slide) {
 }
 let generating = false;
 async function generate() {
-  if (state.photos.length < 4) return toast("사진 4–10장을 먼저 불러오세요.");
+  if (state.photos.length < 1) return toast("사진을 먼저 불러오세요.");
   if (generating) return;
   generating = true;
   $("generate").disabled = true;

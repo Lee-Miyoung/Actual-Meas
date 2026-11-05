@@ -7,16 +7,16 @@ with sync_playwright() as p:
  b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox','--disable-dev-shm-usage'])
  ctx=b.new_context(viewport={'width':1500,'height':1050},accept_downloads=True)
  page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('dialog',lambda d:d.accept())
- page.goto(os.environ.get('STUDIO_TEST_URL','http://127.0.0.1:8000')+'/marketing/');page.wait_for_function('officeReady && writingReady')
+ page.goto(os.environ.get('STUDIO_TEST_URL','http://127.0.0.1:8000')+'/marketing/');page.wait_for_function('officeReady && writingReady && easyReady && !easyBusy',timeout=120000)
  # Seed a real old-schema snapshot, then reload to exercise automatic backup + migration.
  legacy=legacy_state()
  page.evaluate('''async s=>{await dbPut('current',s);localStorage.setItem('cm_v20_records','preserved-legacy-marker')}''',legacy)
- page.reload();page.wait_for_function('officeReady && writingReady');assert page.evaluate('state.officeVersion')==2
+ page.reload();page.wait_for_function('officeReady && writingReady && easyReady && !easyBusy',timeout=120000);assert page.evaluate('state.officeVersion')==2
  old=page.evaluate("dbGet('pre-office-v2')");assert old==legacy
  assert page.locator('#title').input_value()==legacy['title']
  # All photos analysed; recommendations stay separate until applied.
- page.locator('#analyze-all').click();page.wait_for_function('state.photos.every(p=>p.analysis)')
- assert page.evaluate('state.photos.every(p=>!p.approved)')
+ page.locator('#advanced-edit summary').click();page.locator('#analyze-all').click();page.wait_for_function('state.photos.every(p=>p.analysis)')
+ assert page.evaluate('state.photos.every(p=>p.autoPrepared)')
  page.locator('#apply-recommendation').click();page.locator('#photo-preview').screenshot(path=str(OUT/'corrected-fixture.png'))
  page.locator('#compare').click();page.locator('#photo-preview').screenshot(path=str(OUT/'original-fixture.png'));page.locator('#compare').click()
  page.locator('#region').fill('서울 성동구');page.locator('#goal').select_option('consultation')
@@ -49,7 +49,7 @@ with sync_playwright() as p:
  with page.expect_download() as info:page.locator('#backup').click()
  info.value.save_as(OUT/'backup.json');backup=json.loads((OUT/'backup.json').read_text());assert len(backup['projects'])==1 and len(backup['current']['leads'])==1
  page.locator('[data-tab="studio"]').click();page.locator('#title').fill('temporary');page.locator('[data-tab="storage"]').click();page.locator('#restore').set_input_files(str(OUT/'backup.json'));page.wait_for_function('state.title!=="temporary"')
- page.wait_for_timeout(1000);page.reload();page.wait_for_function('officeReady && writingReady');assert page.evaluate('state.insights.length')==1;assert page.evaluate("localStorage.getItem('cm_v20_records')")=='preserved-legacy-marker'
+ page.wait_for_timeout(1000);page.reload();page.wait_for_function('officeReady && writingReady && easyReady && !easyBusy',timeout=120000);assert page.evaluate('state.insights.length')==1;assert page.evaluate("localStorage.getItem('cm_v20_records')")=='preserved-legacy-marker'
  assert page.locator('#run-ai').is_disabled();assert not errors,errors
  print(json.dumps({'errors':errors,'legacy_migration_backup':'PASS','photo_analysis_approval':'PASS','layouts_png':'PASS','responsive_4_sizes':'PASS','growth_upsert':'PASS','consultation_attribution':'PASS','mp4':meta,'archive_backup_restore':'PASS','legacy_storage_preserved':'PASS'},ensure_ascii=False))
  (OUT/'results.json').write_text(json.dumps({'errors':errors,'all_assertions':'PASS','video':meta},ensure_ascii=False,indent=2))

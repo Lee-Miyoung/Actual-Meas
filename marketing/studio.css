@@ -1045,3 +1045,86 @@ body:has(#copy:not([hidden])) #copy {
   width: 100%;
   min-height: 200px;
 }
+.easy-status {
+  padding: 16px 20px;
+  background: #ece5d8;
+  border-left: 3px solid #8b7552;
+  margin: 10px 0 22px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.easy-status.error {
+  background: #f4e8e0;
+  border-color: #a34f32;
+}
+.easy-actions {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--paper);
+  padding: 12px 0;
+}
+.easy-actions button {
+  background: #514b3d;
+  color: white;
+}
+.download-box {
+  padding: 20px;
+  background: #eeeee5;
+  margin: 24px 0;
+}
+.download-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.download-row a {
+  color: var(--ink);
+  font-size: 13px;
+}
+#product-search {
+  margin-bottom: 8px;
+}
+#engine-product-facts {
+  line-height: 1.9;
+}
+.advanced-edit {
+  margin: 22px 0;
+}
+.advanced-edit > summary {
+  font-size: 12px;
+  color: var(--muted);
+}
+.toolbar:empty {
+  display: none;
+}
+.project > details {
+  margin-bottom: 20px;
+}
+.project > details > summary {
+  font-size: 11px;
+  color: var(--muted);
+}
+#quick-product-search {
+  margin: 6px 0;
+}
+#quick-product {
+  font-size: 12px;
+}
+.variant-chips {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+.variant-chips button {
+  font-size: 11px;
+  padding: 6px 10px;
+  background: #f8f5ee;
+}
+.variant-chips button:hover {
+  background: #e5ddcc;
+}

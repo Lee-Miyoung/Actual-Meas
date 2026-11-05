@@ -160,7 +160,7 @@ async function startWriting() {
 }
 function selectedProduct() {
   const key = state.authoring.productKey,
-    p = state.catalog.find((p) => p.id === key);
+    p = Writer.resolveProduct(state.catalog, key);
   if (p) return structuredClone(p);
   if (key.startsWith("category:")) {
     const [, type, ...rest] = key.split(":");
@@ -239,6 +239,14 @@ function renderProductSelect() {
       );
       o.value = p.id;
       group.append(o);
+      for (const v of p.variants || []) {
+        const child = node(
+          "option",
+          `${Writer.label(p)} · ${v.name}${v.size ? " / " + v.size : ""}`,
+        );
+        child.value = p.id + "::" + v.id;
+        group.append(child);
+      }
     }
     select.append(group);
   }
@@ -524,8 +532,8 @@ async function copyWriting(text, field) {
 }
 async function generateWriting(force = false) {
   if (!writingReady) return toast("저장소를 준비하고 있습니다.");
-  if (state.photos.length < 4 || state.photos.length > 10)
-    return toast("현장 사진 4–10장을 먼저 등록하세요.");
+  if (state.photos.length < 1 || state.photos.length > 10)
+    return toast("현장 사진을 먼저 등록하세요.");
   if (!selectedProduct())
     return toast("제품을 선택하거나 제품 도감에 등록하세요.");
   if (
@@ -622,10 +630,13 @@ function renderCatalog() {
         "size",
         "color",
         "material",
+        "pack",
+        "coverage",
+        "colorOptions",
         "features",
         "source",
       ])
-        $("catalog-" + k).value = p[k];
+        $("catalog-" + k).value = p[k] || "";
       $("catalog-verified").checked = p.verified;
       $("catalog-form").dataset.edit = p.id;
       $("catalog-form").scrollIntoView({ behavior: "smooth" });
@@ -642,7 +653,10 @@ $("catalog-cancel").onclick = resetCatalogForm;
 $("catalog-form").onsubmit = (e) => {
   e.preventDefault();
   try {
-    const raw = { id: $("catalog-form").dataset.edit || crypto.randomUUID() };
+    const raw = {
+      ...state.catalog.find((p) => p.id === $("catalog-form").dataset.edit),
+      id: $("catalog-form").dataset.edit || crypto.randomUUID(),
+    };
     for (const k of [
       "type",
       "category",
@@ -651,6 +665,9 @@ $("catalog-form").onsubmit = (e) => {
       "size",
       "color",
       "material",
+      "pack",
+      "coverage",
+      "colorOptions",
       "features",
       "source",
     ])
@@ -666,7 +683,7 @@ $("catalog-form").onsubmit = (e) => {
     const i = state.catalog.findIndex((x) => x.id === p.id);
     if (i < 0) state.catalog.push(p);
     else state.catalog[i] = p;
-    if (!state.authoring.productKey || state.catalog.length === 1)
+    if (i < 0 || !state.authoring.productKey || state.catalog.length === 1)
       state.authoring.productKey = p.id;
     if (state.authoring.productKey === p.id) state.authoring.approved = null;
     persist();

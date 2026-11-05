@@ -153,3 +153,52 @@ test("recommendations use selected facts/history; insufficient observations neve
   assert(stats.sufficient);
   assert.equal(stats.rows.find((r) => r.mode === "product").leads, 1);
 });
+
+test("owner product table: 91 entries, no prices, explicit package specs and no performance inventions", () => {
+  const products = require("../data/provided-products.json");
+  assert.equal(products.length, 91);
+  assert.equal(products.filter((p) => p.type === "wall").length, 4);
+  for (const p of products) {
+    assert(!Object.hasOwn(p, "price"));
+    assert(!/\d[\d,]*원/.test(JSON.stringify(p)));
+    E.normalProduct(p);
+  }
+  const p = products.find((p) => p.model === "스킨마루165"),
+    out = E.create(input(p, "product"));
+  assert(out.caption.includes("165 × 1205 × 7.2T"));
+  assert(out.caption.includes("16pcs"));
+  assert(out.caption.includes("3.18㎡/BOX"));
+  assert(!out.caption.includes("130,000"));
+  assert(
+    products
+      .filter((p) => p.model.startsWith("시그니월"))
+      .every((p) => !p.features && !p.verified),
+  );
+});
+
+test("detailed model selection resolves only its own color and size variant", () => {
+  const products = require("../data/provided-products.json");
+  assert.equal(
+    products.reduce((n, p) => n + (p.variants || []).length, 0),
+    377,
+  );
+  const terrace = products.find((p) => p.model === "트라빼 초광폭 우드형"),
+    short = terrace.variants.find((v) => v.name === "로엔오크1210"),
+    long = terrace.variants.find((v) => v.name === "로엔오크2420");
+  const s = E.resolveProduct(products, terrace.id + "::" + short.id),
+    l = E.resolveProduct(products, terrace.id + "::" + long.id);
+  assert.equal(s.size, "230 × 1210 × 8.5T");
+  assert.equal(s.pack, "10pcs");
+  assert.equal(l.size, "230 × 2420 × 8.5T");
+  assert.equal(l.pack, "5pcs");
+  assert.equal(s.color, "로엔오크1210");
+  assert(E.create({...input(s),photoCount:1}).carousel.every(c=>c.photo===1));
+  const out = E.create(input(s, "product"));
+  assert(out.caption.includes("로엔오크1210"));
+  assert(!out.caption.includes("로엔오크2420"));
+  assert(!out.caption.includes("가격"));
+  assert.equal(
+    E.resolveProduct(products, terrace.id + "::not-a-real-variant"),
+    null,
+  );
+});

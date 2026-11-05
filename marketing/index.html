@@ -6,7 +6,7 @@
     <title>청인마루 · 마케팅 오피스</title>
     <link rel="icon" href="../icon.jpg" />
     <link rel="stylesheet" href="fonts/fonts.css" />
-    <link rel="stylesheet" href="studio.css" />
+    <link rel="stylesheet" href="studio.css?v=easy-models-20261105" />
   </head>
   <body>
     <aside>
@@ -50,7 +50,7 @@
         <div class="work-grid">
           <div class="editor">
             <label class="upload"
-              >＋ 현장 사진 4–10장 불러오기<input
+              >＋ 현장 사진 1–10장 불러오기<input
                 id="photos"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -197,7 +197,7 @@
               디자인 3안 비교하기 ↗
             </button>
             <p class="hint">
-              사진 4–10장이 필요합니다. 생성 문구는 현장 메모 기반 템플릿입니다.
+              사진 1–10장이 필요합니다. 생성 문구는 현장 메모 기반 템플릿입니다.
             </p>
           </div>
         </div>
@@ -230,7 +230,7 @@
         <div class="writing-setup">
           <div>
             <label
-              >현장 사진 4–10장<input
+              >현장 사진 1–10장<input
                 id="writing-photos"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -239,7 +239,18 @@
             <p id="writing-photo-status" class="hint"></p>
             <div id="writing-photo-strip"></div>
             <button id="go-photo-editor">사진 보정 화면으로</button>
-            <label>사용한 제품<select id="engine-product"></select></label>
+            <label
+              >사용한 제품<input
+                id="product-search"
+                type="search"
+                placeholder="모델명·규격 검색 (예: 스킨마루165)" /><select
+                id="engine-product"
+              ></select
+            ></label>
+            <label class="checkline"
+              ><input id="show-historic-products" type="checkbox" />단종·출시 전
+              표기 제품도 보기</label
+            >
             <p id="engine-product-facts" class="hint"></p>
             <button id="go-catalog">제품 등록 / CSV 관리</button>
             <label
@@ -362,6 +373,21 @@
                   placeholder="제조사 표기 단위 포함" /></label
               ><label>색상<input id="catalog-color" maxlength="80" /></label
               ><label>소재<input id="catalog-material" maxlength="120" /></label
+              ><label
+                >박스 구성<input
+                  id="catalog-pack"
+                  maxlength="150"
+                  placeholder="예: 16pcs" /></label
+              ><label
+                >박스 면적<input
+                  id="catalog-coverage"
+                  maxlength="100"
+                  placeholder="예: 3.18㎡/BOX" /></label
+              ><label
+                >색상 종류 수<input
+                  id="catalog-colorOptions"
+                  maxlength="100"
+                  placeholder="색상명 대신 종류 수만 확인된 경우" /></label
               ><label
                 >확인 출처<input
                   id="catalog-source"
@@ -684,9 +710,11 @@
       <footer>청인마루　/　공간을 완성하는 디테일</footer>
     </main>
     <div id="toast" role="status" hidden></div>
-    <script src="studio.js"></script>
-    <script src="office.js"></script>
-    <script src="content-engine.js"></script>
-    <script src="authoring.js"></script>
+    <script src="studio.js?v=easy-models-20261105"></script>
+    <script src="office.js?v=easy-models-20261105"></script>
+    <script src="content-engine.js?v=easy-models-20261105"></script>
+    <script src="authoring.js?v=easy-models-20261105"></script>
+    <script src="catalog-seed.js?v=easy-models-20261105"></script>
+    <script src="easy-flow.js?v=easy-models-20261105"></script>
   </body>
 </html>

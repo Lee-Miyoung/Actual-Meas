@@ -42,11 +42,30 @@
       model: clean(raw.model),
       size: clean(raw.size),
       color: clean(raw.color),
+      pack: clean(raw.pack),
+      coverage: clean(raw.coverage),
+      colorOptions: clean(raw.colorOptions),
+      status: clean(raw.status),
+      note: clean(raw.note),
       material: clean(raw.material),
       features: clean(raw.features),
       source: clean(raw.source),
       verified: raw.verified === true,
+      variants: (raw.variants || []).map((v) => ({
+        id: clean(v.id),
+        name: clean(v.name),
+        status: clean(v.status),
+        size: clean(v.size),
+        pack: clean(v.pack),
+        coverage: clean(v.coverage),
+      })),
     };
+    if (
+      p.variants.length > 500 ||
+      p.variants.some((v) => !v.id || !v.name) ||
+      new Set(p.variants.map((v) => v.id)).size !== p.variants.length
+    )
+      throw Error("세부모델 식별자가 누락되거나 중복되었습니다.");
     if (!["floor", "wall"].includes(p.type))
       throw Error("구분은 floor(바닥재) 또는 wall(벽장재)이어야 합니다.");
     if (!p.category) throw Error("제품군이 필요합니다.");
@@ -69,7 +88,27 @@
       .join("|");
   }
   function label(p) {
-    return [p.brand, p.model || p.category].filter(Boolean).join(" ");
+    return [p.brand, p.model || p.category, p.id?.includes("::") ? p.color : ""]
+      .filter(Boolean)
+      .join(" ");
+  }
+  function resolveProduct(catalog, key) {
+    const [baseId, variantId] = key.split("::"),
+      base = catalog.find((p) => p.id === baseId);
+    if (!base) return null;
+    const p = normalProduct(base);
+    if (!variantId) return p;
+    const v = p.variants.find((v) => v.id === variantId);
+    if (!v) return null;
+    return {
+      ...p,
+      id: key,
+      color: v.name,
+      size: v.size || p.size,
+      pack: v.pack || p.pack,
+      coverage: v.coverage || p.coverage,
+      status: [p.status, v.status].filter(Boolean).join(" / "),
+    };
   }
   function facts(p) {
     return [
@@ -78,6 +117,9 @@
       p.size && `규격: ${p.size}`,
       p.color && `색상: ${p.color}`,
       p.material && `소재: ${p.material}`,
+      p.pack && `박스 구성: ${p.pack}`,
+      p.coverage && `박스 면적: ${p.coverage}`,
+      p.colorOptions && `색상 선택: ${p.colorOptions}`,
       p.verified && p.source && p.features && `확인된 특징: ${p.features}`,
     ].filter(Boolean);
   }
@@ -119,6 +161,11 @@
       규격: "size",
       색상: "color",
       소재: "material",
+      박스구성: "pack",
+      박스면적: "coverage",
+      색상종수: "colorOptions",
+      상태: "status",
+      메모: "note",
       확인된특징: "features",
       확인출처: "source",
       특징확인: "verified",
@@ -147,6 +194,11 @@
               "size",
               "color",
               "material",
+              "pack",
+              "coverage",
+              "colorOptions",
+              "status",
+              "note",
               "features",
               "source",
               "verified",
@@ -170,7 +222,7 @@
     let v = clean(text)
       .toLowerCase()
       .replace(/공간의\s*위로가\s*되다|청인마루/g, "");
-    for (const x of [p?.brand, p?.model, p?.category])
+    for (const x of [p?.brand, p?.model, p?.category, p?.color])
       if (x) v = v.split(x.toLowerCase()).join("");
     return v.replace(/[^\p{L}\p{N}]/gu, "");
   }
@@ -345,6 +397,9 @@
                   p.size && "규격 " + p.size,
                   p.color && "색상 " + p.color,
                   p.material && "소재 " + p.material,
+                  p.pack && "구성 " + p.pack,
+                  p.coverage && "박스 면적 " + p.coverage,
+                  p.colorOptions && "색상 선택 " + p.colorOptions,
                 ]
                   .filter(Boolean)
                   .join(" / "),
@@ -431,7 +486,9 @@
       { role: "공간", text: titleChoices[0], photo: 1 },
       {
         role: "제품",
-        text: [name, p.size, p.color].filter(Boolean).join(" · "),
+        text: [name, p.id.includes("::") ? "" : p.color]
+          .filter(Boolean)
+          .join(" · "),
         photo: Math.min(2, input.photoCount || 4),
       },
     ];
@@ -465,6 +522,7 @@
         text: source ? inquiry : `청인마루 · ${SLOGAN}`,
         photo: Math.min(6, input.photoCount || 4),
       });
+    for(const card of cards) card.photo=Math.min(card.photo,input.photoCount||4);
     const tags = [
       "청인마루",
       p.category,
@@ -484,7 +542,7 @@
       works.length
         ? "확인한 현장 작업\n" + workLine
         : "사진을 살펴보는 순서\n전체 공간과 소재의 디테일을 차례로 비교해 보세요.",
-      "상담 전 준비할 내용\n현장 사진, 대략의 면적, 기존 마감 상태, 원하는 자재와 일정을 정리하면 상담에 도움이 됩니다. 실제 시공 범위와 비용은 현장 조건을 확인한 후 안내합니다.",
+      "상담 전 준비할 내용\n현장 사진, 대략의 면적, 기존 마감 상태, 원하는 자재와 일정을 정리하면 상담에 도움이 됩니다. 실제 시공 범위는 현장 조건을 확인한 후 안내합니다.",
       trust,
       inquiry,
       `청인마루 · ${SLOGAN}`,
@@ -531,6 +589,7 @@
     WORKS,
     TYPES,
     normalProduct,
+    resolveProduct,
     identity,
     label,
     facts,

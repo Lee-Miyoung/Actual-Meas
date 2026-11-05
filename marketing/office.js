@@ -298,7 +298,7 @@ async function analysePhoto(p) {
     mean: sum / n,
     clipping: clipped / n,
     sharpness: edge / ((w - 2) * (h - 2)),
-    resolution: im.width * im.height,
+    resolution: (p.sourceWidth || im.width) * (p.sourceHeight || im.height),
     hash: hash.join(""),
     neutralFraction: neutral / n,
     recommended: {
@@ -386,7 +386,7 @@ function renderAnalysis() {
   host.append(
     node(
       "p",
-      `추천 노출 ${a.recommended.exposure.toFixed(2)}EV / 색온도 ${a.recommended.warmth.toFixed(1)} / 수평 ${a.recommended.rotation.toFixed(1)}° · ${p.approved ? "보정 확정" : "미확정"}`,
+      `추천 노출 ${a.recommended.exposure.toFixed(2)}EV / 색온도 ${a.recommended.warmth.toFixed(1)} / 수평 ${a.recommended.rotation.toFixed(1)}° · ${p.autoPrepared ? "자동 보정 적용" : p.approved ? "보정 확정" : "수동 편집 중"}`,
       "hint",
     ),
   );
@@ -598,7 +598,7 @@ $("make-copy").onclick = () => {
   toast("입력한 사실을 채널별 템플릿으로 구성했습니다.");
 };
 $("reel-cover").onclick = async () => {
-  if (state.photos.length < 4) return toast("사진을 등록하세요.");
+  if (state.photos.length < 1) return toast("사진을 등록하세요.");
   const format = state.format;
   state.format = "story";
   try {
@@ -616,8 +616,8 @@ $("export-stories").onclick = async () => {
 let videoBusy = false;
 $("export-reel").onclick = async () => {
   if (videoBusy) return;
-  if (state.photos.length < 4 || state.photos.some((p) => !p.approved))
-    return toast("사진 4장 이상 보정 확정 후 출력하세요.");
+  if (state.photos.length < 1 || state.photos.some((p) => !p.approved))
+    return toast("사진을 등록하면 자동으로 보정 후 출력합니다.");
   const mime = ["video/mp4;codecs=avc1.42001E", "video/mp4"].find(
     (x) => window.MediaRecorder && MediaRecorder.isTypeSupported(x),
   );
@@ -1075,6 +1075,7 @@ async function renderProjects() {
         records: state.records,
         settings: state.settings,
         target: state.target,
+        providedCatalogueVersion: state.providedCatalogueVersion,
         catalog: state.catalog,
         contentHistory: state.contentHistory,
       };
@@ -1109,6 +1110,7 @@ $("new-project").onclick = async () => {
       records: state.records,
       settings: state.settings,
       target: state.target,
+      providedCatalogueVersion: state.providedCatalogueVersion,
       catalog: state.catalog,
       contentHistory: state.contentHistory,
     };
@@ -1626,13 +1628,24 @@ card = async function (theme, slide) {
   )
     .filter(Boolean)
     .join(" / ");
-  const foot = last
+  let foot = last
     ? goal === "discovery"
       ? "더 많은 공간 기록은 청인마루에서"
       : goal === "trust"
         ? "현장 사진으로 시공 디테일을 확인하세요"
         : "시공 지역 · 현장 사진 · 원하는 소재로 상담을 시작하세요"
     : tag;
+  if (
+    writingProduct &&
+    state.authoring?.draft?.carousel?.[slide]?.role === "제품"
+  )
+    foot = [
+      writingProduct.size,
+      writingProduct.pack && "구성 " + writingProduct.pack,
+      writingProduct.coverage && "박스 면적 " + writingProduct.coverage,
+    ]
+      .filter(Boolean)
+      .join(" / ");
   if (theme === "editorial") {
     const y = first ? 340 : 140,
       bottom = last ? 320 : 250;
