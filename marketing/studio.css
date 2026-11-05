@@ -861,3 +861,5 @@ footer {
     padding-top: 20px;
   }
 }
+/* Keep pointer-to-image coordinates exact in the mask editor. */
+#mask-canvas { height: auto; max-height: none; }
