@@ -68,7 +68,16 @@ function safeUrl(value) {
 const originalValidate = validate;
 validate = function (s) {
   originalValidate(s);
-  if(s.copyDrafts !== undefined && (!s.copyDrafts || typeof s.copyDrafts !== 'object' || Array.isArray(s.copyDrafts) || Object.values(s.copyDrafts).some(v => !v || typeof v.source !== 'string' || typeof v.text !== 'string'))) throw Error('콘텐츠 초안 형식 오류');
+  if (
+    s.copyDrafts !== undefined &&
+    (!s.copyDrafts ||
+      typeof s.copyDrafts !== "object" ||
+      Array.isArray(s.copyDrafts) ||
+      Object.values(s.copyDrafts).some(
+        (v) => !v || typeof v.source !== "string" || typeof v.text !== "string",
+      ))
+  )
+    throw Error("콘텐츠 초안 형식 오류");
   for (const p of s.photos) {
     if (
       p.originalSrc &&
@@ -567,7 +576,7 @@ renderCopy = function () {
     t.readOnly = false;
     t.oninput = () => {
       state.copyDrafts ||= {};
-      state.copyDrafts[heading] = {source: text, text: t.value};
+      state.copyDrafts[heading] = { source: text, text: t.value };
       persist();
     };
     const b = node("button", "문구 복사");
@@ -772,6 +781,7 @@ $("schedule-form").onsubmit = (e) => {
   e.preventDefault();
   const form = $("schedule-form"),
     record = {
+      ...state.posts.find((p) => p.id === form.dataset.edit),
       id: form.dataset.edit || crypto.randomUUID(),
       title: $("post-title").value,
       date: $("post-date").value,
@@ -1065,6 +1075,8 @@ async function renderProjects() {
         records: state.records,
         settings: state.settings,
         target: state.target,
+        catalog: state.catalog,
+        contentHistory: state.contentHistory,
       };
       state = { ...normalise(validate(await dbGet(key))), ...active };
       selected = 0;
@@ -1097,6 +1109,8 @@ $("new-project").onclick = async () => {
       records: state.records,
       settings: state.settings,
       target: state.target,
+      catalog: state.catalog,
+      contentHistory: state.contentHistory,
     };
     state = {
       version: 1,
@@ -1110,6 +1124,7 @@ $("new-project").onclick = async () => {
       ...officeDefaults(),
       ...keep,
     };
+    if (window.CheonginContent) ensureWriting(state);
     selected = 0;
     images.clear();
     sync();
@@ -1144,6 +1159,7 @@ backup = async function () {
       current: state,
       projects,
       preUpgrade: await dbGet("pre-office-v2"),
+      contentUpgradeBackup: await dbGet("pre-content-engine-v1"),
     };
     download(
       new Blob([JSON.stringify(data)], { type: "application/json" }),
@@ -1163,6 +1179,8 @@ $("restore").onchange = async (e) => {
     const raw = JSON.parse(await f.text()),
       bundle = raw.bundleVersion === 1 ? raw : { current: raw, projects: [] };
     validate(bundle.current);
+    if (bundle.preUpgrade) validate(bundle.preUpgrade);
+    if (bundle.contentUpgradeBackup) validate(bundle.contentUpgradeBackup);
     if (!Array.isArray(bundle.projects) || bundle.projects.length > 100)
       throw Error("현장 보관함 형식 오류");
     for (const item of bundle.projects) {
@@ -1181,6 +1199,11 @@ $("restore").onchange = async (e) => {
         store = t.objectStore("projects");
       store.put(structuredClone(state), "pre-restore:" + Date.now());
       store.put(next, "current");
+      if (bundle.contentUpgradeBackup)
+        store.put(
+          bundle.contentUpgradeBackup,
+          "imported-pre-content-engine:" + Date.now(),
+        );
       for (const item of bundle.projects) store.put(item.state, item.key);
       if (bundle.preUpgrade)
         store.put(
@@ -1233,7 +1256,8 @@ function renderContact() {
     a.rel = "noopener noreferrer";
     host.append(a);
   }
-  $("ai-status").textContent = "미연결 · 연결 확인 필요"; $("run-ai").disabled = true;
+  $("ai-status").textContent = "미연결 · 연결 확인 필요";
+  $("run-ai").disabled = true;
 }
 // Mask has source-aligned pixels. Token stays only in this page's password input.
 let maskLayer = null,
@@ -1335,10 +1359,14 @@ $("run-ai").onclick = async () => {
   if (!$("ai-consent").checked) return toast("외부 전송 동의가 필요합니다.");
   $("run-ai").disabled = true;
   try {
-    const img = node("canvas"), activeMask = node("canvas"), mask = node("canvas");
-    img.width = $("photo-preview").width; img.height = $("photo-preview").height;
+    const img = node("canvas"),
+      activeMask = node("canvas"),
+      mask = node("canvas");
+    img.width = $("photo-preview").width;
+    img.height = $("photo-preview").height;
     img.getContext("2d").drawImage($("photo-preview"), 0, 0);
-    activeMask.width = maskLayer.width; activeMask.height = maskLayer.height;
+    activeMask.width = maskLayer.width;
+    activeMask.height = maskLayer.height;
     activeMask.getContext("2d").drawImage(maskLayer, 0, 0);
     mask.width = img.width;
     mask.height = img.height;
@@ -1387,9 +1415,13 @@ $("run-ai").onclick = async () => {
       src: composite.toDataURL("image/png"),
       before: img.toDataURL("image/png"),
     };
-    const position = state.photos.findIndex(photo => photo.id === p.id);
-    if (position < 0) { aiCandidate = null; throw Error("현장 사진이 바뀌어 AI 결과를 적용하지 않았습니다."); }
-    selected = position; thumbnails();
+    const position = state.photos.findIndex((photo) => photo.id === p.id);
+    if (position < 0) {
+      aiCandidate = null;
+      throw Error("현장 사진이 바뀌어 AI 결과를 적용하지 않았습니다.");
+    }
+    selected = position;
+    thumbnails();
     const c = $("photo-preview");
     c.width = candidate.width;
     c.height = candidate.height;
@@ -1552,11 +1584,16 @@ card = async function (theme, slide) {
       "좋은 공간의 시작, 청인마루",
     ],
   };
-  const title = first
+  let title = first
     ? state.title || headings[goal][0]
     : last
       ? headings[goal][5]
       : headings[goal][slide];
+  if (
+    state.authoring?.draft?.carousel?.[slide] &&
+    state.authoring.draft.inputSignature === window.currentWritingSignature?.()
+  )
+    title = state.authoring.draft.carousel[slide].text;
   const serif = '"Studio Serif", "Noto Serif CJK KR", serif',
     sans = '"Studio Sans", sans-serif';
   const colors = {
@@ -1574,7 +1611,19 @@ card = async function (theme, slide) {
     920,
     64,
   );
-  const tag = [state.region, state.materialBrand, state.product]
+  const writingProduct =
+    window.CheonginContent && window.currentWritingSignature?.()
+      ? selectedProduct()
+      : null;
+  const tag = (
+    writingProduct
+      ? [
+          state.authoring.site,
+          writingProduct.brand,
+          writingProduct.model || writingProduct.category,
+        ]
+      : [state.region, state.materialBrand, state.product]
+  )
     .filter(Boolean)
     .join(" / ");
   const foot = last
@@ -1633,7 +1682,8 @@ card = async function (theme, slide) {
       ctx.fillStyle = colors[1];
       ctx.font = "20px " + sans;
       ctx.fillText(
-        state.memo.slice(0, 36) || "소재의 표정을 기록합니다.",
+        (writingProduct ? state.authoring.memo : state.memo).slice(0, 36) ||
+          "소재의 표정을 기록합니다.",
         65,
         h - 160,
       );

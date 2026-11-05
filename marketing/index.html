@@ -217,17 +217,91 @@
         </p>
       </section>
       <section id="copy" class="panel" hidden>
-        <h2>02 <em>현장을 전하는 문장</em></h2>
+        <p class="eyebrow">CHEONGINMARU / BRAND WRITING ENGINE</p>
+        <h2>02 <em>공간의 위로가 되다.</em></h2>
         <p>
-          현장 메모를 기반으로 생성됩니다. 제품 성능이나 고객 후기는 임의로
-          만들지 않습니다.
+          사진과 제품을 확인하면 청인마루의 말투로 글을 구성합니다. 외부 AI 없이
+          동작하며, 등록한 사실과 선택한 작업만 사용합니다.
         </p>
+        <div class="writing-workflow">
+          <span>사진</span><span>제품 확인</span><span>작성 모드</span
+          ><span>제목 선택</span><span>수정·승인</span>
+        </div>
+        <div class="writing-setup">
+          <div>
+            <label
+              >현장 사진 4–10장<input
+                id="writing-photos"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+            /></label>
+            <p id="writing-photo-status" class="hint"></p>
+            <div id="writing-photo-strip"></div>
+            <button id="go-photo-editor">사진 보정 화면으로</button>
+            <label>사용한 제품<select id="engine-product"></select></label>
+            <p id="engine-product-facts" class="hint"></p>
+            <button id="go-catalog">제품 등록 / CSV 관리</button>
+            <label
+              >현장명 또는 지역 (선택)<input
+                id="writing-site"
+                maxlength="80"
+                placeholder="예: 성수 아파트 / 서울 성동구" /></label
+            ><label
+              >확인한 현장 특징 (선택)<textarea
+                id="writing-memo"
+                rows="3"
+                maxlength="2000"
+                placeholder="사진에서 보이는 특징이나 직접 확인한 현장 정보"
+              ></textarea>
+            </label>
+            <fieldset>
+              <legend>실제로 진행한 특이 작업만 선택</legend>
+              <div id="work-options" class="work-options"></div>
+            </fieldset>
+          </div>
+          <div>
+            <label
+              >사진 종류<select id="photo-kind">
+                <option value="auto">지정 안 함 · 내용 자동 판독 안 함</option>
+                <option value="space">공간 전체</option>
+                <option value="detail">소재 근접</option>
+                <option value="process">시공 과정</option>
+              </select></label
+            >
+            <div
+              id="mode-recommendation"
+              class="recommendation-note"
+              aria-live="polite"
+            ></div>
+            <label
+              >작성 모드<select id="writing-mode">
+                <option value="editorial">A. 공간 화보형</option>
+                <option value="product">B. 제품 소개형</option>
+                <option value="craft">C. 시공 전문형</option>
+                <option value="question">D. 소비자 궁금증형</option>
+              </select></label
+            ><button id="apply-writing-mode">추천 모드 적용</button
+            ><label
+              >캐러셀 장수<select id="writing-count">
+                <option>3</option>
+                <option>4</option>
+                <option selected>5</option>
+                <option>6</option>
+              </select></label
+            >
+            <p id="writing-approval" role="status">초안 미생성</p>
+            <p id="writing-warning" class="hint"></p>
+          </div>
+        </div>
         <div class="toolbar">
-          <button id="make-copy">채널별 콘텐츠 생성</button
+          <button id="make-copy">한 번에 콘텐츠 작성</button
           ><button id="export-reel">릴스 MP4 저장</button
           ><button id="reel-cover">릴스 표지 PNG</button
           ><button id="export-stories">스토리 5장 준비</button
-          ><button id="save-post">게시 일정으로 보내기</button>
+          ><button id="approve-writing">최종 문구 승인·저장</button
+          ><button id="copy-caption">게시글 복사</button
+          ><button id="save-post">승인본을 게시 일정으로</button>
         </div>
         <progress id="video-progress" max="100" value="0" hidden></progress>
         <p id="video-status" role="status"></p>
@@ -236,7 +310,23 @@
           사용권이 있는 음악을 추가하세요. MP4 미지원 브라우저에서는 지원 여부를
           안내합니다.
         </p>
+        <div id="title-choices"></div>
+        <div id="instagram-preview" class="instagram-preview"></div>
         <div id="copy-content"></div>
+        <details>
+          <summary>이전 버전에서 저장한 문구</summary>
+          <button id="content-migration-backup">
+            자동 작성 엔진 업데이트 전 백업
+          </button>
+          <div id="legacy-copy"></div>
+        </details>
+        <h3>게시 이력과 작성 모드</h3>
+        <div id="content-history"></div>
+        <details>
+          <summary>이 현장의 이전 승인본</summary>
+          <div id="approval-archive"></div>
+        </details>
+        <div id="content-performance"></div>
       </section>
       <section id="products" class="panel" hidden>
         <h2>03 <em>소재 라이브러리</em></h2>
@@ -244,6 +334,65 @@
           제품군 참고 도감입니다. 실제 브랜드·모델·성능·가격은 제조사 자료로
           확인하세요.
         </p>
+        <details class="catalog-manager" open>
+          <summary>내 제품 도감 · 직접 등록 / CSV</summary>
+          <p class="hint">
+            제조사나 현장에서 직접 확인한 정보만 등록하세요. 특징을 문구에
+            쓰려면 확인 출처와 특징 확인 표시가 필요합니다.
+          </p>
+          <form id="catalog-form">
+            <div class="settings-grid">
+              <label
+                >구분<select id="catalog-type">
+                  <option value="floor">바닥재</option>
+                  <option value="wall">벽장재</option>
+                </select></label
+              ><label
+                >제품군<input
+                  id="catalog-category"
+                  maxlength="80"
+                  required
+                  placeholder="강마루 / 벽장재 등" /></label
+              ><label>브랜드<input id="catalog-brand" maxlength="80" /></label
+              ><label>모델명<input id="catalog-model" maxlength="120" /></label
+              ><label
+                >규격<input
+                  id="catalog-size"
+                  maxlength="120"
+                  placeholder="제조사 표기 단위 포함" /></label
+              ><label>색상<input id="catalog-color" maxlength="80" /></label
+              ><label>소재<input id="catalog-material" maxlength="120" /></label
+              ><label
+                >확인 출처<input
+                  id="catalog-source"
+                  maxlength="400"
+                  placeholder="제조사 제품표 / 카탈로그 날짜 등"
+              /></label>
+            </div>
+            <label
+              >확인한 특징<textarea
+                id="catalog-features"
+                maxlength="2000"
+                rows="3"
+              ></textarea></label
+            ><label class="checkline"
+              ><input id="catalog-verified" type="checkbox" /> 특징을 출처
+              자료로 확인했습니다</label
+            ><button class="primary">제품 저장</button
+            ><button type="button" id="catalog-cancel">새 제품 등록으로</button>
+          </form>
+          <div class="toolbar">
+            <button id="csv-template">CSV 양식 저장</button
+            ><label
+              >UTF-8 CSV 파일<input
+                id="catalog-csv"
+                type="file"
+                accept=".csv,text/csv" /></label
+            ><button id="confirm-csv" disabled>미리보기 제품 가져오기</button>
+          </div>
+          <div id="csv-preview"></div>
+          <div id="catalog-list"></div>
+        </details>
         <div id="product-cards" class="product-cards"></div>
       </section>
       <section id="records" class="panel" hidden>
@@ -537,5 +686,7 @@
     <div id="toast" role="status" hidden></div>
     <script src="studio.js"></script>
     <script src="office.js"></script>
+    <script src="content-engine.js"></script>
+    <script src="authoring.js"></script>
   </body>
 </html>

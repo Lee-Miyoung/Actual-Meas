@@ -69,3 +69,5 @@ AI 잡물체 제거는 별도 서버에 OpenAI API 키, 접속 토큰, HTTPS 호
 기존 Pages 배포 방식을 유지하고 `marketing/`만 변경합니다. 변경 전 백업: `backup/marketing-before-upgrade-20261105`, 커밋 `b9c7bba557dc3ef873c1287721928d17b79bbaa6`. 원격에 보존합니다. 최초 실측 원본은 `backup/before-marketing-20261105` / `5a36bac764cc2da8d0e14d0a73e2aee4afc1698b`입니다.
 
 문제 발생 시 전체 JSON 백업을 먼저 내려받고 `git restore --source=backup/marketing-before-upgrade-20261105 -- marketing/`로 마케팅 폴더만 백업 상태로 복원한 뒤 변경을 커밋하고 main에 정상 push해 Pages를 재배포하세요. 여러 배포 커밋이 있더라도 마케팅 경로만 복구하며 루트 실측 파일은 대상에 포함하지 않습니다. 실측 앱을 덮어쓰거나 force push·브라우저 데이터 초기화를 하지 마세요. 구 버전 앱은 v2 추가 필드까지 보존할 수 있지만 새 기능을 인식하지 못하므로, 문제가 있는 데이터는 복사본을 보관한 뒤 업그레이드 전 v1 JSON을 해당 구 버전 앱에서 복원할 수 있습니다.
+
+콘텐츠 자동 작성 엔진을 추가했습니다. 제품 CSV, 4개 작성 모드, 표현 반복 검사, 승인 스냅샷·게시 이력과 성과 연결은 [CONTENT_ENGINE.md](CONTENT_ENGINE.md)를 참고하세요. 이 문서 앞부분의 기존 8개 채널 템플릿 대신 새 사실 기반 작성 화면을 사용합니다.
