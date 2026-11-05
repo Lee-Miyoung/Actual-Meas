@@ -486,7 +486,7 @@ async function card(theme, slide) {
     ctx.font = "23px sans-serif";
     ctx.fillText(state.product + "  /  시공 기록", 65, h - 140);
     ctx.font = '20px "Noto Serif CJK KR",serif';
-    ctx.fillText("공간을 완성하는 디테일, 청인마루", 65, h - 65);
+    ctx.fillText("공간의 위로가 되다 · 청인마루", 65, h - 65);
   }
   if (
     slide === (state.slideCount || 5) - 1 &&
@@ -546,7 +546,7 @@ function renderCopy() {
     items = [
       [
         "설명글",
-        `${title}\n\n${state.product} 시공 현장의 빛과 질감을 기록합니다.\n${state.memo}\n\n공간을 완성하는 디테일, 청인마루.\n제품과 시공 상담은 청인마루로 문의해 주세요.`,
+        `${title}\n\n${state.product} 시공 현장의 빛과 질감을 기록합니다.\n${state.memo}\n\n공간의 위로가 되다 · 청인마루.\n제품과 시공 상담은 청인마루로 문의해 주세요.`,
       ],
       [
         "해시태그",
