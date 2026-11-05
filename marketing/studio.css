@@ -1255,3 +1255,52 @@ body:has(#dashboard:not([hidden])) main > .workflow {
     font-size: 30px;
   }
 }
+
+/* Approved Cheonginmaru identity, 2026-11-05. No marketing data/schema changes. */
+aside .brand.brand-official {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  text-decoration:none;
+}
+aside .brand.brand-official img {
+  width:166px !important;
+  height:auto !important;
+  max-width:100%;
+  object-fit:contain;
+  border-radius:0 !important;
+}
+aside .brand.brand-official small {
+  display:block;
+  font:600 9px/1.6 system-ui,sans-serif;
+  color:#D0D6CB;
+  letter-spacing:2.7px;
+  padding-left:2px;
+}
+aside .brandkit-link {
+  display:block;
+  margin-top:20px;
+  padding:11px 12px;
+  border:1px solid rgba(236,232,218,.35);
+  border-radius:8px;
+  color:#F5F0E5;
+  font-size:12px;
+  text-decoration:none;
+  line-height:1.5;
+  background:rgba(255,255,255,.035);
+}
+aside .brandkit-link:hover {
+  background:#385346;
+  border-color:rgba(236,232,218,.65);
+}
+@media (max-width:1100px) {
+  aside .brand.brand-official img {width:145px !important;}
+  aside .brandkit-link {font-size:11px;padding:10px 8px;}
+}
+@media (max-width:760px) {
+  aside .brand.brand-official {gap:5px;flex-direction:row;align-items:center;}
+  aside .brand.brand-official img {width:126px !important;height:auto !important;}
+  aside .brand.brand-official small {font-size:8px;letter-spacing:1.3px;}
+  aside .brandkit-link {display:inline-flex;margin-top:10px;padding:7px 10px;}
+}
