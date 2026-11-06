@@ -32,6 +32,7 @@ brandPanel.className = "brand-output-panel";
 brandPanel.innerHTML = `
   <h3>청인마루 공통 디자인</h3>
   <p>보정한 사진을 넣고 문구를 붙여넣으세요. 명조체와 중앙 로고를 모든 출력에 같은 비율로 적용합니다.</p>
+  <label class="checkline"><input id="brand-prepared" type="checkbox" checked>보정 완료 사진 · 업로드 시 자동 색보정 생략</label>
   <details class="brand-handoff"><summary>ChatGPT와 제작 설정 주고받기</summary>
     <p>요청문을 복사해 ChatGPT에 사진과 함께 보내세요. 보정 사진은 사진 불러오기로, 제작 설정 JSON은 아래 칸으로 가져옵니다.</p>
     <button id="brand-request" type="button">ChatGPT 작업 요청문 복사</button>
@@ -60,6 +61,7 @@ formatSelect.replaceChildren(...Object.entries(OUTPUT_PRESETS).map(([key, preset
 function syncBrandControls() {
   const settings = brandSettings();
   for (const key of Object.keys(BRAND_DEFAULTS)) $("brand-" + key).value = key === "caption" ? platformCaption() : settings[key];
+  $("brand-prepared").checked = state.usePreparedPhotos !== false;
   formatSelect.value = OUTPUT_PRESETS[state.format] ? state.format : "carousel";
   $("brand-preset-note").textContent = OUTPUT_PRESETS[formatSelect.value].note;
 }
@@ -215,4 +217,22 @@ $("brand-apply").onclick = () => {
     syncBrandControls(); brandChanged();
     $("brand-import-status").textContent = `${kit.slides.length}장 문구와 ${Object.keys(kit.captions).length}개 플랫폼 설명글을 적용했습니다. 사진은 파일명 순서로 확인하세요.`;
   } catch (error) { $("brand-import-status").textContent = "적용 실패 · " + error.message; }
+};
+
+// External retouching is the normal workflow; avoid a second exposure/WB pass.
+const prepareBeforeBrand = preparePhotos;
+preparePhotos = async function () {
+  if (state.usePreparedPhotos !== false) {
+    for (const photo of state.photos) {
+      if (!photo.autoPrepared && !photo.approved) {
+        photo.autoPrepared = true;
+        photo.approved = true;
+      }
+    }
+  }
+  return prepareBeforeBrand();
+};
+$("brand-prepared").onchange = event => {
+  state.usePreparedPhotos = event.target.checked;
+  persist();
 };
