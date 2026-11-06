@@ -64,6 +64,7 @@ const singleExport = document.createElement('button'); singleExport.textContent 
 singleExport.onclick = async () => { try { if (!state.photos.length) return toast('사진을 먼저 불러오세요.'); await exportCanvas(await card(state.theme, productionSlide), `청인마루_${state.format}_${productionSlide + 1}.png`); } catch(e) { toast(e.message); } };
 currentExport.after(singleExport);
 $('brand-export-all').textContent = '모든 플랫폼 묶음 저장';
+exportToolbar.after($('video-progress'), $('video-status'));
 const targets = document.createElement('details'); targets.innerHTML = '<summary>모든 플랫폼에 포함되는 출력 규격</summary>';
 const targetList = document.createElement('p'); targetList.className = 'hint';
 targetList.textContent = Object.values(OUTPUT_PRESETS).map(p => p.label + ': ' + (p.natural ? '원본 비율 · 긴 변 최대 1600px' : `${p.width} × ${p.height}`)).join('\n'); targets.append(targetList); brandPanel.append(targets);
@@ -167,7 +168,6 @@ async function exportProductionPlatform() {
       files.push({ name: `${String(i + 1).padStart(2, '0')}-${canvas.width}x${canvas.height}.png`, blob: await canvasBlob(canvas) });
     }
     files.push({ name: '캡션.txt', blob: new Blob([platformCaption()], { type: 'text/plain;charset=utf-8' }) });
-    files.push({ name: 'production.json', blob: new Blob([JSON.stringify(currentBrandKit(), null, 2)], { type: 'application/json' }) });
     download(await storedZip(files), `청인마루_${state.format}.zip`);
     $('download-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch (error) { toast(error.message); }

@@ -168,6 +168,7 @@ card = async function (theme, slide, format = state.format) {
   original = false;
   try { image = transformed(await photoImage(photo), photo.adjust, 2400); } finally { original = was; }
   const settings = brandSettings(), product = selectedProduct();
+  if (videoBusy) settings.fit = "cover";
   const custom = settings.titles.split(/\r?\n/).filter(line => line.trim());
   const draft = state.authoring?.draft;
   const validDraft = draft?.inputSignature === window.currentWritingSignature?.();

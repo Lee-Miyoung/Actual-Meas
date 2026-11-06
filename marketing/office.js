@@ -634,8 +634,8 @@ $("export-reel").onclick = async () => {
   try {
     state.format = "story";
     const frames = [];
-    for (let i = 0; i < 5; i++)
-      frames.push(await card(theme, i % state.slideCount));
+    for (let i = 0; i < (state.slideCount || 5); i++)
+      frames.push(await card(theme, i));
     state.format = format;
     const c = node("canvas");
     c.width = 1080;
@@ -657,7 +657,7 @@ $("export-reel").onclick = async () => {
     });
     rec.start(300);
     const started = performance.now(),
-      duration = 15000;
+      duration = frames.length * 3000;
     await new Promise((resolve, reject) => {
       const tick = () => {
         if (document.hidden) {
@@ -665,12 +665,12 @@ $("export-reel").onclick = async () => {
           return;
         }
         const elapsed = performance.now() - started,
-          idx = Math.min(4, Math.floor(elapsed / 3000)),
+          idx = Math.min(frames.length - 1, Math.floor(elapsed / 3000)),
           progress = (elapsed % 3000) / 3000;
         ctx.fillStyle = "#eee";
         ctx.fillRect(0, 0, c.width, c.height);
         ctx.save();
-        const zoom = 1 + progress * 0.025;
+        const zoom = 1; // Keep type, logo and framing stable throughout each shot.
         ctx.translate(540, 960);
         ctx.scale(zoom, zoom);
         ctx.drawImage(frames[idx], -540, -960);
@@ -688,7 +688,7 @@ $("export-reel").onclick = async () => {
     if (blob.size < 1000) throw Error("영상 데이터가 부족합니다.");
     download(blob, "청인마루_릴스_1080x1920.mp4");
     $("video-status").textContent =
-      "15초 · 1080×1920 MP4 저장 완료 (음악 없음)";
+      `${frames.length * 3}초 · 1080×1920 MP4 저장 완료 (음악 없음)`;
   } catch (e) {
     if (rec && rec.state !== "inactive") rec.stop();
     toast("영상 출력 실패: " + e.message);
