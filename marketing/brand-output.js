@@ -97,7 +97,19 @@ generationKey = function () { return generationKeyBeforeBrand() + JSON.stringify
 const brandMark = loadImage("brand/watermark-white.svg");
 function brandText(ctx, text, x, y, width, size, rows) {
   ctx.font = `400 ${size}px "Studio Serif", serif`;
-  lines(ctx, text, x, y, width, size * 1.5, rows);
+  const chars = Array.from(String(text));
+  let row = 0, line = '';
+  while (chars.length && row < rows) {
+    const ch = chars.shift();
+    if (ctx.measureText(line + ch).width > width && line) {
+      if (row === rows - 1) {
+        while (line && ctx.measureText(line + '…').width > width) line = line.slice(0, -1);
+        ctx.fillText(line + '…', x, y + row * size * 1.5); return;
+      }
+      ctx.fillText(line, x, y + row * size * 1.5); row++; line = ch;
+    } else line += ch;
+  }
+  if (line) ctx.fillText(line, x, y + row * size * 1.5);
 }
 async function renderBrandPhoto(image, text, product, size, format, settings = brandSettings()) {
   const preset = OUTPUT_PRESETS[format] || OUTPUT_PRESETS.carousel;
@@ -107,7 +119,7 @@ async function renderBrandPhoto(image, text, product, size, format, settings = b
   const ctx = canvas.getContext("2d"), w = canvas.width, h = canvas.height;
   const unit = Math.min(w, h), margin = w * .055;
   const showText = !preset.natural && settings.position !== "none" && !!text;
-  const footer = showText ? Math.round(unit * (settings.coverSlide ? .205 : .13) + (preset.vertical ? 160 : 0)) : 0;
+  const footer = showText ? Math.round(unit * (settings.coverSlide ? .32 : .235) + (preset.vertical ? 160 : 0)) : 0;
   const ph = h - footer;
   ctx.fillStyle = "#f6f3ed"; ctx.fillRect(0, 0, w, h);
   function draw(source, x, y, width, height, sx = 0, sw = source.width) {
@@ -138,20 +150,16 @@ async function renderBrandPhoto(image, text, product, size, format, settings = b
   if (showText) {
     ctx.fillStyle = "#f6f3ed"; ctx.fillRect(0, photoHeight, w, footer);
     ctx.fillStyle = "#41392f"; ctx.textBaseline = "top";
-    const titleSize = unit * (settings.coverSlide ? .038 : .031);
-    // Single line, reduced to fit; the same baseline and type scale across photos.
-    let fontSize = titleSize;
-    do { ctx.font = `400 ${fontSize}px "Studio Serif", serif`; if (ctx.measureText(text).width <= w - 2 * margin) break; fontSize--; } while (fontSize > unit * .017);
-    ctx.fillText(text, margin, photoHeight + unit * .038);
+    // Keep a readable type scale; wrap rather than shrinking the headline.
+    const titleSize = unit * .052;
+    brandText(ctx, text, margin, photoHeight + unit * .035, w - 2 * margin, titleSize, 2);
     if (settings.coverSlide) {
-      for (const [detail, y, desired] of [[product, .104, .025], [size, .151, .023]]) {
-        let detailSize = unit * desired;
-        do { ctx.font = `400 ${detailSize}px "Studio Serif", serif`; if (ctx.measureText(detail).width <= w - 2 * margin) break; detailSize--; } while (detailSize > 9);
-        ctx.fillStyle = "#81776b";
-        ctx.fillText(detail, margin, photoHeight + unit * y);
-      }
+      ctx.fillStyle = "#51483d";
+      brandText(ctx, product, margin, photoHeight + unit * .205, w - 2 * margin, unit * .028, 1);
+      brandText(ctx, size, margin, photoHeight + unit * .255, w - 2 * margin, unit * .026, 1);
     }
   }
+
   const logo = await brandMark, logoWidth = w * settings.logoWidth / 100;
   ctx.save(); ctx.globalAlpha = settings.opacity / 100;
   ctx.drawImage(logo, (w - logoWidth) / 2, photoHeight / 2 - logoWidth * logo.height / logo.width / 2, logoWidth, logoWidth * logo.height / logo.width);

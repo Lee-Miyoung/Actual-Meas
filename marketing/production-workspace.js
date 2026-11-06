@@ -25,6 +25,41 @@ desk.innerHTML = `
   </section><section class="desk-settings"><div id="production-settings"></div></section></div>`;
 document.querySelector('#studio > .section-head').after(desk);
 $('production-preview').append($('designs'));
+const strategy = document.createElement('section');
+strategy.className = 'story-planner';
+strategy.innerHTML = `<div class="planner-heading"><div><span class="eyebrow">콘텐츠 설계</span><h3>예쁜 사진에서, 상담하고 싶은 시공 사례로.</h3></div><span>관심 → 비교 → 확인 → 상담</span></div>
+<div class="planner-fields"><label>현장 지역·공간<input id="story-site" placeholder="예: 춘천 석사동 · 신축 주택 1층"></label><label>첫 장에서 전달할 내용<select id="story-angle"><option value="change">시공 전후 · 공간의 변화</option><option value="product">제품 선택 · 실제 시공 모습</option><option value="detail">디테일 · 결과 색감</option></select></label></div>
+<div class="story-sequence"><span>01 관심을 끄는 표지</span><span>02 전후 비교</span><span>03 제품 확인</span><span>04 다른 구도 비교</span><span>05 선택에 도움 되는 정보</span><span>06 상담 안내</span></div>
+<p id="story-suggestion">현장과 제품 정보를 바탕으로 문구 초안을 만듭니다. 사진 순서는 그대로 유지합니다.</p>
+<div class="planner-actions"><button id="story-draft">문구 초안 보기</button><button id="story-apply" class="primary" disabled>검토한 문구·캡션 적용</button></div><div id="story-review" hidden></div>
+<p class="hint">사진과 맞는 문구인지 확인 후 적용하세요. 전후 비교 사진은 ‘사진 연결’에서 지정할 수 있습니다.</p>`;
+$('package-drop').after(strategy);
+let storyDraft = null;
+$('story-site').value = state.marketingSite || '';
+$('story-site').onchange = e => {state.marketingSite = e.target.value.trim(); persist();};
+$('story-draft').onclick = () => {
+  const product = $('brand-product').value.trim() || '마루', size = $('brand-size').value.trim();
+  const site = $('story-site').value.trim();
+  const first = {change:'마루 시공 전후, 공간의 변화',product:product + ', 실제 시공 모습',detail:'가까이서 보는 마루의 결'}[$('story-angle').value];
+  const titles = [first,'시공 전과 후를 비교해 보세요',product + '의 결과 색감','다른 구도에서 보는 시공 전후','우리 집에 어울리는 마루일까요?','지역·평수·현장 사진을 보내주세요'];
+  const facts = [site, product, size].filter(Boolean).join(' · ');
+  const base = `${facts}\n\n시공 전후와 여러 구도의 사진을 함께 담았습니다. 마루의 색감은 채광과 보는 화면에 따라 달라 보일 수 있어요. 제품을 고르실 때는 실제 샘플도 함께 확인해 주세요.\n\n시공 상담은 지역·평수·현장 사진을 메시지로 보내주세요. 현장 조건을 확인해 안내드리겠습니다.\n\n마루 시공 · 청인마루`;
+  storyDraft = {titles, captions:Object.fromEntries(Object.keys(OUTPUT_PRESETS).map(key => [key, ['reels','shorts','story'].includes(key) ? `${first}\n${facts}\n\n지역·평수·현장 사진을 메시지로 보내주세요.\n청인마루` : key === 'youtubeCover' ? first : base]))};
+  const review = $('story-review');review.replaceChildren();
+  titles.forEach((title,i) => {const p=document.createElement('p');p.textContent=`${i+1}. ${title}`;review.append(p);});
+  const caption=document.createElement('p');caption.textContent=storyDraft.captions[state.format] || base;caption.className='draft-caption';review.append(caption);review.hidden=false;
+  $('story-apply').disabled=false;$('story-suggestion').textContent='아래는 규칙 기반 초안입니다. 현재 문구는 적용 버튼을 누르기 전까지 유지됩니다.';
+};
+$('story-apply').onclick = () => {
+  if (!storyDraft) return;
+  const slides=productionSlides();
+  state.brandSlides=slides.map((slide,i)=>({...slide,title:storyDraft.titles[i % 6].slice(0,100)}));
+  state.brandOutput={...brandSettings(),titles:state.brandSlides.map(s=>s.title).join('\n')};
+  state.brandCaptions={...state.brandCaptions,...storyDraft.captions};
+  state.marketingSite=$('story-site').value.trim();persist();syncBrandControls();renderProductionWorkspace();
+  $('story-suggestion').textContent='적용했습니다. 각 사진의 문구와 전후 비교 연결을 미리보기에서 확인하세요.';
+};
+
 $('production-settings').append(brandPanel);
 brandPanel.querySelector('h3').textContent = '03　스타일과 게시 준비';
 brandPanel.querySelector('p').textContent = '사진은 끝까지 넓게. 문구는 사진 아래, 로고는 같은 크기로.';
