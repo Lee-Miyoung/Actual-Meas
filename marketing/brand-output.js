@@ -12,7 +12,7 @@ const OUTPUT_PRESETS = Object.freeze({
   reels: { label: "인스타 릴스", width: 1080, height: 1920, vertical: true, note: "9:16 · 표지 PNG / 영상 MP4" },
   shorts: { label: "유튜브 쇼츠", width: 1080, height: 1920, vertical: true, note: "9:16 · 표지 PNG / 영상 MP4" },
 });
-const BRAND_DEFAULTS = Object.freeze({ logoWidth: 18, opacity: 15, position: "top", tone: "dark", fit: "contain", titles: "", caption: "", product: "", size: "" });
+const BRAND_DEFAULTS = Object.freeze({ logoWidth: 18, opacity: 15, position: "top", tone: "dark", fit: "cover", titles: "", caption: "", product: "", size: "" });
 function brandSettings() {
   const raw = state.brandOutput || {};
   const number = (key, min, max) => Number.isFinite(Number(raw[key])) ? Math.max(min, Math.min(max, Number(raw[key]))) : BRAND_DEFAULTS[key];
@@ -20,7 +20,7 @@ function brandSettings() {
     ...BRAND_DEFAULTS,
     logoWidth: number("logoWidth", 10, 30), opacity: number("opacity", 5, 30),
     position: ["top", "left", "right", "none"].includes(raw.position) ? raw.position : "top",
-    tone: raw.tone === "light" ? "light" : "dark", fit: raw.fit === "cover" ? "cover" : "contain",
+    tone: raw.tone === "light" ? "light" : "dark", fit: raw.fit === "contain" ? "contain" : "cover",
     ...Object.fromEntries(["titles", "caption", "product", "size"].map(key => [key, typeof raw[key] === "string" ? raw[key].slice(0, 10000) : ""])),
   };
 }
@@ -105,44 +105,63 @@ async function renderBrandPhoto(image, text, product, size, format, settings = b
   const canvas = document.createElement("canvas");
   [canvas.width, canvas.height] = CheonginBrandKit.dimensions(preset, image.width, image.height);
   const ctx = canvas.getContext("2d"), w = canvas.width, h = canvas.height;
-  const unit = Math.min(w, h), margin = unit * 0.055;
-  const hasText = settings.position !== "none" && !!(text || product || size);
-  const header = hasText && settings.position === "top" ? Math.round(unit * (preset.vertical ? 0.46 : 0.27)) : 0;
-  ctx.fillStyle = settings.tone === "light" ? "#35312c" : "#f4f0e8";
-  ctx.fillRect(0, 0, w, h);
-  if (settings.fit === "cover" && !preset.natural) cover(ctx, image, 0, header, w, h - header);
-  else {
-    const ratio = Math.min(w / image.width, (h - header) / image.height);
-    ctx.drawImage(image, (w - image.width * ratio) / 2, header + (h - header - image.height * ratio) / 2, image.width * ratio, image.height * ratio);
+  const unit = Math.min(w, h), margin = w * .055;
+  const showText = !preset.natural && settings.position !== "none" && !!text;
+  const footer = showText ? Math.round(unit * (settings.coverSlide ? .205 : .13) + (preset.vertical ? 160 : 0)) : 0;
+  const ph = h - footer;
+  ctx.fillStyle = "#f6f3ed"; ctx.fillRect(0, 0, w, h);
+  function draw(source, x, y, width, height, sx = 0, sw = source.width) {
+    const c = ProductionCore.crop(sw, source.height, width, height, settings.focus ?? .45);
+    ctx.drawImage(source, sx + c.sx, c.sy, c.sw, c.sh, x, y, width, height);
   }
-  if (hasText) {
-    const safeTop = preset.vertical ? 220 : margin;
-    const y = preset.vertical ? safeTop : margin;
-    const width = settings.position === "right" ? w * 0.58 : w - margin * 2 - (settings.mascot ? unit * 0.15 : 0);
-    const x = settings.position === "right" ? w - margin - width : margin;
-    ctx.fillStyle = settings.tone === "light" ? "#fff9ef" : "#3f352e";
-    if (!header) { ctx.shadowColor = settings.tone === "light" ? "#0009" : "#fff9"; ctx.shadowBlur = unit * 0.006; }
-    ctx.textBaseline = "top";
-    brandText(ctx, text, x, y, width, unit * 0.042, 2);
-    brandText(ctx, product, x, y + unit * 0.14, width, unit * 0.022, 1);
-    brandText(ctx, size, x, y + unit * 0.19, width, unit * 0.019, 1);
-    ctx.shadowBlur = 0;
-  }
-  if (settings.mascot && assets[settings.mascot]) {
-    const mascot = assets[settings.mascot], side = unit * 0.1;
-    const ratio = Math.min(side / mascot.width, side / mascot.height);
-    ctx.drawImage(mascot, w - margin - mascot.width * ratio, preset.vertical ? 220 : margin, mascot.width * ratio, mascot.height * ratio);
+  // The known comparison package contains two panels with a 1% centre gutter.
+  // Reflow those panels; never synthesize a new camera view or recolor the before.
+  const pair = settings.pair && image.width / image.height > 1.4;
+  if (pair) {
+    const vertical = h / w > 1.1, sw = image.width * .495;
+    for (let i = 0; i < 2; i++) {
+      const x = vertical ? 0 : i * w / 2, y = vertical ? i * ph / 2 : 0;
+      const rw = vertical ? w : w / 2, rh = vertical ? ph / 2 : ph;
+      draw(image, x, y, rw, rh, i ? image.width - sw : 0, sw);
+      ctx.fillStyle = "#f6f3ed"; ctx.fillRect(x + margin * .55, y + margin * .55, unit * .105, unit * .047);
+      ctx.fillStyle = "#51463b"; ctx.textBaseline = "middle"; ctx.font = `400 ${unit * .021}px "Studio Serif", serif`;
+      ctx.fillText(i ? "시공 후" : "시공 전", x + margin * .72, y + margin * .55 + unit * .024);
+    }
+  } else if (settings.fit === "contain" && !preset.natural) {
+    // Full-photo mode uses its own image ratio, without introducing side bars.
+    const height = Math.round(w * image.height / image.width);
+    canvas.height = height + footer;
+    ctx.fillStyle = "#f6f3ed"; ctx.fillRect(0, 0, w, canvas.height);
+    ctx.drawImage(image, 0, 0, w, height);
+  } else draw(image, 0, 0, w, ph);
+  const photoHeight = canvas.height - footer;
+  if (showText) {
+    ctx.fillStyle = "#f6f3ed"; ctx.fillRect(0, photoHeight, w, footer);
+    ctx.fillStyle = "#41392f"; ctx.textBaseline = "top";
+    const titleSize = unit * (settings.coverSlide ? .038 : .031);
+    // Single line, reduced to fit; the same baseline and type scale across photos.
+    let fontSize = titleSize;
+    do { ctx.font = `400 ${fontSize}px "Studio Serif", serif`; if (ctx.measureText(text).width <= w - 2 * margin) break; fontSize--; } while (fontSize > unit * .017);
+    ctx.fillText(text, margin, photoHeight + unit * .038);
+    if (settings.coverSlide) {
+      for (const [detail, y, desired] of [[product, .104, .025], [size, .151, .023]]) {
+        let detailSize = unit * desired;
+        do { ctx.font = `400 ${detailSize}px "Studio Serif", serif`; if (ctx.measureText(detail).width <= w - 2 * margin) break; detailSize--; } while (detailSize > 9);
+        ctx.fillStyle = "#81776b";
+        ctx.fillText(detail, margin, photoHeight + unit * y);
+      }
+    }
   }
   const logo = await brandMark, logoWidth = w * settings.logoWidth / 100;
   ctx.save(); ctx.globalAlpha = settings.opacity / 100;
-  ctx.drawImage(logo, (w - logoWidth) / 2, h / 2 - logoWidth * logo.height / logo.width / 2, logoWidth, logoWidth * logo.height / logo.width);
-  ctx.restore();
-  canvas.dataset.platform = format;
+  ctx.drawImage(logo, (w - logoWidth) / 2, photoHeight / 2 - logoWidth * logo.height / logo.width / 2, logoWidth, logoWidth * logo.height / logo.width);
+  ctx.restore(); canvas.dataset.platform = format;
+  canvas.dataset.crop = settings.fit === "contain" || preset.natural ? "original" : "fill";
   return canvas;
 }
 card = async function (theme, slide, format = state.format) {
   const requested = state.brandSlides?.[slide]?.photo;
-  const photo = state.photos.find(photo => requested && photo.name === requested) || state.photos[slide % state.photos.length];
+  const photo = ProductionCore.matchPhoto(requested, state.photos) || state.photos[slide % state.photos.length];
   if (!photo) throw Error("사진을 먼저 등록하세요.");
   const was = original;
   let image;
@@ -153,32 +172,33 @@ card = async function (theme, slide, format = state.format) {
   const draft = state.authoring?.draft;
   const validDraft = draft?.inputSignature === window.currentWritingSignature?.();
   const title = custom[slide] || (validDraft && draft?.carousel?.[slide]?.text) || state.title;
-  // Three variants retain the same type and logo rules; only copy placement changes.
-  const position = theme === "journal" ? "none" : theme === "gallery" && settings.position === "top" ? "left" : settings.position;
-  return renderBrandPhoto(image, title || "", settings.product || (product ? Writer.label(product) : state.product), settings.size || product?.size || "", format, { ...settings, position, mascot: slide === (state.slideCount || 5) - 1 && state.mascot !== "none" ? state.mascot : null });
+  // Keep one consistent composition; photo-only output is an explicit choice.
+  const position = theme === "journal" ? "none" : "top";
+  return renderBrandPhoto(image, title || "", settings.product || (product ? Writer.label(product) : state.product), settings.size || product?.size || "", format, { ...settings, position, coverSlide: slide === 0, pair: state.brandSlides?.[slide]?.layout === "pair" || (state.brandSlides?.[slide]?.layout !== "photo" && /compare|비교|전후/i.test(photo.name)), focus: state.brandSlides?.[slide]?.focus ?? .45, mascot: slide === (state.slideCount || 5) - 1 && state.mascot !== "none" ? state.mascot : null });
 };
 workflowCard = async function (content, index, format) {
   const ref = content.photoRefs[index % content.photoRefs.length];
   const image = await workflowImage(ref, 2200);
   const settings = content.brandOutput || brandSettings();
-  return renderBrandPhoto(image, content.carousel?.[index]?.text || content.title, settings.product || Writer.label(content.product), settings.size || content.product?.size || "", format || "carousel", settings);
+  return renderBrandPhoto(image, content.carousel?.[index]?.text || content.title, settings.product || Writer.label(content.product), settings.size || content.product?.size || "", format || "carousel", { ...settings, position: state.theme === "journal" ? "none" : "top", coverSlide: index === 0 });
 };
 $("brand-video").onclick = () => $("export-reel").click();
 $("brand-export-all").onclick = async () => {
   const button = $("brand-export-all");
   if (!state.photos.length) return toast("사진을 먼저 등록하세요.");
+  if (state.brandSlides?.some(s => s.photo && !ProductionCore.matchPhoto(s.photo, state.photos))) return toast("사진 연결을 확인한 뒤 저장하세요.");
   button.disabled = true;
   try {
     await waitEasyReady();
     const files = [];
-    for (const target of ["naver", "naverCover", "carousel", "kakao", "kakaoWide", "youtube", "youtubeCover", "reels", "shorts"]) {
+    for (const target of ["naver", "naverCover", "carousel", "kakao", "kakaoWide", "youtube", "youtubeCover", "story", "reels", "shorts"]) {
       for (let i = 0; i < (state.slideCount || 5); i++) {
         const canvas = await card(state.theme, i, target);
         files.push({ name: `${target}/scene-${i + 1}-${canvas.width}x${canvas.height}.png`, blob: await canvasBlob(canvas) });
       }
       $("brand-preset-note").textContent = OUTPUT_PRESETS[target].label + " 준비 완료";
     }
-    for (const target of ["naver", "carousel", "kakao", "youtube", "reels", "shorts"]) {
+    for (const target of Object.keys(OUTPUT_PRESETS)) {
       files.push({ name: `${target}/설명글.txt`, blob: new Blob([platformCaption(target) || state.authoring?.draft?.caption || ""], { type: "text/plain;charset=utf-8" }) });
     }
     download(await storedZip(files), "cheonginmaru-platforms.zip");
@@ -193,7 +213,7 @@ function currentBrandKit() {
   return {
     schema: "cheonginmaru-production-v1", format: state.format,
     product: settings.product || state.product, size: settings.size,
-    slides: Array.from({ length: state.slideCount || 5 }, (_, index) => ({ title: titles[index] || state.authoring?.draft?.carousel?.[index]?.text || state.title || "시공 기록", photo: state.brandSlides?.[index]?.photo || photos[index % Math.max(1, photos.length)]?.name || "" })),
+    slides: Array.from({ length: state.slideCount || 5 }, (_, index) => ({ ...state.brandSlides?.[index], title: titles[index] || state.authoring?.draft?.carousel?.[index]?.text || state.title || "시공 기록", photo: state.brandSlides?.[index]?.photo || photos[index % Math.max(1, photos.length)]?.name || "" })),
     captions: { ...state.brandCaptions, [state.format]: platformCaption() },
   };
 }
@@ -204,9 +224,7 @@ $("brand-request").onclick = async () => {
   try { await navigator.clipboard.writeText(prompt); toast("ChatGPT에 붙여넣을 작업 요청문을 복사했습니다."); }
   catch { $("brand-import").value = prompt; toast("요청문을 제작 설정 칸에 표시했습니다. 복사해서 사용하세요."); }
 };
-$("brand-apply").onclick = () => {
-  try {
-    const kit = CheonginBrandKit.parse($("brand-import").value);
+function applyBrandKit(kit) {
     // Validate first, then apply the entire transfer atomically.
     state.brandOutput = { ...brandSettings(), titles: kit.slides.map(slide => slide.title).join("\n"), product: kit.product, size: kit.size, caption: kit.captions[kit.format] || "" };
     state.brandCaptions = kit.captions;
@@ -216,7 +234,10 @@ $("brand-apply").onclick = () => {
     $("slide-count").value = String(state.slideCount);
     syncBrandControls(); brandChanged();
     $("brand-import-status").textContent = `${kit.slides.length}장 문구와 ${Object.keys(kit.captions).length}개 플랫폼 설명글을 적용했습니다. 사진은 파일명 순서로 확인하세요.`;
-  } catch (error) { $("brand-import-status").textContent = "적용 실패 · " + error.message; }
+}
+$("brand-apply").onclick = () => {
+  try { applyBrandKit(CheonginBrandKit.parse($("brand-import").value)); }
+  catch (error) { $("brand-import-status").textContent = "적용 실패 · " + error.message; }
 };
 
 // External retouching is the normal workflow; avoid a second exposure/WB pass.

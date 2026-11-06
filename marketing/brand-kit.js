@@ -14,7 +14,18 @@
       return input.trim();
     };
     if (!Array.isArray(value.slides) || value.slides.length < 3 || value.slides.length > 6) throw Error("사진별 문구는 3~6개가 필요합니다.");
-    const slides = value.slides.map((slide) => ({ title: string(slide.title, 100, "제목"), photo: string(slide.photo || "", 200, "사진 파일명") }));
+    const slides = value.slides.map((slide) => {
+      const result = { title: string(slide.title, 100, "제목"), photo: string(slide.photo || "", 200, "사진 파일명") };
+      if (slide.layout !== undefined) {
+        if (!["auto", "photo", "pair"].includes(slide.layout)) throw Error("사진 종류를 확인하세요.");
+        result.layout = slide.layout;
+      }
+      if (slide.focus !== undefined) {
+        if (typeof slide.focus !== "number" || !Number.isFinite(slide.focus) || slide.focus < 0 || slide.focus > 1) throw Error("사진 구도를 확인하세요.");
+        result.focus = slide.focus;
+      }
+      return result;
+    });
     const captions = {};
     for (const [platform, caption] of Object.entries(value.captions || {})) {
       if (!platforms.includes(platform)) throw Error("지원하지 않는 플랫폼입니다.");

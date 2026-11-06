@@ -200,6 +200,7 @@ async function preparePhotos() {
   await preview();
 }
 async function easyGenerate(force = false) {
+  if (window.renderProductionWorkspace) return window.renderProductionWorkspace();
   if (!easyReady || !writingReady) {
     easyStatus(
       "저장된 현장과 제품 도감을 불러오는 중입니다. 잠시 후 자동으로 진행합니다.",
