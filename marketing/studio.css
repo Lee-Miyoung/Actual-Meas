@@ -1407,3 +1407,10 @@ body:has(.production-studio:not([hidden])) .intro,body:has(.production-studio:no
 .planner-actions {display:flex;gap:10px;flex-wrap:wrap;}#story-review {padding:16px 20px;background:#fffdf8;margin-top:16px;}#story-review p {margin:8px 0;}.draft-caption {white-space:pre-line;border-top:1px solid #d1cbbb;padding-top:16px;}
 .production-desk button:disabled {opacity:.45;cursor:not-allowed;}
 @media(max-width:850px){.planner-fields{grid-template-columns:1fr}.planner-heading{display:block}.planner-heading>span{display:none}.story-planner{padding:18px}.desk-heading h2{font-size:26px}}
+
+/* Platform proof sheet: the preview uses the exact downloadable renderer. */
+.platform-preview{background:#e6e2d9;padding:24px;display:grid;gap:18px;justify-items:center;margin:16px 0 28px;border:1px solid #d8d2c7}
+.platform-preview small{font-size:11px;letter-spacing:.07em;color:#5b6055}
+.platform-preview canvas{display:block;width:min(100%,420px);height:auto;box-shadow:0 16px 36px #262b251c}
+.channel-job-row{border-radius:0!important;border-top:1px solid #c9c6bc!important;box-shadow:none!important}
+#channel-detail-title{font-family:'Studio Serif',serif;font-weight:400;font-size:28px}

@@ -148,7 +148,7 @@ async function renderProductionWorkspace() {
   if (productionImportBusy) return;
   const revision = ++productionRevision;
   migrateProductionDesign(); syncBrandControls();
-  layoutSelect.value = state.theme === 'journal' ? 'journal' : 'editorial';
+  layoutSelect.value = ['editorial','gallery','journal'].includes(state.theme) ? state.theme : 'editorial';
   for (const [key, button] of platformButtons) { button.classList.toggle('active', key === state.format); button.setAttribute('aria-pressed', String(key === state.format)); }
   if (!state.photos.length) {
     $('designs').textContent = '보정 사진이나 제작 ZIP을 넣으면 여기에 출력 모습이 나타납니다.';

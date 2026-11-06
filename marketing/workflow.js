@@ -402,6 +402,7 @@ $("site-form").onsubmit = async (e) => {
         "사진을 불러오지 못했습니다. 이전 현장은 보관함에 유지됩니다.",
       );
     await easyGenerate(false);
+    await generateWriting(false);
     await prepareChannels();
     await dbPut("project:" + state.projectId, state);
     $("site-registration").open = false;
@@ -814,6 +815,7 @@ $("approve-project").onclick = () => {
 $("prepare-site-channels").onclick = async () => {
   try {
     await easyGenerate(false);
+    await generateWriting(false);
     await prepareChannels();
   } catch (e) {
     progress(e.message, true);
@@ -1004,7 +1006,7 @@ async function cacheGeneratedImages(job, files, content, revision) {
       at: new Date().toISOString(),
       revision,
       content: structuredClone(content),
-      renderer: "workflow-card-v1",
+      renderer: "platform-design-v2",
       files: images,
     });
     persist();
@@ -1069,6 +1071,14 @@ async function exportJob(job) {
         blob: await canvasBlob(await workflowCard(content, i, { naver: "naver", kakao: "kakao", website: "naver" }[job.channel] || "youtube")),
       });
   }
+  if (job.channel === "naver" || job.channel === "kakao") {
+    files.push({name: job.channel === "naver" ? "blog-cover.png" : "kakao-case.png", blob: await canvasBlob(await workflowCard(content, 0, job.channel === "naver" ? "blog" : "kakao"))});
+  }
+  if (job.channel === "naver") {
+    const paragraphs = content.body.split(/\n\s*\n/).filter(Boolean);
+    const html = `<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(content.title)}</title><style>body{margin:0;background:#f7f5ef;color:#30352e;font:17px/2 system-ui}main{max-width:760px;margin:auto;padding:50px 24px}h1{font:38px/1.5 serif}img{width:100%;height:auto;margin:30px 0}p{white-space:pre-line}small{letter-spacing:.18em}</style><main><small>청인마루 / 현장 기록</small><h1>${escapeHTML(content.title)}</h1><img src="blog-cover.png" alt="현장 기록 표지">${paragraphs.map((p,i)=>`<p>${escapeHTML(p)}</p>${i<content.photoRefs.length?`<img src="images/scene-${String(i+1).padStart(2,'0')}.png" alt="현장 사진 ${i+1}">`:''}`).join('')}</main></html>`;
+    files.push({name:"blog-preview.html",blob:new Blob([html],{type:"text/html;charset=utf-8"})});
+  }
   if (job.channel === "website") {
     const record = publicRecord;
     const related = state.channelJobs
@@ -1082,7 +1092,7 @@ async function exportJob(job) {
           ["게시 완료", "성과 분석"].includes(j.status),
       )
       .slice(0, 3);
-    const html = `<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(record.title)}</title><style>body{max-width:960px;margin:50px auto;padding:24px;background:#f6f3ed;color:#333;font:16px/1.9 system-ui}h1{font:36px/1.6 serif}img{width:100%;height:auto}p{white-space:pre-line}a{color:inherit}</style><main><p>청인마루 / ${escapeHTML(record.projectNumber)}</p><h1>${escapeHTML(record.title)}</h1><img src="images/scene-01.png" alt="승인된 현장 시공 사진"><p>${escapeHTML(record.body)}</p>${related.length ? "<h2>관련 시공 사례</h2>" + related.map((j) => '<p><a href="' + escapeHTML(safeUrl(j.publishedUrl)) + '">' + escapeHTML(j.approved.title) + "</a></p>").join("") : ""}</main></html>`;
+    const html = `<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(record.title)}</title><style>body{margin:0;background:#f4f1e9;color:#292e28;font:17px/2 system-ui}main{max-width:1200px;margin:0 auto;padding:60px 5vw}h1{max-width:850px;font:clamp(32px,5vw,64px)/1.5 serif;margin:50px 0}img{display:block;width:100%;height:auto;margin:35px 0}p{white-space:pre-line;max-width:760px;margin:30px 0}a{color:inherit}main>p:first-child{letter-spacing:.15em;font-size:13px;border-bottom:1px solid #aaa;padding-bottom:24px}</style><main><p>청인마루 / ${escapeHTML(record.projectNumber)}</p><h1>${escapeHTML(record.title)}</h1><img src="images/scene-01.png" alt="승인된 현장 시공 사진"><p>${escapeHTML(record.body)}</p>${content.photoRefs.slice(1).map((r,i)=>`<img src="images/scene-${String(i+2).padStart(2,"0")}.png" alt="시공 상세 사진 ${i+2}" loading="lazy">`).join("")}${related.length ? "<h2>관련 시공 사례</h2>" + related.map((j) => '<p><a href="' + escapeHTML(safeUrl(j.publishedUrl)) + '">' + escapeHTML(j.approved.title) + "</a></p>").join("") : ""}</main></html>`;
     files.push(
       {
         name: "case.html",
