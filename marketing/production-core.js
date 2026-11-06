@@ -55,8 +55,17 @@
     for (const e of entries) e.read = async function() {
       let bytes = e.bytes;
       if (e.method === 8) {
-        if (typeof DecompressionStream === 'undefined') throw Error('이 브라우저에서는 ZIP을 풀어 사진과 JSON을 선택해 주세요.');
-        const reader = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw')).getReader();
+        let decompressor;
+        try { if (typeof DecompressionStream !== 'undefined') decompressor = new DecompressionStream('deflate-raw'); } catch { /* Safari 16/17: local fallback below. */ }
+        if (!decompressor) {
+          const codec = typeof fflate !== 'undefined' ? fflate : typeof require === 'function' ? require('./vendor/fflate-0.8.2.js') : null;
+          if (!codec) throw Error('ZIP을 풀어 사진과 JSON을 함께 선택해 주세요.');
+          const parts=[]; let length=0;
+          const inflater=new codec.Inflate((part)=>{length+=part.length;if(length>e.size||length>21*1024*1024)throw Error('ZIP 실제 용량이 올바르지 않습니다.');parts.push(part);});
+          for(let offset=0;offset<bytes.length;offset+=1024)inflater.push(bytes.subarray(offset,offset+1024),offset+1024>=bytes.length);
+          bytes=new Uint8Array(length);let offset=0;for(const part of parts){bytes.set(part,offset);offset+=part.length;}
+        } else {
+        const reader = new Blob([bytes]).stream().pipeThrough(decompressor).getReader();
         const chunks = []; let length = 0;
         try {
           while (true) {
@@ -68,6 +77,7 @@
         } finally { reader.releaseLock(); }
         bytes = new Uint8Array(length); let offset = 0;
         for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+        }
       }
       if (bytes.length !== e.size) throw Error('ZIP 파일 크기가 일치하지 않습니다.');
       let crc = 0xffffffff;

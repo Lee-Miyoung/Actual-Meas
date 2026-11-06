@@ -887,6 +887,7 @@ async function workflowImage(ref, max = 1800) {
     return c;
   } finally {
     original = was;
+    image.src = "";
   }
 }
 async function workflowCard(content, index, format = "carousel") {
@@ -1113,6 +1114,7 @@ async function exportJob(job) {
     storageWarning =
       " 생성 이미지 보관에 실패했습니다. 다운로드 파일을 별도로 보관하세요.";
   }
+  offerPhotoFiles(files);
   download(
     await storedZip(files),
     `청인마루_${Flow.CHANNELS[job.channel]}_자료.zip`,

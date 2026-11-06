@@ -39,3 +39,14 @@ test('production settings retain comparison layout and crop position across roun
  assert.deepEqual(kit.parse(JSON.stringify(value)).slides,value.slides);
  value.slides[0].focus=2;assert.throws(()=>kit.parse(JSON.stringify(value)));
 });
+
+test('Safari without deflate-raw support imports a compressed Korean package locally',async()=>{
+ const Native=global.DecompressionStream;
+ try{
+  global.DecompressionStream=class{constructor(){throw new TypeError('unsupported format')}};
+  const entries=await readZip(zip('아이패드 · 규격 165 × 1200 × 7.5T',true));
+  assert.equal(new TextDecoder().decode(await entries[0].read()),'아이패드 · 규격 165 × 1200 × 7.5T');
+  const bad=zip('손상 검증',true);new Uint8Array(bad)[45]^=1;
+  const corrupt=await readZip(bad);await assert.rejects(corrupt[0].read());
+ }finally{global.DecompressionStream=Native;}
+});

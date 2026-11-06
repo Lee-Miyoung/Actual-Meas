@@ -2,11 +2,12 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>청인마루 · 마케팅 오피스</title>
     <link rel="icon" href="../icon.jpg" />
     <link rel="stylesheet" href="fonts/fonts.css" />
-    <link rel="stylesheet" href="studio.css?v=platform-20261106" />
+    <link rel="stylesheet" href="studio.css?v=apple-20261106" />
+    <link rel="stylesheet" href="editorial.css?v=apple-20261106" />
   </head>
   <body>
     <aside>
@@ -63,7 +64,7 @@
                 >사진 1–10장<input
                   id="site-photos"
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                   multiple
                   required /></label
               ><label
@@ -183,7 +184,7 @@
               >＋ 현장 사진 1–10장 불러오기<input
                 id="photos"
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                 multiple
             /></label>
             <p class="hint">
@@ -363,7 +364,7 @@
               >현장 사진 1–10장<input
                 id="writing-photos"
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                 multiple
             /></label>
             <p id="writing-photo-status" class="hint"></p>
@@ -840,18 +841,21 @@
       <footer>청인마루　/　공간의 위로가 되다</footer>
     </main>
     <div id="toast" role="status" hidden></div>
-    <script src="studio.js?v=20261106-1"></script>
+    <script src="studio.js?v=apple-20261106"></script>
     <script src="office.js?v=desk-20261106-6"></script>
     <script src="content-engine.js?v=phase1-20261105"></script>
     <script src="authoring.js?v=phase1-20261105"></script>
     <script src="catalog-seed.js?v=phase1-20261105"></script>
-    <script src="easy-flow.js?v=desk-20261106-6"></script>
+    <script src="easy-flow.js?v=apple-20261106"></script>
     <script src="workflow-core.js?v=phase1-20261105"></script>
-    <script src="workflow.js?v=platform-20261106"></script>
+    <script src="workflow.js?v=apple-20261106"></script>
     <script src="brand-kit.js?v=20261106-6"></script>
-    <script src="production-core.js?v=20261106-6"></script>
+    <script src="vendor/fflate-0.8.2.js"></script>
+    <script src="production-core.js?v=apple-20261106"></script>
     <script src="brand-output.js?v=20261106-6"></script>
-    <script src="production-workspace.js?v=platform-20261106"></script>
-    <script src="platform-design.js?v=platform-20261106"></script>
+    <script src="production-workspace.js?v=apple-20261106"></script>
+    <script src="platform-design.js?v=apple-20261106"></script>
+    <script src="vendor/mp4-muxer-5.2.2.js"></script>
+    <script src="mobile-runtime.js?v=apple-20261106"></script>
   </body>
 </html>

@@ -10,7 +10,7 @@ desk.innerHTML = `
   <div class="desk-heading"><div><p class="eyebrow">PHOTO TO PUBLISH</p><h2>사진 한 장에서, 모든 채널로.</h2><p>자료를 넣고 → 사진과 문구 확인 → 원하는 채널로 저장</p></div><span class="desk-badge">청인마루 공통 스타일</span></div>
   <section class="package-drop" id="package-drop">
     <div><strong>01　제작 자료 불러오기</strong><p>ChatGPT가 준 ZIP 하나면 사진·문구·규격이 함께 들어옵니다.</p></div>
-    <label class="package-picker">ZIP 또는 사진·JSON 선택<input id="production-files" type="file" accept=".zip,.json,image/jpeg,image/png,image/webp" multiple></label>
+    <label class="package-picker">ZIP 또는 사진·JSON 선택<input id="production-files" type="file" accept=".zip,.json,image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple></label>
     <p id="production-import-status" role="status">파일을 여기에 끌어 놓아도 됩니다. 기존 작업은 새 자료를 확인한 뒤 교체합니다.</p>
   </section>
   <div class="desk-layout"><section class="desk-preview">
@@ -36,14 +36,17 @@ strategy.innerHTML = `<div class="planner-heading"><div><span class="eyebrow">�
 $('package-drop').after(strategy);
 let storyDraft = null;
 $('story-site').value = state.marketingSite || '';
+$('story-angle').value='product';
 $('story-site').onchange = e => {state.marketingSite = e.target.value.trim(); persist();};
 $('story-draft').onclick = () => {
   const product = $('brand-product').value.trim() || '마루', size = $('brand-size').value.trim();
   const site = $('story-site').value.trim();
+  const hasComparison=state.brandSlides?.some(s=>s.layout==='pair');
+  if($('story-angle').value==='change'&&!hasComparison)return toast('전후 비교 사진을 연결한 뒤 선택하세요. 일반 사진은 제품·디테일 모드를 사용할 수 있습니다.');
   const first = {change:'마루 시공 전후, 공간의 변화',product:product + ', 실제 시공 모습',detail:'가까이서 보는 마루의 결'}[$('story-angle').value];
-  const titles = [first,'시공 전과 후를 비교해 보세요',product + '의 결과 색감','다른 구도에서 보는 시공 전후','우리 집에 어울리는 마루일까요?','지역·평수·현장 사진을 보내주세요'];
+  const titles = [first,hasComparison?'시공 전과 후를 비교해 보세요':'가까이서 바라본 공간',product + '의 결과 색감',hasComparison?'다른 구도에서 보는 시공 전후':'다른 구도에서 바라본 공간','우리 집에 어울리는 마루일까요?','지역·평수·현장 사진을 보내주세요'];
   const facts = [site, product, size].filter(Boolean).join(' · ');
-  const base = `${facts}\n\n시공 전후와 여러 구도의 사진을 함께 담았습니다. 마루의 색감은 채광과 보는 화면에 따라 달라 보일 수 있어요. 제품을 고르실 때는 실제 샘플도 함께 확인해 주세요.\n\n시공 상담은 지역·평수·현장 사진을 메시지로 보내주세요. 현장 조건을 확인해 안내드리겠습니다.\n\n마루 시공 · 청인마루`;
+  const base = `${facts}\n\n${hasComparison?'시공 전후와 여러 구도의 사진을 함께 담았습니다.':'현장 사진으로 공간과 소재의 모습을 담았습니다.'} 마루의 색감은 채광과 보는 화면에 따라 달라 보일 수 있어요. 제품을 고르실 때는 실제 샘플도 함께 확인해 주세요.\n\n시공 상담은 지역·평수·현장 사진을 메시지로 보내주세요. 현장 조건을 확인해 안내드리겠습니다.\n\n마루 시공 · 청인마루`;
   storyDraft = {titles, captions:Object.fromEntries(Object.keys(OUTPUT_PRESETS).map(key => [key, ['reels','shorts','story'].includes(key) ? `${first}\n${facts}\n\n지역·평수·현장 사진을 메시지로 보내주세요.\n청인마루` : key === 'youtubeCover' ? first : base]))};
   const review = $('story-review');review.replaceChildren();
   titles.forEach((title,i) => {const p=document.createElement('p');p.textContent=`${i+1}. ${title}`;review.append(p);});
@@ -147,6 +150,10 @@ async function renderProductionWorkspace() {
   if (!easyReady || !writingReady) return;
   if (productionImportBusy) return;
   const revision = ++productionRevision;
+  document.body.classList.toggle("has-site-photos",state.photos.length>0);
+  $('package-drop').querySelector('strong').textContent=state.photos.length?'현장 사진 '+state.photos.length+'장':'01　현장 사진 불러오기';
+  $('package-drop').querySelector('.package-picker').firstChild.textContent=state.photos.length?'사진·자료 바꾸기':'사진 또는 제작 ZIP 선택';
+  document.body.classList.toggle("full-photo-mode",brandSettings().fit==="contain");
   migrateProductionDesign(); syncBrandControls();
   layoutSelect.value = ['editorial','gallery','journal'].includes(state.theme) ? state.theme : 'editorial';
   for (const [key, button] of platformButtons) { button.classList.toggle('active', key === state.format); button.setAttribute('aria-pressed', String(key === state.format)); }
@@ -171,7 +178,7 @@ async function renderProductionWorkspace() {
     const p = match || state.photos[i % state.photos.length];
     const button = document.createElement('button'); button.className = i === productionSlide ? 'active' : '';
     button.setAttribute('aria-label', `${i + 1}번 사진 ${item.title}`); button.setAttribute('aria-pressed', String(i === productionSlide));
-    const img = document.createElement('img'); img.src = p.src; img.alt = '';
+    const img = document.createElement('img'); img.src = p.thumbnail || p.src; img.alt = '';
     const number = document.createElement('span'); number.textContent = String(i + 1).padStart(2, '0');
     button.append(img, number); button.onclick = () => { productionSlide = i; renderProductionWorkspace(); }; $('production-filmstrip').append(button);
   });
@@ -179,9 +186,10 @@ async function renderProductionWorkspace() {
   $('production-crop-note').textContent = natural ? '원본 비율로 출력합니다. 양옆 테두리와 추가 색보정이 없습니다.' : '플랫폼 비율에 맞춰 가장자리를 일부 자릅니다. 바닥·창이 잘리면 위 슬라이더로 구도를 옮기거나 전체 사진 보존을 선택하세요.';
   try {
     const canvas = await card(state.theme, productionSlide);
-    if (revision !== productionRevision) return;
+    if (revision !== productionRevision) {canvas.width=canvas.height=1; return;}
+    if(canvas.dataset.textTruncated)$('production-crop-note').textContent+=' 긴 문구는 이미지에서 줄여 표시합니다. 원고는 전체 문장을 유지합니다.';
     canvas.setAttribute('aria-label', `${OUTPUT_PRESETS[state.format].label} ${productionSlide + 1}번 출력 미리보기`);
-    $('designs').classList.remove('production-empty'); $('designs').replaceChildren(canvas);
+    $('designs').classList.remove('production-empty'); for(const old of $('designs').querySelectorAll('canvas'))old.width=old.height=1; $('designs').replaceChildren(canvas);
     $('production-dimensions').textContent = `${canvas.width} × ${canvas.height} px`;
     easyStatus(missing ? `연결할 사진 ${missing}장이 없습니다. ‘사진 연결’에서 올바른 파일을 골라 주세요.` : `사진 ${state.photos.length}장 · ${OUTPUT_PRESETS[state.format].label} 준비 완료` , !!missing);
     renderKey = generationKey();
@@ -201,8 +209,10 @@ async function exportProductionPlatform() {
       button.textContent = `${i + 1}/${state.slideCount || 5}장 저장 준비 중…`;
       const canvas = await card(state.theme, i);
       files.push({ name: `${String(i + 1).padStart(2, '0')}-${canvas.width}x${canvas.height}.png`, blob: await canvasBlob(canvas) });
+      canvas.width=canvas.height=1; await new Promise(resolve=>setTimeout(resolve,0));
     }
     files.push({ name: '캡션.txt', blob: new Blob([platformCaption()], { type: 'text/plain;charset=utf-8' }) });
+    offerPhotoFiles(files);
     download(await storedZip(files), `청인마루_${state.format}.zip`);
     $('download-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch (error) { toast(error.message); }
@@ -214,7 +224,7 @@ function fileAsDataURL(file) { return new Promise((resolve, reject) => { const r
 async function importProductionFiles(files) {
   if (productionImportBusy || !files.length) return;
   productionImportBusy = true; const status = $('production-import-status');
-  $('production-files').disabled = true; status.textContent = '자료를 확인하고 있습니다…';
+  $('production-files').disabled = true; status.dataset.error='false'; status.textContent = '자료를 확인하고 있습니다…';
   try {
     if (!easyReady || !writingReady) throw Error('저장된 작업을 불러오는 중입니다. 잠시 후 다시 선택하세요.');
     let source = [...files], kit;
@@ -248,11 +258,14 @@ async function importProductionFiles(files) {
     if (!source.length && !kit) throw Error('사진, 제작 JSON 또는 제작 ZIP을 선택하세요.');
     const photos = [];
     for (const file of source) {
-      if (!/\.(png|jpe?g|webp)$/i.test(file.name) || file.size > 20 * 1024 * 1024) throw Error('사진은 JPG·PNG·WebP, 장당 20MB 이하입니다.');
-      const src = await fileAsDataURL(file), image = await loadImage(src);
+      if (!/\.(png|jpe?g|webp|heic|heif)$/i.test(file.name) || file.size > 20 * 1024 * 1024) throw Error('사진은 JPG·PNG·WebP·HEIC, 장당 20MB 이하입니다.');
+      const src = await fileAsDataURL(file);
+      let image; try { image = await loadImage(src); } catch { throw Error(/\.hei[cf]$/i.test(file.name) ? '이 기기에서 HEIC를 읽을 수 없습니다. 사진 앱의 공유 옵션에서 호환성 우선(JPG)으로 내보낸 뒤 선택해 주세요.' : '사진 파일을 읽지 못했습니다: '+file.name); }
       if (image.width * image.height > 48000000 || Math.max(image.width, image.height) > 12000) throw Error('사진 크기를 4800만 화소 이하로 줄여 주세요.');
-      photos.push({ id: crypto.randomUUID(), name: file.name, src, sourceWidth: image.width, sourceHeight: image.height, adjust: defaults(), approved: true, autoPrepared: true });
+      const sourceWidth=image.width, sourceHeight=image.height; image.src="";
+      photos.push({ id: crypto.randomUUID(), name: file.name, src, sourceWidth, sourceHeight, adjust: defaults(), approved: true, autoPrepared: true });
     }
+    for (const photo of photos) await photoImage(photo);
     const available = photos.length ? photos : state.photos;
     if (kit && kit.slides.some(s => s.photo && !ProductionCore.matchPhoto(s.photo, available))) throw Error('문구와 연결할 사진이 없습니다. 사진과 JSON을 함께 선택하세요.');
     // Decode and validate everything first. A failed import never changes current work.
@@ -267,7 +280,7 @@ async function importProductionFiles(files) {
     state.usePreparedPhotos = true; persist(); syncBrandControls();
     productionSlide = 0;
     status.textContent = `${photos.length || state.photos.length}장 사진${kit ? ' · 제품 규격 · 플랫폼별 캡션' : ''}을 불러왔습니다. 아래 미리보기에서 확인하세요.`;
-  } catch (error) { status.textContent = '불러오기 실패 · ' + error.message; }
+  } catch (error) { status.dataset.error='true'; status.textContent = '불러오기 실패 · ' + error.message; }
   finally { productionImportBusy = false; $('production-files').disabled = false; $('production-files').value = ''; renderProductionWorkspace(); }
 }
 $('production-files').onchange = e => importProductionFiles([...e.target.files]);

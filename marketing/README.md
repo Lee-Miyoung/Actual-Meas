@@ -93,3 +93,9 @@ AI 잡물체 제거는 별도 서버에 OpenAI API 키, 접속 토큰, HTTPS 호
 한 장씩 큰 미리보기와 사진 목록으로 확인하며 현재 문구·사진 연결·위아래 구도를 수정할 수 있습니다. 기본 출력은 사진 폭을 끝까지 채워 양옆 테두리를 없애고, 명조체 문구는 아래에 배치합니다. 제품·규격은 첫 장만 표시합니다. 플랫폼 비율 때문에 가장자리가 잘릴 수 있으며, 전체 사진 보존을 선택하면 고정 규격 대신 원본 비율로 출력합니다. 블로그 본문은 원본 비율 사진과 별도 캡션을 사용합니다.
 
 이전 패키지의 `compare`/`비교`/`전후` 파일명인 좌우 비교사진은 세로 출력에서 위아래로 재배치합니다. 다른 합성본은 사진 종류를 직접 선택하세요. 전후 패널 자체의 촬영 높이·화각 차이는 보정하지 않습니다. 모든 렌더링은 원본 색 필터를 추가하지 않습니다. ‘선택한 플랫폼 사진 + 캡션 저장’에는 PNG·캡션이 포함됩니다. 제작 JSON은 별도 설정 저장 버튼으로 원본 사진과 함께 보관합니다. 모든 플랫폼 저장은 10개 출력과 설명글을 포함합니다.
+
+## 터치 기기·공통 편집 디자인 (2026-11-06)
+
+`editorial.css`, `platform-design.js`, `mobile-runtime.js`가 공통 사진 편집·반응형·저장 공유를 제공합니다. 해외 참고 자료, iOS 지원 범위 및 복구 절차는 [APPLE_EDITORIAL.md](APPLE_EDITORIAL.md)를 보세요. 앱에서 서버 설치 없이 동작하며, MP4는 WebCodecs H.264 지원 브라우저를 사용합니다. `vendor/`의 ZIP/MP4 라이브러리는 로컬 파일로 제공하고 각 라이선스를 동봉했습니다.
+
+검증: `node --test marketing/tests/*.test.js`, Chromium에서 `python marketing/tests/apple_browser.py`와 `python marketing/tests/workflow_browser.py`. WebKitGTK와 Selenium 설치 환경에서는 `STUDIO_TEST_MP4=1 python marketing/tests/webkit_browser.py`. WebKit 경로는 `WEBKIT_BROWSER_BINARY`, `WEBKIT_DRIVER_BINARY`로 지정할 수 있습니다. 테스트 MP4는 ffprobe 메타정보와 `ffmpeg -v error -xerror -i <file> -f null -` 전체 디코딩을 모두 통과해야 합니다. 물리 iPhone/iPad의 사진 앱 저장과 테스트 대역의 공유 API 검증을 혼동하지 마세요.

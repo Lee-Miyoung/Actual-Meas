@@ -61,8 +61,8 @@ function downloadLink(blob, name) {
   }
   downloadBox.hidden = false;
   downloadBox.append(row);
-  savedDownloads.push({ url, row });
-  while (savedDownloads.length > 10) {
+  savedDownloads.push({ url, row, size: blob.size });
+  while (savedDownloads.length > 3 || (savedDownloads.length > 1 && savedDownloads.reduce((n,x)=>n+x.size,0)>40*1024*1024)) {
     const old = savedDownloads.shift();
     URL.revokeObjectURL(old.url);
     old.row.remove();

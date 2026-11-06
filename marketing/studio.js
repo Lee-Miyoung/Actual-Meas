@@ -54,22 +54,32 @@ function loadImage(src) {
     i.src = src;
   });
 }
+// Keep only two decoded working images. Originals remain unchanged in IndexedDB.
 async function photoImage(p) {
-  if (!images.has(p.id)) {
-    const source = await loadImage(p.src);
-    p.sourceWidth = source.width;
-    p.sourceHeight = source.height;
-    const scale = Math.min(1, 2200 / Math.max(source.width, source.height));
-    const working = document.createElement("canvas");
-    working.width = Math.round(source.width * scale);
-    working.height = Math.round(source.height * scale);
-    working
-      .getContext("2d")
-      .drawImage(source, 0, 0, working.width, working.height);
-    images.set(p.id, working);
+  if (images.has(p.id)) {
+    const cached = images.get(p.id); images.delete(p.id); images.set(p.id, cached);
+    return cached;
   }
-  return images.get(p.id);
+  const source = await loadImage(p.src);
+  p.sourceWidth = source.width; p.sourceHeight = source.height;
+  const scale = Math.min(1, 1800 / Math.max(source.width, source.height));
+  const working = document.createElement("canvas");
+  working.width = Math.max(1, Math.round(source.width * scale));
+  working.height = Math.max(1, Math.round(source.height * scale));
+  working.getContext("2d").drawImage(source, 0, 0, working.width, working.height);
+  source.src = "";
+  if (!p.thumbnail) {
+    const thumb = document.createElement("canvas"), ratio = Math.min(1, 240 / Math.max(working.width, working.height));
+    thumb.width = Math.max(1, Math.round(working.width * ratio)); thumb.height = Math.max(1, Math.round(working.height * ratio));
+    thumb.getContext("2d").drawImage(working, 0, 0, thumb.width, thumb.height);
+    p.thumbnail = thumb.toDataURL("image/jpeg", .75); thumb.width = thumb.height = 1;
+  }
+  images.set(p.id, working);
+  // Evicted canvases may still be in use by a concurrent render. Let GC release them.
+  while (images.size > 2) images.delete(images.keys().next().value);
+  return working;
 }
+
 function persist() {
   clearTimeout(saveTimer);
   $("save-status").textContent = "저장 대기";
@@ -116,7 +126,7 @@ function correctedCanvas(img, p, max = 1800) {
   c.height = Math.round(img.height * scale);
   const ctx = c.getContext("2d", { willReadFrequently: true });
   ctx.drawImage(img, 0, 0, c.width, c.height);
-  if (original) return c;
+  if (original || (!p.exposure && !p.warmth && !p.contrast)) return c;
   const d = ctx.getImageData(0, 0, c.width, c.height),
     gain = 2 ** p.exposure,
     contrast = 1 + p.contrast / 100;
@@ -134,7 +144,7 @@ function correctedCanvas(img, p, max = 1800) {
 }
 function transformed(img, p, max = 1800) {
   const source = correctedCanvas(img, p, max);
-  if (original) return source;
+  if (original || (!p.rotation && (!p.zoom || p.zoom === 1) && !p.vertical && !p.horizontal && !p.x && !p.y)) return source;
   const c = document.createElement("canvas");
   c.width = source.width;
   c.height = source.height;
@@ -176,6 +186,7 @@ function transformed(img, p, max = 1800) {
       sh + 0.6,
     );
   }
+  source.width = source.height = 1;
   return c;
 }
 async function preview() {
@@ -204,7 +215,7 @@ function thumbnails() {
     b.className = "thumb" + (i === selected ? " selected" : "");
     b.title = `사진 ${i + 1}: ${p.name}`;
     const im = document.createElement("img");
-    im.src = p.src;
+    im.src = p.thumbnail || p.src;
     im.alt = p.name;
     b.append(im);
     b.onclick = () => {
@@ -241,7 +252,7 @@ $("photos").onchange = async (e) => {
       files.some(
         (f) =>
           f.size > 20 * 1024 * 1024 ||
-          !["image/jpeg", "image/png", "image/webp"].includes(f.type),
+          !/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name),
       )
     )
       throw Error("지원 형식과 장당 20MB 제한을 확인하세요.");
@@ -266,17 +277,20 @@ $("photos").onchange = async (e) => {
         Math.max(decoded.width, decoded.height) > 12000
       )
         throw Error("사진은 4800만 화소, 한 변 12000px 이하로 줄여 주세요.");
+      const sourceWidth = decoded.width, sourceHeight = decoded.height;
+      decoded.src = "";
       photos.push({
         id: crypto.randomUUID(),
         name: f.name,
         src,
         adjust: defaults(),
-        sourceWidth: decoded.width,
-        sourceHeight: decoded.height,
+        sourceWidth,
+        sourceHeight,
       });
     }
     state.photos = photos;
     images.clear();
+    for (const photo of photos) await photoImage(photo);
     selected = 0;
     original = false;
     $("compare").setAttribute("aria-pressed", "false");
