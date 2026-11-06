@@ -1304,3 +1304,11 @@ aside .brandkit-link:hover {
   aside .brand.brand-official small {font-size:8px;letter-spacing:1.3px;}
   aside .brandkit-link {display:inline-flex;margin-top:10px;padding:7px 10px;}
 }
+
+.brand-output-panel { background: #f5f1e8; border: 1px solid #d7ccba; border-radius: 18px; padding: 24px; margin: 24px 0; }
+.brand-output-panel h3 { margin-top: 0; }
+.brand-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+.brand-output-panel textarea { width: 100%; box-sizing: border-box; }
+.brand-output-panel label { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+.brand-output-panel .toolbar { flex-wrap: wrap; }
+@media (max-width: 600px) { .brand-output-panel { padding: 16px; } .brand-controls { grid-template-columns: 1fr; } }

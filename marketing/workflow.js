@@ -1016,6 +1016,11 @@ async function exportJob(job) {
     project = state.projectIndex.find((p) => p.id === job.projectId);
   const publicRecord =
     job.channel === "website" ? Flow.publicCase(project, job) : null;
+  content.brandOutput = brandSettings();
+  const importedCaption = platformCaption({ instagram: "carousel", naver: "naver", kakao: "kakao" }[job.channel] || "naver");
+  if (importedCaption) content.body = importedCaption;
+  const importedTitles = content.brandOutput.titles.split(/\r?\n/).filter(Boolean);
+  if (importedTitles.length) content.carousel = importedTitles.map(text => ({ text }));
   progress("원고와 사진 파일을 준비합니다…");
   const files = [
     {
@@ -1061,7 +1066,7 @@ async function exportJob(job) {
     for (let i = 0; i < content.photoRefs.length; i++)
       files.push({
         name: `images/scene-${String(i + 1).padStart(2, "0")}.png`,
-        blob: await canvasBlob(await workflowImage(content.photoRefs[i], 2200)),
+        blob: await canvasBlob(await workflowCard(content, i, { naver: "naver", kakao: "kakao", website: "naver" }[job.channel] || "youtube")),
       });
   }
   if (job.channel === "website") {

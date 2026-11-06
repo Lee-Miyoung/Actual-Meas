@@ -664,7 +664,7 @@ function validate(s) {
     if (typeof s[k] !== "string") throw Error("필수 항목이 누락되었습니다.");
   if (
     !["editorial", "gallery", "journal"].includes(s.theme) ||
-    !["carousel", "story"].includes(s.format) ||
+    !["carousel", "story", "naver", "naverCover", "kakao", "kakaoWide", "youtube", "youtubeCover", "reels", "shorts"].includes(s.format) ||
     !["none", "maruni", "ruru"].includes(s.mascot)
   )
     throw Error("설정값이 올바르지 않습니다.");
