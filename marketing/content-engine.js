@@ -308,281 +308,58 @@
     return { mode, reason };
   }
   function create(input, history = [], sequence = 0) {
-    const p = normalProduct(input.product),
-      mode = Object.hasOwn(MODES, input.mode) ? input.mode : "editorial",
-      works = (input.works || []).filter((w) => WORKS.includes(w)),
-      count = Math.max(3, Math.min(6, Number(input.count) || 5)),
-      wall = p.type === "wall",
-      surface = wall ? "벽면" : "바닥",
-      name = label(p),
-      place = clean(input.region) || clean(input.site),
-      memo = clean(input.memo),
-      specs = facts(p),
-      verifiedFeatures = p.verified && p.source ? clean(p.features) : "",
-      source = clean(input.contact),
-      inquiry = source
-        ? `시공 상담은 ${source}에서 안내합니다.`
-        : "시공 상담 시 현장 사진과 원하는 소재를 함께 알려주세요.";
-    const hooks = {
-      editorial: [
-        `${surface}에서 시작하는 공간의 인상`,
-        `공간을 바라보는 또 하나의 시선`,
-        `${name}, 일상의 배경이 되다`,
-        `사진으로 남긴 ${surface}의 표정`,
-        `소재와 공간 사이의 균형`,
-        `오래 바라보고 싶은 공간의 기록`,
-        `가까이서 만나는 ${name}`,
-        `${place || "오늘의 공간"}의 소재 기록`,
-      ],
-      product: [
-        `${name}를 살펴볼 때 확인할 것`,
-        `규격과 색상으로 읽는 ${name}`,
-        `${surface} 소재 선택을 위한 기록`,
-        `${name}의 제품 정보를 정리했습니다`,
-        `공간에 맞는 ${surface} 선택의 기준`,
-        `사진과 함께 확인하는 ${name}`,
-        `소재를 고르기 전, 제품 정보부터`,
-        `${name}를 차분히 들여다봅니다`,
-      ],
-      craft: [
-        `${surface} 시공, 확인한 작업을 기록하다`,
-        `현장에 남긴 ${surface}의 디테일`,
-        `${name} 시공 현장 노트`,
-        `사진과 사실로 전하는 시공 기록`,
-        `공간을 완성하는 작업의 순서`,
-        `눈에 보이는 마감, 기록하는 이유`,
-        `시공 사진에서 확인할 부분`,
-        `${surface}를 다루는 현장의 기록`,
-      ],
-      question: [
-        `${name}, 무엇부터 확인하면 좋을까요`,
-        `${surface} 소재를 고를 때 묻는 질문`,
-        `우리 공간에 맞는 ${name} 선택법`,
-        `제품 규격은 어디에서 확인할까요`,
-        `사진만으로 알 수 있는 것과 없는 것`,
-        `시공 전 어떤 정보를 준비할까요`,
-        `${surface} 선택 전에 함께 확인할 내용`,
-        `${name} 상담을 위한 작은 안내`,
-      ],
+    const p=normalProduct(input.product),mode=Object.hasOwn(MODES,input.mode)?input.mode:'editorial';
+    const neutral=p.category==='마감재',wall=p.type==='wall',surface=neutral?'소재':wall?'벽면':'바닥',name=label(p),place=clean(input.region)||clean(input.site),memo=clean(input.memo);
+    const works=(input.works||[]).filter(w=>WORKS.includes(w)),count=Math.max(3,Math.min(6,Number(input.count)||5));
+    const specs=facts(p),features=p.verified&&p.source?clean(p.features):'',source=clean(input.contact);
+    const inquiry=`지역과 현장 사진, 마음에 드는 ${neutral?'소재':wall?'벽장재':'마루'}를 알려주세요. 원하는 분위기와 시공 조건을 함께 살펴보겠습니다.${source?'\n상담 연결: '+source:''}`;
+    const banks={
+      editorial:['가구를 들이기 전, 집의 분위기를 고르는 일','좋아하는 가구가 어울릴 배경을 고릅니다','오래 머물 집이라면, 바닥부터 천천히','사진 속 이 분위기, 우리 집에도 어울릴까요','문을 열고 들어왔을 때, 어떤 집이고 싶나요','바닥은 매일 보는 집의 가장 큰 배경입니다','마음에 드는 집에는, 마음에 드는 바닥이 있습니다','우리 집의 첫인상, 어디에서 시작할까요'],
+      product:['좋아 보이는 소재에서, 우리 집에 맞는 소재로','사진에서 마음에 든 이유를, 제품 정보로 확인하세요','{PRODUCT}, 이름 다음에 살펴볼 것들','컬러만 고르기 전에, 규격도 함께 보세요','우리 집 가구와 함께 놓고 보는 바닥','같은 제품도, 우리 집의 빛에서 다시 보세요','취향을 정했다면, 소재의 크기를 확인할 차례','바닥을 고를 때, 사진 옆에 두어야 할 정보'],
+      craft:['마루가 끝나는 자리까지, 보고 결정하세요','전체 사진 다음에는, 연결되는 자리를 봅니다','시공을 맡기기 전, 꼭 보고 싶은 부분들','무슨 작업을 했는지, 사진과 함께 확인하세요','집의 분위기와 마감, 둘 다 보고 고르세요','제품을 고른 다음, 현장의 조건을 살펴봅니다','마음에 든 공간에서, 한 걸음 더 가까이','시공 결과를 볼 때, 어디까지 살펴보시나요'],
+      question:['사진 속 이 마루, 우리 집에도 어울릴까요','우리 집 가구에는 어떤 바닥이 어울릴까요','사진과 실제 색이 다르게 느껴지는 이유','마음에 든 바닥, 상담할 때 무엇을 보내면 될까요','바닥 사진 한 장으로, 제품을 결정해도 될까요','색을 고른 다음에는 무엇을 확인할까요','집마다 다른 조건, 상담 전에 같이 볼까요','내 집에 놓일 소재, 어디서부터 고를까요']
     };
-    hooks.product = hooks.product.filter(
-      (t) => !t.includes("규격과 색상") || (p.size && p.color),
-    );
-    const recent = history.slice(-30),
-      variants = [];
-    for (let attempt = 0; attempt < 64; attempt++) {
-      const n = (sequence + attempt) % hooks[mode].length,
-        opening = hooks[mode][n],
-        space = (
-          place
-            ? [
-                `${place}의 ${surface} 시공 사진을 기록합니다.`,
-                `${place}, ${surface}를 중심으로 현장을 살펴봅니다.`,
-                `${surface}와 함께 담은 ${place}의 시공 기록입니다.`,
-                `${place}에서 남긴 ${surface} 사진을 차분히 모았습니다.`,
-              ]
-            : [
-                `이번 ${surface} 시공 사진을 소개합니다.`,
-                `${surface}를 중심으로 현장의 모습을 기록했습니다.`,
-                `소재를 선택할 때 참고할 ${surface} 시공 사진입니다.`,
-                `사진으로 전하는 ${surface} 시공 현장의 기록입니다.`,
-              ]
-        )[Math.floor((sequence + attempt) / 8) % 4],
-        productLine = specs.length
-          ? mode === "product" || mode === "question"
-            ? `${name}의 제품 정보입니다.\n${specs.join("\n")}`
-            : [
-                `사용 제품은 ${name}입니다.`,
-                [
-                  p.size && "규격 " + p.size,
-                  p.color && "색상 " + p.color,
-                  p.material && "소재 " + p.material,
-                  p.pack && "구성 " + p.pack,
-                  p.coverage && "박스 면적 " + p.coverage,
-                  p.colorOptions && "색상 선택 " + p.colorOptions,
-                ]
-                  .filter(Boolean)
-                  .join(" / "),
-                verifiedFeatures,
-              ]
-                .filter(Boolean)
-                .join("\n")
-          : `선택한 제품군은 ${p.category}입니다. 모델과 세부 규격은 확인 후 안내합니다.`,
-        workLine = works.length
-          ? `이 현장에서 확인한 작업은 ${works.join(" · ")}입니다.`
-          : "",
-        memoLine = memo ? `현장 기록: ${memo}` : "",
-        trust = [
-          "소재를 고를 때는 제품 정보와 현장 조건을 함께 살펴봅니다.",
-          "제품 표기와 실제 현장 조건을 구분해 안내합니다.",
-          "시공 범위는 현장 상태를 확인한 뒤 안내합니다.",
-          "상담에서는 원하는 소재와 현재 마감 상태를 함께 확인합니다.",
-        ][Math.floor((sequence + attempt) / 2) % 4],
-        qa = `Q. ${wall ? "벽장재" : "바닥재"} 선택 전에 무엇을 확인해야 할까요?\nA. 제품의 모델과 규격, 원하는 색상을 먼저 확인하고 현장 사진과 함께 시공 조건을 살펴보세요.`,
-        sections =
-          mode === "product"
-            ? [productLine, space, memoLine, workLine]
-            : mode === "craft"
-              ? [space, workLine, memoLine, productLine]
-              : mode === "question"
-                ? [qa, productLine, memoLine, workLine]
-                : [space, memoLine, productLine, workLine];
-      if ((sequence + attempt) % 2 === 1 && mode !== "question")
-        sections.reverse();
-      const caption = [
-        opening,
-        ...sections.filter(Boolean),
-        mode === "craft" ||
-        mode === "question" ||
-        (sequence + attempt) % 3 === 0
-          ? trust
-          : "",
-        mode === "question" || (sequence + attempt) % 2 === 0 ? inquiry : "",
-        `청인마루 · ${SLOGAN}`,
-      ]
-        .filter(Boolean)
-        .join("\n\n");
-      const overlap = Math.max(
-        0,
-        ...recent.map((h) =>
-          Math.max(
-            similarity(opening, h.title, p),
-            similarity(caption, h.caption, p),
-          ),
-        ),
-      );
-      variants.push({
-        opening,
-        caption,
-        n,
-        overlap,
-        attempt,
-        space,
-        productLine,
-        workLine,
-        memoLine,
-        trust,
-      });
+    for(const key of Object.keys(banks))banks[key]=banks[key].map(t=>neutral?t.replaceAll('바닥','소재').replaceAll('마루','소재'):wall?t.replaceAll('바닥','벽면').replaceAll('마루','벽장재'):t).map(t=>t.replaceAll('{PRODUCT}',name));
+    const leads={
+      editorial:wall?'가구를 더하기 전에, 그 뒤에 놓일 벽을 떠올려 보세요. 벽의 색과 표면은 집 안의 물건들이 보이는 배경이 됩니다.':'소파를 고를 때, 그 아래에 놓일 바닥도 함께 떠올려 보세요. 바닥의 색과 결은 가구와 나란히 집의 인상을 만듭니다.',
+      product:`마음에 든 사진을 저장했다면, ${surface}의 제품명과 규격도 함께 살펴보세요. 색상 이름만으로 결정하기보다 주변 마감과 실제 샘플을 함께 비교하면 선택이 구체적이 됩니다.`,
+      craft:`${surface}의 전체 모습과 주변 마감이 만나는 자리를 함께 살펴보세요. 원하는 마감의 모습을 현장 사진과 함께 이야기하면 상담의 기준도 구체적이 됩니다.`,
+      question:`Q. 사진 속 ${neutral?'소재':wall?'벽장재':'마루'}를 우리 집에 사용해도 같은 느낌일까요?\nA. 채광과 주변 마감, 보는 화면에 따라 색의 인상이 달라질 수 있습니다. 마음에 든 사진과 우리 집 사진을 함께 놓고, 실제 샘플로 확인해 보세요.`
+    };
+    if(neutral)leads.editorial='좋아하는 가구와 함께 놓일 소재를 떠올려 보세요. 집 전체의 분위기는 소재와 가구가 함께 만듭니다.';
+    const productLine=[place?`${place} 현장의 선택`:'이번 공간의 선택',p.model?name:`제품군: ${p.category}`,p.size&&`규격: ${p.size}`,p.color&&`색상: ${p.color}`,p.material&&`소재: ${p.material}`,p.pack&&`박스 구성: ${p.pack}`,p.coverage&&`박스 면적: ${p.coverage}`,features].filter(Boolean).join('\n');
+    const workLine=works.length?`이 현장에서 진행한 작업: ${works.join(' · ')}.`:'';
+    const trust=neutral?'주변 마감과 만나는 부분도 함께 살펴보세요. 구체적인 시공 범위는 현장의 상태를 확인해 안내합니다.':wall?'벽장재와 주변 마감이 만나는 부분도 함께 살펴보세요. 구체적인 시공 범위는 현재 현장의 상태를 확인해 안내합니다.':'마루와 주변 마감이 만나는 부분도 함께 살펴보세요. 구체적인 시공 범위는 현재 현장의 상태를 확인해 안내합니다.';
+    const recent=history.slice(-30),candidates=[];
+    for(let attempt=0;attempt<banks[mode].length;attempt++){
+      const n=(sequence+attempt)%banks[mode].length,opening=banks[mode][n];
+      const caption=[opening,leads[mode],memo,productLine,workLine,(mode==='craft'||mode==='question')?trust:'',inquiry,`청인마루\n${SLOGAN}`].filter(Boolean).join('\n\n');
+      const overlap=Math.max(0,...recent.map(h=>Math.max(similarity(opening,h.title,p),similarity(caption,h.caption,p))));
+      candidates.push({opening,caption,n,overlap,attempt});
     }
-    variants.sort((a, b) => a.overlap - b.overlap || a.attempt - b.attempt);
-    const chosen = variants[0],
-      titleChoices = [chosen.opening];
-    for (
-      let step = 1;
-      step <= hooks[mode].length && titleChoices.length < 3;
-      step++
-    ) {
-      const candidate = hooks[mode][(chosen.n + step) % hooks[mode].length];
-      if (
-        !recent.some((h) => normalText(h.title, p) === normalText(candidate, p))
-      )
-        titleChoices.push(candidate);
+    candidates.sort((a,b)=>a.overlap-b.overlap||a.attempt-b.attempt);const chosen=candidates[0];
+    const titles=[chosen.opening];
+    for(let step=1;step<=banks[mode].length&&titles.length<3;step++){
+      const title=banks[mode][(chosen.n+step)%banks[mode].length];
+      if(!recent.some(h=>normalText(h.title,p)===normalText(title,p)))titles.push(title);
     }
-    for (const candidate of hooks[mode])
-      if (titleChoices.length < 3 && !titleChoices.includes(candidate))
-        titleChoices.push(candidate);
-    const { space, productLine, workLine, memoLine, trust } = chosen;
-    const cards = [
-      { role: "공간", text: titleChoices[0], photo: 1 },
-      {
-        role: "제품",
-        text: [name, p.id.includes("::") ? "" : p.color]
-          .filter(Boolean)
-          .join(" · "),
-        photo: Math.min(2, input.photoCount || 4),
-      },
+    for(const title of banks[mode])if(titles.length<3&&!titles.includes(title))titles.push(title);
+    const invitation=neutral?'이 분위기, 우리 집에도 어울릴까요?':wall?'이 분위기, 우리 집의 벽에도 어울릴까요?':'이 분위기, 우리 집의 바닥에도 어울릴까요?';
+    const allCards=[
+      {role:'초대',text:titles[0],kicker:neutral?'소재를 고르는 일':wall?'벽을 고르는 일':'바닥을 고르는 일',detail:'청인마루 · '+SLOGAN,photo:1,layout:'cover'},
+      {role:'공간',text:neutral?'가구와 함께 놓고 보는 소재':wall?'가구와 함께 놓고 보는 벽의 색':'가구와 함께 놓고 보는 바닥의 색',kicker:'살고 싶은 공간',detail:place||'',photo:2,layout:'quiet'},
+      {role:'제품',text:name,kicker:'이 공간의 선택',detail:[p.size,p.color].filter(Boolean).join(' · '),photo:3,layout:'material'},
+      {role:works.length?'시공':'선택 기준',text:works.length?works.join(' · '):neutral?'주변 마감과 만나는 자리까지':wall?'벽면이 만나는 자리까지':'마루가 끝나는 자리까지',kicker:works.length?'실제 진행한 작업':'함께 살펴볼 기준',detail:works.length?workLine:trust,photo:4,layout:'evidence'},
+      {role:'문의',text:invitation,kicker:'우리 집을 위한 상담',detail:inquiry,photo:1,layout:'invitation'}
     ];
-    if (works.length)
-      cards.push({ role: "시공", text: works.join(" · "), photo: 3 });
-    else if (verifiedFeatures)
-      cards.push({ role: "확인된 특징", text: verifiedFeatures, photo: 3 });
-    else
-      cards.push({
-        role: "선택 기준",
-        text: wall
-          ? "벽면과 주변 마감의 조화를 살펴보세요"
-          : "전체 공간과 소재의 조화를 살펴보세요",
-        photo: 3,
-      });
-    if (count > 3)
-      cards.push({
-        role: "현장 기록",
-        text: memo || `${surface}의 전체 모습과 가까운 디테일`,
-        photo: 4,
-      });
-    if (count > 4)
-      cards.push({
-        role: "신뢰",
-        text: trust,
-        photo: Math.min(5, input.photoCount || 4),
-      });
-    if (count > 5)
-      cards.push({
-        role: "문의",
-        text: source ? inquiry : `청인마루 · ${SLOGAN}`,
-        photo: Math.min(6, input.photoCount || 4),
-      });
-    for(const card of cards) card.photo=Math.min(card.photo,input.photoCount||4);
-    const tags = [
-      "청인마루",
-      p.category,
-      wall ? "벽장재시공" : "마루시공",
-      "시공기록",
-      p.brand,
-      place ? place.replace(/[^\p{L}\p{N}]/gu, "") + "인테리어" : "",
-    ]
-      .filter(Boolean)
-      .map((t) => "#" + t.replace(/\s/g, ""));
-    const blog = [
-      `${place ? place + " " : ""}${name} 시공 기록`,
-      space,
-      memoLine,
-      "제품 정보",
-      productLine,
-      works.length
-        ? "확인한 현장 작업\n" + workLine
-        : "사진을 살펴보는 순서\n전체 공간과 소재의 디테일을 차례로 비교해 보세요.",
-      "상담 전 준비할 내용\n현장 사진, 대략의 면적, 기존 마감 상태, 원하는 자재와 일정을 정리하면 상담에 도움이 됩니다. 실제 시공 범위는 현장 조건을 확인한 후 안내합니다.",
-      trust,
-      inquiry,
-      `청인마루 · ${SLOGAN}`,
-    ]
-      .filter(Boolean)
-      .join("\n\n");
-    return {
-      mode,
-      product: structuredClone(p),
-      works,
-      sequence,
-      titles: titleChoices,
-      selectedTitle: 0,
-      caption: chosen.caption,
-      carousel: cards,
-      hook: titleChoices[1],
-      script: cards
-        .map((c, i) => `${i * 3}–${(i + 1) * 3}초 · 사진 ${c.photo}\n${c.text}`)
-        .join("\n\n"),
-      story: `${place ? place + "의 " : ""}${name} 시공 기록\n${titleChoices[0]}\n청인마루 · ${SLOGAN}`,
-      hashtags: [...new Set(tags)].join(" "),
-      comment: inquiry,
-      blog,
-      shorts: `${titleChoices[1]} #Shorts\n${name} 시공 사진 기록\n${inquiry}`,
-      kakao: `${titleChoices[0]}\n${name}의 공간 기록을 소개합니다.\n${inquiry}`,
-      maxSimilarity: chosen.overlap,
-      warnings: [
-        !p.model ? "모델 정보가 없어 제품군만 사용했습니다." : "",
-        p.features && !verifiedFeatures
-          ? "미확인 특징은 문구에서 제외했습니다."
-          : "",
-        !works.length
-          ? "선택한 특이 작업이 없어 작업 수행 문장을 넣지 않았습니다."
-          : "",
-        chosen.overlap > 0.65
-          ? "최근 문구와 유사도가 높습니다. 사실 정보는 유지하되 제목·본문을 검토하세요."
-          : "",
-      ].filter(Boolean),
-    };
+    let cards=count===3?[allCards[0],allCards[2],allCards[4]]:count===4?[allCards[0],allCards[2],allCards[3],allCards[4]]:allCards;
+    if(count===6)cards.splice(4,0,{role:'현장 메모',text:memo||`우리 집의 ${surface}, 사진과 샘플로 함께 고르세요`,kicker:'선택을 구체적으로',detail:features||[p.size,p.color].filter(Boolean).join(' · '),photo:5,layout:'note'});
+    cards=cards.map(c=>({...c,photo:Math.min(c.photo,input.photoCount||4)}));
+    const tags=['청인마루',p.category,wall?'벽장재시공':'마루시공',p.brand,place?place.replace(/[^\p{L}\p{N}]/gu,'')+'인테리어':''].filter(Boolean).map(t=>'#'+t.replace(/\s/g,''));
+    const blog=[[place,name,wall?'벽장재 시공':'마루 시공'].filter(Boolean).join(' '),titles[0],leads[mode],memo,'이 공간에 사용한 제품\n'+productLine,works.length?'실제로 진행한 작업\n'+workLine:'제품을 고를 때 함께 볼 것\n'+trust,'사진을 보는 순서\n전체 공간 → 가구와 소재의 관계 → 제품 정보 → 주변 마감과 만나는 부분','우리 집에 적용하고 싶다면\n'+inquiry,`청인마루 · ${SLOGAN}`].filter(Boolean).join('\n\n');
+    return {mode,product:structuredClone(p),works,sequence,titles,selectedTitle:0,caption:chosen.caption,carousel:cards,hook:titles[0],script:cards.map((c,i)=>`${i*3}–${(i+1)*3}초 · 사진 ${c.photo}\n${c.text}`).join('\n\n'),story:titles[0]+'\n'+name+'\n'+SLOGAN,hashtags:[...new Set(tags)].join(' '),comment:inquiry,blog,shorts:titles[0]+' #Shorts\n'+name+'\n'+inquiry,kakao:[invitation,name,p.size,inquiry].filter(Boolean).join('\n'),maxSimilarity:chosen.overlap,copyVersion:2,series:neutral?'청인마루 · 소재를 고르는 일':wall?'청인마루 · 벽을 고르는 일':'청인마루 · 바닥을 고르는 일',warnings:[!p.model?'모델 정보가 없어 제품군만 사용했습니다.':'',p.features&&!features?'미확인 특징은 문구에서 제외했습니다.':'',!works.length?'선택한 특이 작업이 없어 작업 수행 문장을 넣지 않았습니다.':'',chosen.overlap>.65?'최근 문구와 유사도가 높습니다. 원고를 검토하세요.':''].filter(Boolean)};
   }
+
   return {
     SLOGAN,
     MODES,

@@ -16,7 +16,7 @@ with sync_playwright() as p:
   ctx=b.new_context(**p.devices[device],accept_downloads=True);a=ctx.new_page();errors=[];a.on('pageerror',lambda e:errors.append(str(e)));a.on('dialog',lambda d:d.accept())
   a.add_init_script("Object.defineProperty(navigator,'canShare',{value:()=>true});Object.defineProperty(navigator,'share',{value:async data=>{window.testSharedFiles=data.files.map(f=>({name:f.name,type:f.type,size:f.size}));}})")
   a.goto('http://127.0.0.1:8000/marketing/');a.wait_for_function('workflowReady&&easyReady');assert a.evaluate('appleTouchDevice')
-  a.locator('#production-files').set_input_files([str(f)for f in photos[:4]]);a.wait_for_function('state.photos.length===4&&document.querySelector("#designs canvas")?.dataset.renderer==="editorial-v3"',timeout=90000)
+  a.locator('#production-files').set_input_files([str(f)for f in photos[:4]]);a.wait_for_function('state.photos.length===4&&document.querySelector("#designs canvas")?.dataset.renderer==="cheongin-stories-v4"',timeout=90000)
   assert a.evaluate('document.documentElement.scrollWidth<=innerWidth+1');assert a.evaluate('state.photos.every(p=>p.sourceWidth===4032&&!!p.thumbnail)')
   assert a.evaluate('images.size<=2');assert a.locator('#production-title').evaluate('(el)=>parseFloat(getComputedStyle(el).fontSize)>=16')
   a.locator('.direction-trigger').click();a.wait_for_function('document.querySelectorAll(".direction-options canvas").length===3',timeout=60000);a.locator('.direction-options button').nth(1).click();a.wait_for_function('state.theme==="gallery"&&document.querySelector("#designs canvas")?.dataset.design==="gallery"')

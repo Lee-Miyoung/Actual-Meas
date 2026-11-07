@@ -42,6 +42,8 @@
       ),
       common = {
         product: p,
+        series: draft.series || "",
+        copyVersion: draft.copyVersion || 1,
         photoRefs: assets,
         mode: draft.mode,
         theme: project.theme || "editorial",

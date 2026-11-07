@@ -107,13 +107,13 @@ compareButton.onclick=async()=>{
   const revision=++directionRevision;
   directionDialog.replaceChildren();const close=node('button','닫기','export-close');close.onclick=()=>directionDialog.close();
   const heading=node('h2','같은 공간, 세 가지 편집');heading.id='direction-dialog-title';
-  const note=node('p','제품과 사진은 그대로, 편집 방향을 비교하세요. 선택하면 현재 작업 전체에 적용합니다.');
+  const note=node('p','같은 현장을 살고 싶은 이유, 소재를 고르는 기준, 맡길 수 있는 근거로 풀어냅니다. 선택하면 제안 문구가 적용됩니다. 기존 문구는 되돌릴 수 있도록 보관합니다.');
   const options=node('div',undefined,'direction-options');directionDialog.append(close,heading,note,options);directionDialog.showModal();
-  try { for(const [theme,label]of [['editorial','01 공간 화보'],['gallery','02 공간 갤러리'],['journal','03 소재 저널']]){
-    const full=await card(theme,0,'carousel');
+  try { for(const [theme,label]of [['editorial','01 살고 싶은 공간'],['gallery','02 소재를 고르는 안목'],['journal','03 맡길 수 있는 시공']]){
+    const full=await card(theme,0,'carousel',true);
     if(revision!==directionRevision){releaseCanvas(full);return;}
     const thumb=node('canvas');thumb.width=320;thumb.height=400;thumb.getContext('2d').drawImage(full,0,0,320,400);releaseCanvas(full);
-    const b=node('button');b.type='button';b.append(thumb,node('span',label+' · 이 디자인 선택'));b.onclick=()=>{state.theme=theme;directionSelect.value=theme;persist();directionDialog.close();window.renderProductionWorkspace();};options.append(b);
+    const b=node('button');b.type='button';b.append(thumb,node('span',label+' · 디자인과 문구 적용'));b.onclick=()=>{if(window.selectBrandDirection)window.selectBrandDirection(theme);else{state.theme=theme;persist();}directionSelect.value=theme;directionDialog.close();window.renderProductionWorkspace();};options.append(b);
   }}catch(e){note.textContent='시안 생성 실패 · '+e.message;}
 };
 

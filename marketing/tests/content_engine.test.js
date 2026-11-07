@@ -202,3 +202,14 @@ test("detailed model selection resolves only its own color and size variant", ()
     null,
   );
 });
+
+test('brand wording preserves wall manufacturer names and does not guess an unknown material',()=>{
+ const wall={id:'wall-original-name',type:'wall',category:'벽장재',brand:'동화자연마루',model:'시그니월',size:'1010×2460×9T'};
+ const result=E.create(input(wall,'product'),[],2);
+ assert(result.titles.some(t=>t.includes('동화자연마루 시그니월')));
+ assert(!result.caption.includes('동화자연벽장재'));
+ const generic=E.create(input({id:'unknown',type:'floor',category:'마감재'}));
+ assert(!generic.caption.includes('바닥'));assert(!generic.caption.includes('규격:'));
+ assert.equal(generic.carousel.at(-1).role,'문의');
+ assert.equal(generic.carousel[1].layout,'quiet');
+});

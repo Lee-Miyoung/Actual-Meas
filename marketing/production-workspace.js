@@ -135,6 +135,7 @@ function productionSlides() {
   return Array.from({ length: state.slideCount || 5 }, (_, i) => ({ ...state.brandSlides?.[i], title: titles[i] || state.title || '시공 기록' }));
 }
 function updateProductionSlide(patch) {
+  if(Object.hasOwn(patch,"title"))state.brandStoryMode="manual";
   const slides = productionSlides(); slides[productionSlide] = { ...slides[productionSlide], ...patch };
   state.brandSlides = slides;
   state.brandOutput = { ...brandSettings(), titles: slides.map(s => s.title).join('\n') };
@@ -154,6 +155,7 @@ async function renderProductionWorkspace() {
   $('package-drop').querySelector('strong').textContent=state.photos.length?'현장 사진 '+state.photos.length+'장':'01　현장 사진 불러오기';
   $('package-drop').querySelector('.package-picker').firstChild.textContent=state.photos.length?'사진·자료 바꾸기':'사진 또는 제작 ZIP 선택';
   document.body.classList.toggle("full-photo-mode",brandSettings().fit==="contain");
+  window.updateCampaignSummary?.();
   migrateProductionDesign(); syncBrandControls();
   layoutSelect.value = ['editorial','gallery','journal'].includes(state.theme) ? state.theme : 'editorial';
   for (const [key, button] of platformButtons) { button.classList.toggle('active', key === state.format); button.setAttribute('aria-pressed', String(key === state.format)); }
@@ -271,11 +273,12 @@ async function importProductionFiles(files) {
     // Decode and validate everything first. A failed import never changes current work.
     if (photos.length && state.photos.length && !confirm('현재 사진을 새 제작 자료로 교체할까요? 필요한 기존 작업은 보관함에서 백업해 주세요.')) { status.textContent = '불러오기를 취소했습니다. 기존 작업을 유지합니다.'; return; }
     if (photos.length) { state.photos = photos; images.clear(); selected = 0; original = false; thumbnails(); }
-    if (kit) applyBrandKit(kit);
+    if (kit) {state.brandStoryMode="manual";delete state.brandStories;applyBrandKit(kit);}
     else if (photos.length) {
       state.slideCount = Math.max(3, Math.min(6, photos.length)); $('slide-count').value = String(state.slideCount);
       state.brandSlides = Array.from({ length: state.slideCount }, (_, i) => ({ photo: photos[i % photos.length].name, title: '시공 기록' }));
       state.brandOutput = { ...brandSettings(), titles: state.brandSlides.map(s => s.title).join('\n') };
+      await window.prepareBrandStories?.({apply:true,resetPhotos:true});
     }
     state.usePreparedPhotos = true; persist(); syncBrandControls();
     productionSlide = 0;

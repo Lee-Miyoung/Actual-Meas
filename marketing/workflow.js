@@ -1007,7 +1007,7 @@ async function cacheGeneratedImages(job, files, content, revision) {
       at: new Date().toISOString(),
       revision,
       content: structuredClone(content),
-      renderer: "platform-design-v2",
+      renderer: "cheongin-stories-v4",
       files: images,
     });
     persist();
