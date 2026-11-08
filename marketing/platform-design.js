@@ -60,9 +60,14 @@ async function renderPlatformDesign(content, image, index=0, format='carousel') 
     text(value,x,y,width,size,rows,true,light?'#fffdf7':EDITORIAL.ink,Math.max(40,size-18),true);
   }
   function productFacts(x,y,width=325){
-    small('이 공간의 선택',x,y,width);text(product,x,y+62,width,35,4,true,EDITORIAL.ink,28);
-    let cursor=y+274;
-    for(const [label,value]of [['규격',content.product?.size],['컬러',content.product?.color],['소재',content.product?.material]])if(value){small(label,x,cursor,width);text(value,x,cursor+42,width,26,3,false,EDITORIAL.ink,23);cursor+=154;}
+    small('이 공간의 선택',x,y,width);
+    const titleHeight=text(product,x,y+62,width,42,4,true,EDITORIAL.ink,36);
+    let cursor=y+62+titleHeight+58;
+    for(const [label,value]of [['규격',content.product?.size],['컬러',content.product?.color],['소재',content.product?.material]])if(value){
+      small(label,x,cursor,width);
+      const valueHeight=text(value,x,cursor+48,width,32,3,false,EDITORIAL.ink,28);
+      cursor+=48+valueHeight+28;
+    }
   }
   if(natural){
     g.drawImage(image,0,0,1080,h);
