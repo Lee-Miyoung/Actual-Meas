@@ -176,6 +176,7 @@ function selectedProduct() {
 function contentInput() {
   return {
     product: selectedProduct(),
+    stage: state.siteStage || 'unknown',
     mode: state.authoring.mode,
     works: state.authoring.works,
     site: state.authoring.site,

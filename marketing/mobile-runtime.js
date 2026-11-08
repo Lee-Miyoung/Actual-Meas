@@ -101,20 +101,48 @@ document.querySelector('.desk-settings .brand-output-panel > p').textContent='�
 const compareButton=node('button','같은 사진으로 디자인 3안 비교','direction-trigger');compareButton.type='button';$('production-platforms').after(compareButton);
 const directionDialog=node('dialog');directionDialog.id='direction-dialog';directionDialog.setAttribute('aria-labelledby','direction-dialog-title');document.body.append(directionDialog);
 let directionRevision=0;
-directionDialog.addEventListener('close',()=>{directionRevision++;for(const c of directionDialog.querySelectorAll('canvas'))releaseCanvas(c);});
+directionDialog.tabIndex=-1;
+directionDialog.addEventListener('close',()=>{directionRevision++;for(const c of directionDialog.querySelectorAll('canvas'))releaseCanvas(c);directionDialog.replaceChildren();});
+compareButton.textContent='디자인 3안 크게 비교';
 compareButton.onclick=async()=>{
   if(!state.photos.length)return toast('현장 사진을 먼저 선택하세요.');
-  const revision=++directionRevision;
-  directionDialog.replaceChildren();const close=node('button','닫기','export-close');close.onclick=()=>directionDialog.close();
-  const heading=node('h2','같은 공간, 세 가지 편집');heading.id='direction-dialog-title';
-  const note=node('p','같은 현장을 살고 싶은 이유, 소재를 고르는 기준, 맡길 수 있는 근거로 풀어냅니다. 선택하면 제안 문구가 적용됩니다. 기존 문구는 되돌릴 수 있도록 보관합니다.');
-  const options=node('div',undefined,'direction-options');directionDialog.append(close,heading,note,options);directionDialog.showModal();
-  try { for(const [theme,label]of [['editorial','01 살고 싶은 공간'],['gallery','02 소재를 고르는 안목'],['journal','03 맡길 수 있는 시공']]){
-    const full=await card(theme,0,'carousel',true);
-    if(revision!==directionRevision){releaseCanvas(full);return;}
-    const thumb=node('canvas');thumb.width=320;thumb.height=400;thumb.getContext('2d').drawImage(full,0,0,320,400);releaseCanvas(full);
-    const b=node('button');b.type='button';b.append(thumb,node('span',label+' · 디자인과 문구 적용'));b.onclick=()=>{if(window.selectBrandDirection)window.selectBrandDirection(theme);else{state.theme=theme;persist();}directionSelect.value=theme;directionDialog.close();window.renderProductionWorkspace();};options.append(b);
-  }}catch(e){note.textContent='시안 생성 실패 · '+e.message;}
+  const revision=++directionRevision;directionDialog.replaceChildren();
+  const header=node('header',undefined,'direction-header'),eyebrow=node('span','CHEONGINMARU / DESIGN','direction-eyebrow');
+  const heading=node('h2','같은 사진, 다른 분위기');heading.id='direction-dialog-title';
+  const note=node('p','크게 비교하고 마음에 드는 시안을 골라보세요.');
+  const close=node('button','×','export-close');close.type='button';close.setAttribute('aria-label','시안 비교 닫기');close.onclick=()=>directionDialog.close();
+  header.append(eyebrow,close,heading,note);
+  const options=node('div',undefined,'direction-options');options.setAttribute('aria-label','디자인 시안 3개');options.tabIndex=0;
+  const nav=node('div',undefined,'direction-navigation'),previous=node('button','←'),next=node('button','→'),counter=node('span','01 / 03');
+  previous.type=next.type='button';previous.setAttribute('aria-label','이전 시안');next.setAttribute('aria-label','다음 시안');counter.setAttribute('aria-live','polite');nav.append(previous,counter,next);
+  const hint=node('p','옆으로 넘겨 비교할 수 있어요.','direction-swipe-hint');
+  directionDialog.append(header,options,hint,nav);directionDialog.showModal();directionDialog.focus({preventScroll:true});
+  let active=0,scrollTick;
+  const pages=[];
+  function syncPage(){
+    if(!pages.length)return;
+    const step=pages.length>1?pages[1].offsetLeft-pages[0].offsetLeft:pages[0].offsetWidth;
+    active=Math.max(0,Math.min(pages.length-1,Math.round(options.scrollLeft/Math.max(1,step))));counter.textContent=String(active+1).padStart(2,'0')+' / 03';previous.disabled=active===0;next.disabled=active===2;
+  }
+  function move(delta){const i=Math.max(0,Math.min(pages.length-1,active+delta));if(!pages[i])return;options.scrollTo({left:pages[i].offsetLeft-pages[0].offsetLeft,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+  previous.onclick=()=>move(-1);next.onclick=()=>move(1);
+  options.onscroll=()=>{cancelAnimationFrame(scrollTick);scrollTick=requestAnimationFrame(syncPage);};
+  options.onkeydown=e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();move(e.key==='ArrowRight'?1:-1);}};
+  const definitions=[['editorial','01','공간 화보','사진을 주인공으로, 문구는 여백에.'],['gallery','02','소재 에디션','큰 제목과 선명한 제품 정보.'],['journal','03','시공 저널','짙은 바탕 위에 정돈한 시공의 기준.']];
+  for(const [theme,number,label,description]of definitions){
+    const page=node('article',undefined,'direction-option');page.setAttribute('aria-label',number+' '+label);
+    const art=node('div',undefined,'direction-art');const preparing=node('span','시안을 준비하고 있어요.','direction-preparing');art.append(preparing);
+    const caption=node('div',undefined,'direction-caption'),title=node('h3');title.append(node('small',number),node('span',label));caption.append(title,node('p',description));
+    const apply=node('button','이 시안 쓰기','direction-apply');apply.type='button';apply.disabled=true;apply.setAttribute('aria-label',number+' '+label+' 적용');
+    apply.onclick=()=>{if(window.selectBrandDirection)window.selectBrandDirection(theme);else{state.theme=theme;persist();}directionSelect.value=theme;directionDialog.close();window.renderProductionWorkspace();};
+    page.append(art,caption,apply);options.append(page);pages.push(page);
+    try{
+      const full=await card(theme,0,'carousel',true);
+      if(revision!==directionRevision){releaseCanvas(full);return;}
+      const thumb=node('canvas');thumb.width=720;thumb.height=900;thumb.getContext('2d').drawImage(full,0,0,720,900);thumb.dataset.design=theme;thumb.dataset.renderer=full.dataset.renderer;thumb.setAttribute('aria-label',label+' 출력 미리보기');releaseCanvas(full);art.replaceChildren(thumb);apply.disabled=false;
+    }catch(e){preparing.textContent='시안을 만들지 못했습니다. '+e.message;}
+  }
+  syncPage();
 };
 
 // Refreshing a saved job returns to the same workspace rather than an empty-looking dashboard.

@@ -81,7 +81,7 @@ advanced.append(controlsHost, $('brand-titles').closest('label'), $('brand-examp
 $('brand-caption').closest('label').before(advanced);
 $('brand-position').closest('label').hidden = true;
 $('brand-tone').closest('label').hidden = true;
-$('brand-fit').replaceChildren(new Option('테두리 없이 채우기 · 가장자리 일부 크롭', 'cover'), new Option('전체 사진 보존 · 원본 비율로 출력', 'contain'));
+$('brand-fit').replaceChildren(new Option('테두리 없이 채우기 · 가장자리 일부 크롭', 'cover'), new Option('사진 전체 보기 · 자르지 않기', 'contain'));
 const fitLabel = $('brand-fit').closest('label');
 advanced.before(fitLabel);
 const layoutControl = document.createElement('label');
@@ -185,7 +185,7 @@ async function renderProductionWorkspace() {
     button.append(img, number); button.onclick = () => { productionSlide = i; renderProductionWorkspace(); }; $('production-filmstrip').append(button);
   });
   const natural = state.format === 'naver' || brandSettings().fit === 'contain';
-  $('production-crop-note').textContent = natural ? '원본 비율로 출력합니다. 양옆 테두리와 추가 색보정이 없습니다.' : '플랫폼 비율에 맞춰 가장자리를 일부 자릅니다. 바닥·창이 잘리면 위 슬라이더로 구도를 옮기거나 전체 사진 보존을 선택하세요.';
+  $('production-crop-note').textContent = natural ? '사진 전체를 디자인 영역 안에 보존합니다. 양옆 테두리와 추가 색보정이 없습니다.' : '플랫폼 비율에 맞춰 가장자리를 일부 자릅니다. 바닥·창이 잘리면 위 슬라이더로 구도를 옮기거나 전체 사진 보존을 선택하세요.';
   try {
     const canvas = await card(state.theme, productionSlide);
     if (revision !== productionRevision) {canvas.width=canvas.height=1; return;}
@@ -272,7 +272,7 @@ async function importProductionFiles(files) {
     if (kit && kit.slides.some(s => s.photo && !ProductionCore.matchPhoto(s.photo, available))) throw Error('문구와 연결할 사진이 없습니다. 사진과 JSON을 함께 선택하세요.');
     // Decode and validate everything first. A failed import never changes current work.
     if (photos.length && state.photos.length && !confirm('현재 사진을 새 제작 자료로 교체할까요? 필요한 기존 작업은 보관함에서 백업해 주세요.')) { status.textContent = '불러오기를 취소했습니다. 기존 작업을 유지합니다.'; return; }
-    if (photos.length) { state.photos = photos; images.clear(); selected = 0; original = false; thumbnails(); }
+    if (photos.length) { state.siteStage='unknown';const stage=$('campaign-stage');if(stage)stage.value='unknown';state.photos = photos; images.clear(); selected = 0; original = false; thumbnails(); }
     if (kit) {state.brandStoryMode="manual";delete state.brandStories;applyBrandKit(kit);}
     else if (photos.length) {
       state.slideCount = Math.max(3, Math.min(6, photos.length)); $('slide-count').value = String(state.slideCount);

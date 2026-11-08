@@ -310,6 +310,7 @@
   function create(input, history = [], sequence = 0) {
     const p=normalProduct(input.product),mode=Object.hasOwn(MODES,input.mode)?input.mode:'editorial';
     const neutral=p.category==='마감재',wall=p.type==='wall',surface=neutral?'소재':wall?'벽면':'바닥',name=label(p),place=clean(input.region)||clean(input.site),memo=clean(input.memo);
+    const stage=['before','progress','complete'].includes(input.stage)?input.stage:'unknown';
     const works=(input.works||[]).filter(w=>WORKS.includes(w)),count=Math.max(3,Math.min(6,Number(input.count)||5));
     const specs=facts(p),features=p.verified&&p.source?clean(p.features):'',source=clean(input.contact);
     const inquiry=`지역과 현장 사진, 마음에 드는 ${neutral?'소재':wall?'벽장재':'마루'}를 알려주세요. 원하는 분위기와 시공 조건을 함께 살펴보겠습니다.${source?'\n상담 연결: '+source:''}`;
@@ -319,6 +320,12 @@
       craft:['마루가 끝나는 자리까지, 보고 결정하세요','전체 사진 다음에는, 연결되는 자리를 봅니다','시공을 맡기기 전, 꼭 보고 싶은 부분들','무슨 작업을 했는지, 사진과 함께 확인하세요','집의 분위기와 마감, 둘 다 보고 고르세요','제품을 고른 다음, 현장의 조건을 살펴봅니다','마음에 든 공간에서, 한 걸음 더 가까이','시공 결과를 볼 때, 어디까지 살펴보시나요'],
       question:['사진 속 이 마루, 우리 집에도 어울릴까요','우리 집 가구에는 어떤 바닥이 어울릴까요','사진과 실제 색이 다르게 느껴지는 이유','마음에 든 바닥, 상담할 때 무엇을 보내면 될까요','바닥 사진 한 장으로, 제품을 결정해도 될까요','색을 고른 다음에는 무엇을 확인할까요','집마다 다른 조건, 상담 전에 같이 볼까요','내 집에 놓일 소재, 어디서부터 고를까요']
     };
+    if(stage!=='complete'){
+      banks.editorial=stage==='progress'?['완성을 향해, 공간의 다음 모습을 준비합니다','지금의 현장에서, 다음의 분위기를 고릅니다','우리 공간의 변화, 어떤 소재로 시작할까요']:stage==='before'?['시작하기 전, 우리 공간의 분위기부터','이 공간에 어울릴 바닥, 함께 고릅니다','바꾸고 싶은 분위기, 사진에서 시작해 보세요']:['이 공간에 어울릴 바닥, 함께 고릅니다','우리 공간의 다음 모습, 어떤 분위기가 좋을까요','집을 위한 소재 선택, 여기서 시작합니다'];
+      banks.product=['소재를 고르기 전, 모델과 규격부터','우리 공간에 맞는 소재를 찾는 순서','{PRODUCT}, 선택 전에 함께 볼 정보'];
+      banks.craft=stage==='progress'?['진행 중인 현장, 작업의 흐름을 담습니다','완성으로 가는 과정, 지금을 기록합니다','시공 과정에서 함께 살펴볼 부분들']:['시공을 맡기기 전, 현장부터 살펴봅니다','현장의 조건을 알아야 선택도 구체적입니다','시작 전에 함께 확인할 시공의 기준'];
+      banks.question=['우리 공간에는 어떤 바닥이 어울릴까요','시공 상담 전, 무엇을 준비하면 좋을까요','마음에 드는 소재, 우리 공간에도 맞을까요'];
+    }
     for(const key of Object.keys(banks))banks[key]=banks[key].map(t=>neutral?t.replaceAll('바닥','소재').replaceAll('마루','소재'):wall?t.replaceAll('바닥','벽면').replaceAll('마루','벽장재'):t).map(t=>t.replaceAll('{PRODUCT}',name));
     const leads={
       editorial:wall?'가구를 더하기 전에, 그 뒤에 놓일 벽을 떠올려 보세요. 벽의 색과 표면은 집 안의 물건들이 보이는 배경이 됩니다.':'소파를 고를 때, 그 아래에 놓일 바닥도 함께 떠올려 보세요. 바닥의 색과 결은 가구와 나란히 집의 인상을 만듭니다.',
@@ -327,6 +334,7 @@
       question:`Q. 사진 속 ${neutral?'소재':wall?'벽장재':'마루'}를 우리 집에 사용해도 같은 느낌일까요?\nA. 채광과 주변 마감, 보는 화면에 따라 색의 인상이 달라질 수 있습니다. 마음에 든 사진과 우리 집 사진을 함께 놓고, 실제 샘플로 확인해 보세요.`
     };
     if(neutral)leads.editorial='좋아하는 가구와 함께 놓일 소재를 떠올려 보세요. 집 전체의 분위기는 소재와 가구가 함께 만듭니다.';
+    if(stage!=='complete')leads.editorial=stage==='progress'?'진행 중인 현장의 모습을 담았습니다. 원하는 분위기와 선택한 소재가 어떻게 이어질지 함께 살펴보세요.':'원하는 분위기와 현재 현장의 조건을 함께 놓고 소재를 골라보세요. 실제 색과 표면은 제품 정보와 샘플로 비교하면 선택이 더 구체적이 됩니다.';
     const productLine=[place?`${place} 현장의 선택`:'이번 공간의 선택',p.model?name:`제품군: ${p.category}`,p.size&&`규격: ${p.size}`,p.color&&`색상: ${p.color}`,p.material&&`소재: ${p.material}`,p.pack&&`박스 구성: ${p.pack}`,p.coverage&&`박스 면적: ${p.coverage}`,features].filter(Boolean).join('\n');
     const workLine=works.length?`이 현장에서 진행한 작업: ${works.join(' · ')}.`:'';
     const trust=neutral?'주변 마감과 만나는 부분도 함께 살펴보세요. 구체적인 시공 범위는 현장의 상태를 확인해 안내합니다.':wall?'벽장재와 주변 마감이 만나는 부분도 함께 살펴보세요. 구체적인 시공 범위는 현재 현장의 상태를 확인해 안내합니다.':'마루와 주변 마감이 만나는 부분도 함께 살펴보세요. 구체적인 시공 범위는 현재 현장의 상태를 확인해 안내합니다.';
@@ -344,11 +352,11 @@
       if(!recent.some(h=>normalText(h.title,p)===normalText(title,p)))titles.push(title);
     }
     for(const title of banks[mode])if(titles.length<3&&!titles.includes(title))titles.push(title);
-    const invitation=neutral?'이 분위기, 우리 집에도 어울릴까요?':wall?'이 분위기, 우리 집의 벽에도 어울릴까요?':'이 분위기, 우리 집의 바닥에도 어울릴까요?';
+    const invitation=stage!=='complete'?'우리 공간의 시공, 함께 준비해 볼까요?':neutral?'이 분위기, 우리 집에도 어울릴까요?':wall?'이 분위기, 우리 집의 벽에도 어울릴까요?':'이 분위기, 우리 집의 바닥에도 어울릴까요?';
     const allCards=[
       {role:'초대',text:titles[0],kicker:neutral?'소재를 고르는 일':wall?'벽을 고르는 일':'바닥을 고르는 일',detail:'청인마루 · '+SLOGAN,photo:1,layout:'cover'},
-      {role:'공간',text:neutral?'가구와 함께 놓고 보는 소재':wall?'가구와 함께 놓고 보는 벽의 색':'가구와 함께 놓고 보는 바닥의 색',kicker:'살고 싶은 공간',detail:place||'',photo:2,layout:'quiet'},
-      {role:'제품',text:name,kicker:'이 공간의 선택',detail:[p.size,p.color].filter(Boolean).join(' · '),photo:3,layout:'material'},
+      {role:'공간',text:stage!=='complete'?'어울리는 소재를 함께 고르는 시간':neutral?'가구와 함께 놓고 보는 소재':wall?'가구와 함께 놓고 보는 벽의 색':'가구와 함께 놓고 보는 바닥의 색',kicker:'살고 싶은 공간',detail:place||'',photo:2,layout:'quiet'},
+      {role:'제품',text:name,kicker:stage==='complete'?'이 공간의 선택':'현장에서 선택한 제품',detail:[p.size,p.color].filter(Boolean).join(' · '),photo:3,layout:'material'},
       {role:works.length?'시공':'선택 기준',text:works.length?works.join(' · '):neutral?'주변 마감과 만나는 자리까지':wall?'벽면이 만나는 자리까지':'마루가 끝나는 자리까지',kicker:works.length?'실제 진행한 작업':'함께 살펴볼 기준',detail:works.length?workLine:trust,photo:4,layout:'evidence'},
       {role:'문의',text:invitation,kicker:'우리 집을 위한 상담',detail:inquiry,photo:1,layout:'invitation'}
     ];
@@ -356,8 +364,8 @@
     if(count===6)cards.splice(4,0,{role:'현장 메모',text:memo||`우리 집의 ${surface}, 사진과 샘플로 함께 고르세요`,kicker:'선택을 구체적으로',detail:features||[p.size,p.color].filter(Boolean).join(' · '),photo:5,layout:'note'});
     cards=cards.map(c=>({...c,photo:Math.min(c.photo,input.photoCount||4)}));
     const tags=['청인마루',p.category,wall?'벽장재시공':'마루시공',p.brand,place?place.replace(/[^\p{L}\p{N}]/gu,'')+'인테리어':''].filter(Boolean).map(t=>'#'+t.replace(/\s/g,''));
-    const blog=[[place,name,wall?'벽장재 시공':'마루 시공'].filter(Boolean).join(' '),titles[0],leads[mode],memo,'이 공간에 사용한 제품\n'+productLine,works.length?'실제로 진행한 작업\n'+workLine:'제품을 고를 때 함께 볼 것\n'+trust,'사진을 보는 순서\n전체 공간 → 가구와 소재의 관계 → 제품 정보 → 주변 마감과 만나는 부분','우리 집에 적용하고 싶다면\n'+inquiry,`청인마루 · ${SLOGAN}`].filter(Boolean).join('\n\n');
-    return {mode,product:structuredClone(p),works,sequence,titles,selectedTitle:0,caption:chosen.caption,carousel:cards,hook:titles[0],script:cards.map((c,i)=>`${i*3}–${(i+1)*3}초 · 사진 ${c.photo}\n${c.text}`).join('\n\n'),story:titles[0]+'\n'+name+'\n'+SLOGAN,hashtags:[...new Set(tags)].join(' '),comment:inquiry,blog,shorts:titles[0]+' #Shorts\n'+name+'\n'+inquiry,kakao:[invitation,name,p.size,inquiry].filter(Boolean).join('\n'),maxSimilarity:chosen.overlap,copyVersion:2,series:neutral?'청인마루 · 소재를 고르는 일':wall?'청인마루 · 벽을 고르는 일':'청인마루 · 바닥을 고르는 일',warnings:[!p.model?'모델 정보가 없어 제품군만 사용했습니다.':'',p.features&&!features?'미확인 특징은 문구에서 제외했습니다.':'',!works.length?'선택한 특이 작업이 없어 작업 수행 문장을 넣지 않았습니다.':'',chosen.overlap>.65?'최근 문구와 유사도가 높습니다. 원고를 검토하세요.':''].filter(Boolean)};
+    const blog=[[place,name,wall?'벽장재 시공':'마루 시공'].filter(Boolean).join(' '),titles[0],leads[mode],memo,(stage==='complete'?'이 공간에 사용한 제품\n':'현장에서 선택한 제품\n')+productLine,works.length?'실제로 진행한 작업\n'+workLine:'제품을 고를 때 함께 볼 것\n'+trust,'사진을 보는 순서\n전체 공간 → 가구와 소재의 관계 → 제품 정보 → 주변 마감과 만나는 부분','우리 집에 적용하고 싶다면\n'+inquiry,`청인마루 · ${SLOGAN}`].filter(Boolean).join('\n\n');
+    return {mode,product:structuredClone(p),works,sequence,titles,selectedTitle:0,caption:chosen.caption,carousel:cards,hook:titles[0],script:cards.map((c,i)=>`${i*3}–${(i+1)*3}초 · 사진 ${c.photo}\n${c.text}`).join('\n\n'),story:titles[0]+'\n'+name+'\n'+SLOGAN,hashtags:[...new Set(tags)].join(' '),comment:inquiry,blog,shorts:titles[0]+' #Shorts\n'+name+'\n'+inquiry,kakao:[invitation,name,p.size,inquiry].filter(Boolean).join('\n'),maxSimilarity:chosen.overlap,copyVersion:3,stage,series:neutral?'청인마루 · 소재를 고르는 일':wall?'청인마루 · 벽을 고르는 일':'청인마루 · 바닥을 고르는 일',warnings:[!p.model?'모델 정보가 없어 제품군만 사용했습니다.':'',p.features&&!features?'미확인 특징은 문구에서 제외했습니다.':'',!works.length?'선택한 특이 작업이 없어 작업 수행 문장을 넣지 않았습니다.':'',chosen.overlap>.65?'최근 문구와 유사도가 높습니다. 원고를 검토하세요.':''].filter(Boolean)};
   }
 
   return {

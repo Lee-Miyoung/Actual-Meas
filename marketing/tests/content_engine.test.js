@@ -213,3 +213,14 @@ test('brand wording preserves wall manufacturer names and does not guess an unkn
  assert.equal(generic.carousel.at(-1).role,'문의');
  assert.equal(generic.carousel[1].layout,'quiet');
 });
+
+test('unconfirmed and in-progress sites do not use completed-home storytelling',()=>{
+ for(const stage of ['unknown','before','progress'])for(const mode of Object.keys(E.MODES)){
+  const result=E.create({...input(floors[0],mode),stage});
+  assert.equal(result.stage,stage);assert(!result.caption.includes('이 공간에 사용한 제품'));
+  assert(!result.carousel.some(c=>c.text.includes('이 분위기, 우리 집의 바닥에도')));
+ }
+ const complete=E.create({...input(floors[0]),stage:'complete'});
+ assert(complete.titles.includes('가구를 들이기 전, 집의 분위기를 고르는 일'));
+ assert(complete.blog.includes('이 공간에 사용한 제품'));
+});

@@ -17,7 +17,7 @@ function campaignProduct(){
   }
   return selected&&!selected.id.startsWith('category:')?selected:{id:'unconfirmed',type:'floor',category:'마감재',size:brandSettings().size||''};
 }
-function campaignInput(){return {product:campaignProduct(),site:state.marketingSite||state.region||'',memo:state.authoring?.memo||state.memo||'',works:state.authoring?.works||[],photoCount:state.photos.length,count:state.slideCount||5,contact:state.settings?.kakao||state.settings?.website||''};}
+function campaignInput(){return {product:campaignProduct(),stage:state.siteStage||'unknown',site:state.marketingSite||state.region||'',memo:state.authoring?.memo||state.memo||'',works:state.authoring?.works||[],photoCount:state.photos.length,count:state.slideCount||5,contact:state.settings?.kakao||state.settings?.website||''};}
 function campaignKey(){return JSON.stringify({...campaignInput(),photos:state.photos.map(p=>p.id)});}
 function brandCampaignFor(theme){
   const key=campaignKey();if(state.brandStories?.key!==key){
@@ -59,24 +59,29 @@ $('story-draft').onclick=()=>{
   $('story-suggestion').textContent='검토한 뒤 적용하면 현재 작업의 문구를 교체합니다. 승인된 채널 원고는 유지됩니다.';
 };
 $('story-apply').onclick=()=>{selectBrandDirection(state.theme);window.renderProductionWorkspace();$('story-suggestion').textContent='적용했습니다. 카드별 문구는 계속 수정할 수 있습니다.';};
+const stageLabel=node('label','현장 상태'),stageSelect=node('select');stageSelect.id='campaign-stage';
+for(const [value,label]of [['unknown','확인 전 · 완료로 표현하지 않음'],['before','시공 전'],['progress','시공 중'],['complete','시공 완료']])stageSelect.append(new Option(label,value));
+stageSelect.value=state.siteStage||'unknown';stageLabel.append(stageSelect);campaignPicker.after(stageLabel);
+stageSelect.onchange=()=>{state.siteStage=stageSelect.value;delete state.brandStories;if(canUseBrandCampaign())applyBrandDirection(state.theme);persist();window.renderProductionWorkspace();};
 const campaignSummary=node('section',undefined,'campaign-summary');
 campaignSummary.innerHTML='<span class="eyebrow">청인마루 콘텐츠 방향</span><h3 id="campaign-name"></h3><p id="campaign-reason"></p>';
 $('production-platforms').before(campaignSummary);
 const undoWriting=node('button','이전 문구로 되돌리기');undoWriting.type='button';undoWriting.id='undo-brand-story';campaignSummary.append(undoWriting);
 function updateCampaignSummary(){
+  stageSelect.value=state.siteStage||'unknown';
   const direction=BRAND_DIRECTIONS[state.theme]||BRAND_DIRECTIONS.editorial;
   $('campaign-name').textContent=direction.name;$('campaign-reason').textContent=direction.reason;
   undoWriting.hidden=!state.brandStoryVersions?.length;
 }
 function selectBrandDirection(theme){
-  state.brandStoryVersions??=[];state.brandStoryVersions.push({at:new Date().toISOString(),photoIds:state.photos.map(p=>p.id).join('|'),theme:state.theme,mode:state.brandStoryMode||'manual',output:structuredClone(brandSettings()),slides:structuredClone(state.brandSlides||[]),captions:structuredClone(state.brandCaptions||{})});
+  state.brandStoryVersions??=[];state.brandStoryVersions.push({at:new Date().toISOString(),photoIds:state.photos.map(p=>p.id).join('|'),theme:state.theme,stage:state.siteStage||'unknown',mode:state.brandStoryMode||'manual',output:structuredClone(brandSettings()),slides:structuredClone(state.brandSlides||[]),captions:structuredClone(state.brandCaptions||{})});
   if(state.brandStoryVersions.length>20)state.brandStoryVersions.shift();
   state.brandStoryMode='auto';applyBrandDirection(theme);updateCampaignSummary();
 }
 undoWriting.onclick=()=>{
   const previous=state.brandStoryVersions?.at(-1);if(!previous)return;
   if(previous.photoIds!==state.photos.map(p=>p.id).join('|'))return toast('사진 구성이 다른 이전 원고입니다. 현재 작업을 보존했습니다.');
-  state.brandStoryVersions.pop();state.theme=previous.theme;state.brandStoryMode=previous.mode;state.brandOutput=previous.output;state.brandSlides=previous.slides;state.brandCaptions=previous.captions;
+  state.brandStoryVersions.pop();state.siteStage=previous.stage||'unknown';$('campaign-stage').value=state.siteStage;delete state.brandStories;state.theme=previous.theme;state.brandStoryMode=previous.mode;state.brandOutput=previous.output;state.brandSlides=previous.slides;state.brandCaptions=previous.captions;
   syncBrandControls();persist();window.renderProductionWorkspace();
 };
 window.selectBrandDirection=selectBrandDirection;window.updateCampaignSummary=updateCampaignSummary;

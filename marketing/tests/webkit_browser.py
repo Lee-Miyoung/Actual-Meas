@@ -20,7 +20,7 @@ try:
  d.set_page_load_timeout(60);d.set_script_timeout(90);wait=WebDriverWait(d,90);d.set_window_size(390,844);d.get('http://127.0.0.1:8000/marketing/');wait.until(lambda d:d.execute_script('return typeof workflowReady!=="undefined"&&workflowReady&&easyReady'))
  d.execute_script('window.testRuntimeErrors=[];window.addEventListener("error",e=>testRuntimeErrors.push(e.message));window.addEventListener("unhandledrejection",e=>testRuntimeErrors.push(String(e.reason)));')
  assert d.execute_script('return appleTouchDevice')
- d.find_element(By.ID,'production-files').send_keys(str(fixture));wait.until(lambda d:d.execute_script('return state.photos.length===1&&document.querySelector("#designs canvas")?.dataset.renderer==="cheongin-type-v5"'))
+ d.find_element(By.ID,'production-files').send_keys(str(fixture));wait.until(lambda d:d.execute_script('return state.photos.length===1&&document.querySelector("#designs canvas")?.dataset.renderer==="cheongin-comparison-v6"'))
  assert d.execute_script('return document.documentElement.scrollWidth<=innerWidth+1')
  # All actual PNG exports render, with the same type family and frozen pixel dimensions.
  formats={'carousel':[1080,1350],'story':[1080,1920],'kakao':[800,800],'naverCover':[1200,1200],'youtubeCover':[1280,720]}
