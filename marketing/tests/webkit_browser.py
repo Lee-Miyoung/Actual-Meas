@@ -20,13 +20,13 @@ try:
  d.set_page_load_timeout(60);d.set_script_timeout(90);wait=WebDriverWait(d,90);d.set_window_size(390,844);d.get('http://127.0.0.1:8000/marketing/');wait.until(lambda d:d.execute_script('return typeof workflowReady!=="undefined"&&workflowReady&&easyReady'))
  d.execute_script('window.testRuntimeErrors=[];window.addEventListener("error",e=>testRuntimeErrors.push(e.message));window.addEventListener("unhandledrejection",e=>testRuntimeErrors.push(String(e.reason)));')
  assert d.execute_script('return appleTouchDevice')
- d.find_element(By.ID,'production-files').send_keys(str(fixture));wait.until(lambda d:d.execute_script('return state.photos.length===1&&document.querySelector("#designs canvas")?.dataset.renderer==="cheongin-stories-v4"'))
+ d.find_element(By.ID,'production-files').send_keys(str(fixture));wait.until(lambda d:d.execute_script('return state.photos.length===1&&document.querySelector("#designs canvas")?.dataset.renderer==="cheongin-type-v5"'))
  assert d.execute_script('return document.documentElement.scrollWidth<=innerWidth+1')
  # All actual PNG exports render, with the same type family and frozen pixel dimensions.
  formats={'carousel':[1080,1350],'story':[1080,1920],'kakao':[800,800],'naverCover':[1200,1200],'youtubeCover':[1280,720]}
  for fmt,size in formats.items():
-  result=d.execute_async_script('''const f=arguments[0],done=arguments[arguments.length-1];card('editorial',0,f).then(async c=>{const b=await canvasBlob(c);done({width:c.width,height:c.height,bytes:b.size});releaseCanvas(c)}).catch(e=>done({error:e.message}));''',fmt)
-  assert [result.get('width'),result.get('height')]==size,result;assert result['bytes']>1000
+  result=d.execute_async_script('''const f=arguments[0],done=arguments[arguments.length-1];card('editorial',0,f).then(async c=>{const b=await canvasBlob(c);done({width:c.width,height:c.height,bytes:b.size,outside:c.typeLayout?.filter(x=>x.x< -2||x.y< -2||x.x+x.width>1082||x.y+x.height>c.height/(c.width/1080)+2)||[]});releaseCanvas(c)}).catch(e=>done({error:e.message}));''',fmt)
+  assert [result.get('width'),result.get('height')]==size,result;assert result['bytes']>1000;assert not result.get('outside'),result
  d.find_element(By.CSS_SELECTOR,'.direction-trigger').click();wait.until(lambda d:len(d.find_elements(By.CSS_SELECTOR,'.direction-options canvas'))==3);d.find_elements(By.CSS_SELECTOR,'.direction-options button')[2].click();wait.until(lambda d:d.execute_script('return state.theme==="journal"'))
  # The final tap happens after generation, keeping the native share/save user activation.
  d.find_element(By.ID,'production-export').click();wait.until(lambda d:d.execute_script('return document.getElementById("device-export").open'));assert len(d.find_elements(By.CSS_SELECTOR,'.device-export-gallery img'))==3

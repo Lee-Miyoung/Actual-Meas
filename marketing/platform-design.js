@@ -1,5 +1,5 @@
 /* One photographic identity, adapted to each channel. No generated room geometry. */
-const EDITORIAL = Object.freeze({ paper: '#f5f3ed', ink: '#2d332f', muted: '#73796f', line: '#c9cdc2', accent: '#69745e', margin: 72 });
+const EDITORIAL = Object.freeze({ paper: '#f5f3ed', ink: '#2d332f', muted: '#596255', line: '#c9cdc2', accent: '#69745e', margin: 72 });
 const designMarks = { dark: loadImage('brand/logo-charcoal.svg').catch(()=>null), light: loadImage('brand/logo-white.svg').catch(()=>null) };
 function releaseCanvas(c) { if(c instanceof HTMLCanvasElement) c.width=c.height=1; }
 function editorialRows(ctx, value, width) {
@@ -22,13 +22,19 @@ async function renderPlatformDesign(content, image, index=0, format='carousel') 
   const theme=content.theme||'editorial',product=Writer.label(content.product||{});
   const title=content.carousel?.[index]?.text||content.title||Writer.SLOGAN;
   const spec=[content.product?.size,content.product?.pack,content.product?.coverage].filter(Boolean).join(' · ');
-  await Promise.all([document.fonts.load('400 56px "Studio Serif"',title+'청인마루'),document.fonts.load('400 24px "Studio Sans"',product+spec+Writer.SLOGAN)]);
-  g.scale(scale,scale);g.fillStyle=EDITORIAL.paper;g.fillRect(0,0,1080,h);
-  function text(value,x,y,width,size=24,maxLines=2,serif=false,color=EDITORIAL.ink,minSize=size){
-    g.fillStyle=color;let rows;
-    do{g.font=`400 ${size}px "${serif?'Studio Serif':'Studio Sans'}"`;rows=editorialRows(g,value,width);if(rows.length<=maxLines||size<=minSize)break;size-=2;}while(size>=minSize);
-    if(rows.length>maxLines){rows=rows.slice(0,maxLines);let last=rows[maxLines-1];while(last&&g.measureText(last+'…').width>width)last=last.slice(0,-1);rows[maxLines-1]=last+'…';c.dataset.textTruncated='true';}
-    rows.forEach((row,i)=>g.fillText(row,x,y+i*size*1.5));return rows.length*size*1.5;
+  const fontCopy=[title,product,spec,content.product?.color,content.product?.material,content.carousel?.[index]?.detail,content.carousel?.[index]?.kicker,Writer.SLOGAN,'이 공간의 선택 규격 컬러 소재 청인마루 집을 위한 선택 공간과 함께 고르는 소재 시공을 맡기기 전에 소재를 고르는 안목 이 공간이 마음에 남았다면 지역 현장 사진 원하는 소재를 알려주세요'].filter(Boolean).join(' ');
+  await Promise.all([document.fonts.load('400 72px "Studio Serif"',fontCopy),document.fonts.load('400 28px "Studio Sans"',fontCopy)]);
+  g.scale(scale,scale);g.fillStyle=EDITORIAL.paper;g.fillRect(0,0,1080,h);g.fontKerning='normal';
+  c.typeLayout=[];
+  function text(value,x,y,width,size=28,maxLines=2,serif=false,color=EDITORIAL.ink,minSize=size,preferPause=false){
+    if(!String(value||'').trim())return 0;
+    const family=serif?'Studio Serif':'Studio Sans',font=n=>`400 ${n}px "${family}"`;
+    const layout=CheonginType.layout(value,{width,fontSize:size,minFontSize:minSize,maxLines,leading:serif&&size>=40?1.26:1.45,preferPause,measure:(line,n)=>{g.font=font(n);return g.measureText(line).width;}});
+    g.font=font(layout.size);g.fillStyle=color;
+    let top=Infinity,left=Infinity,right=-Infinity,bottom=-Infinity;
+    layout.lines.forEach((line,i)=>{const baseline=y+i*layout.lineHeight,m=g.measureText(line);g.fillText(line,x,baseline);top=Math.min(top,baseline-(m.actualBoundingBoxAscent||layout.size*.85));bottom=Math.max(bottom,baseline+(m.actualBoundingBoxDescent||layout.size*.2));left=Math.min(left,x-(m.actualBoundingBoxLeft||0));right=Math.max(right,x+(m.actualBoundingBoxRight||m.width));});
+    c.typeLayout.push({kind:serif?'headline':'detail',source:String(value),lines:layout.lines,size:layout.size,truncated:layout.truncated,x:left,y:top,width:right-left,height:bottom-top});
+    if(layout.truncated)c.dataset.textTruncated='true';return layout.lines.length*layout.lineHeight;
   }
   function rule(y,x=72,width=936,color=EDITORIAL.line){g.fillStyle=color;g.fillRect(x,y,width,1);}
   function photo(x,y,w,hh){
@@ -45,23 +51,13 @@ async function renderPlatformDesign(content, image, index=0, format='carousel') 
     } else cover(g,image,x,y,w,hh);
     g.restore();
   }
-  async function header(light=false,y=66){
-    const mark=await designMarks[light?'light':'dark'];
-    if(mark)g.drawImage(mark,72,y-25,128,128*mark.height/mark.width);
-    else text('청인마루',72,y,300,26,1,true,light?'#fff':EDITORIAL.ink);
-    text('SPACE JOURNAL  /  '+String(index+1).padStart(2,'0'),740,y,270,15,1,false,light?'#fff':EDITORIAL.muted);
-  }
-  function footer(y=h-34,light=false){const color=light?'#f5f3ed':EDITORIAL.muted;if(index===1&&spec){text(product,72,y-34,936,22,1,false,color);text(spec,72,y,936,22,1,false,color);}else text(product||Writer.SLOGAN,72,y,936,24,1,false,color);}
   function gradient(from,to){const a=g.createLinearGradient(0,from,0,to);a.addColorStop(0,'rgba(20,28,23,0)');a.addColorStop(1,'rgba(20,28,23,.88)');g.fillStyle=a;g.fillRect(0,from,1080,to-from);}
   const entry=content.carousel?.[index]||{},role=entry.layout||(['cover','quiet','material','evidence','invitation'][index%5]);
   const kicker=entry.kicker||(index===0?'우리 집을 위한 선택':'청인마루'),detail=entry.detail||'';
-  async function signature(light=false,x=64,y=h-40){const mark=await designMarks[light?'light':'dark'];if(mark)g.drawImage(mark,x,y-22,124,124*mark.height/mark.width);}
-  function small(value,x,y,width=900,light=false){text(value,x,y,width,23,2,false,light?'#f7f4ed':EDITORIAL.muted);}
+  async function signature(light=false,x=64,y=h-40){const mark=await designMarks[light?'light':'dark'];if(mark){const height=124*mark.height/mark.width;g.drawImage(mark,x,y-22,124,height);c.typeLayout.push({kind:'logo',x,y:y-22,width:124,height});}}
+  function small(value,x,y,width=900,light=false){text(value,x,y,width,26,y>h-90?1:2,false,light?'#f7f4ed':EDITORIAL.muted,24);}
   function headline(value,x,y,width=950,size=66,rows=2,light=false){
-    // Prefer a deliberate pause over one orphaned Korean syllable.
-    let copy=String(value||'');const comma=copy.indexOf(', ');
-    if(comma>3&&comma<copy.length-4&&copy.length>19)copy=copy.slice(0,comma+1)+'\n'+copy.slice(comma+2);
-    text(copy,x,y,width,size,rows,true,light?'#fffdf7':EDITORIAL.ink,Math.max(40,size-18));
+    text(value,x,y,width,size,rows,true,light?'#fffdf7':EDITORIAL.ink,Math.max(40,size-18),true);
   }
   function productFacts(x,y,width=325){
     small('이 공간의 선택',x,y,width);text(product,x,y+62,width,35,4,true,EDITORIAL.ink,28);
@@ -71,13 +67,13 @@ async function renderPlatformDesign(content, image, index=0, format='carousel') 
   if(natural){
     g.drawImage(image,0,0,1080,h);
   }else if(['story','reels','shorts'].includes(format)){
-    photo(0,0,1080,h);gradient(980,h);await signature(true,72,270);
+    photo(0,0,1080,h);gradient(980,h);await signature(true,72,294);
     small(kicker,72,1200,860,true);headline(title,72,1290,850,70,3,true);
-    rule(1580,72,850,'#ffffff66');small(product||Writer.SLOGAN,72,1630,850,true);
+    rule(1515,72,850,'#ffffff66');text(product||Writer.SLOGAN,72,1570,850,28,1,false,'#fffdf7',24);
   }else if(['blog','youtubeCover','kakaoWide'].includes(format)){
     photo(0,0,680,h);g.fillStyle=EDITORIAL.paper;g.fillRect(680,0,400,h);
     small('청인마루 · 집을 위한 선택',722,61,300);headline(content.title||title,722,154,294,46,5);
-    small(product,722,h-92,294);await signature(false,722,h-30);
+    small(product,722,h-132,294);await signature(false,722,h-30);
   }else if(['kakao','youtube','naverCover'].includes(format)){
     photo(0,0,1080,h*.70);small(kicker,64,h*.70+50);headline(title,64,h*.70+118,950,53,2);await signature(false,64,h-29);
   }else if(role==='invitation'){
@@ -87,27 +83,27 @@ async function renderPlatformDesign(content, image, index=0, format='carousel') 
   }else if(role==='material'){
     g.fillStyle='#e9e5da';g.fillRect(0,0,1080,h);photo(0,0,650,h-144);
     productFacts(700,90,320);await signature(false,700,h-47);
-    small('소재의 이름을 넘어, 우리 집에 놓였을 때까지.',48,h-73,590);
+    small('공간과 함께 고르는 소재.',48,h-73,590);
   }else if(role==='quiet'){
     // A photographic pause: no repeated cover, headline or sales panel.
-    photo(0,0,1080,h);gradient(h-280,h);small(title,64,h-92,950,true);await signature(true,64,h-38);
+    photo(0,0,1080,h);gradient(h-280,h);small(title,64,h-155,950,true);await signature(true,64,h-38);
   }else if(role==='evidence'){
     await signature(false,64,62);small(kicker,690,62,320);photo(40,109,1000,h-464);
-    headline(title,64,h-255,950,62,2);small(detail,64,h-105,950);small(product,64,h-35,950);
+    headline(title,64,h-280,950,62,2);small(detail,64,h-145,950);small(product,64,h-42,950);
   }else if(theme==='gallery'){
-    // A material-minded edition: generous photograph, precise facts in the margin.
-    await signature(false,64,62);small('소재를 고르는 안목',710,62,310);photo(40,110,1000,h-401);
-    small(kicker,64,h-237);headline(title,64,h-170,950,62,2);small([content.product?.size,content.product?.color].filter(Boolean).join(' · ')||product,64,h-33);
+    await signature(false,64,64);small('소재를 고르는 안목',700,64,320);
+    headline(title,64,190,950,76,2);photo(48,376,984,h-566);
+    small(product,64,h-106);small([content.product?.size,content.product?.color].filter(Boolean).join(' · '),64,h-42);
   }else if(theme==='journal'){
-    // Construction trust starts with a real room, not an invented badge or score.
-    await signature(false,64,62);small('시공을 맡기기 전에',710,62,310);photo(40,110,1000,h-451);
-    small(kicker,64,h-274);headline(title,64,h-202,950,66,2);small(product,64,h-33);
+    g.fillStyle='#243a32';g.fillRect(0,0,1080,h);await signature(true,64,70);small('시공을 맡기기 전에',700,70,320,true);
+    headline(title,64,188,950,72,3,true);photo(48,445,984,h-590);
+    small(product,64,h-83,950,true);small(Writer.SLOGAN,64,h-35,950,true);
   }else{
     // Signature cover. The room comes first; copy lives outside the photograph.
-    photo(0,0,1080,h-315);small(kicker,64,h-256);headline(title,64,h-181,950,70,2);
+    photo(0,0,1080,h-340);small(kicker,64,h-282);headline(title,64,h-206,950,72,2);
     await signature(false,64,h-31);small(content.product?.color||product,440,h-33,575);
   }
-  c.dataset.platform=format;c.dataset.design=theme;c.dataset.renderer='cheongin-stories-v4';return c;
+  c.dataset.platform=format;c.dataset.design=theme;c.dataset.renderer='cheongin-type-v5';return c;
 }
 workflowCard=async function(content,index,format='carousel'){
   if(!content.photoRefs?.length)throw Error('먼저 현장 사진을 등록하세요.');
