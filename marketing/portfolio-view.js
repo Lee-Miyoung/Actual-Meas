@@ -9,6 +9,24 @@ const thumbObserver=window.IntersectionObserver?new IntersectionObserver(entries
 },{root:$('production-filmstrip'),rootMargin:'0px 80px'}):null;
 window.resetPortfolioThumbs=()=>{thumbObserver?.disconnect();pendingThumbs.clear();};
 window.ensurePortfolioThumb=(img,p)=>{if(thumbObserver){pendingThumbs.set(img,p);thumbObserver.observe(img);}else photoImage(p).then(()=>{if(img.isConnected)img.src=p.thumbnail||'';}).catch(()=>{});};
+// Company consultation range is separate from a project's installed product.
+const consultationBrands=Object.freeze(['동화','구정','노바','한솔','네스트']);
+function installedProduct(meta){
+  const p=meta.productData||{},model=String(p.model||'').trim();
+  if(!model||p.id==='unconfirmed'||String(p.id||'').startsWith('category:')||/^(제품\s*(정보\s*)?(미입력|미정|미선택|미지정)|미확인|미지정|선택 안 함|강마루|마감재)$/.test(model))return '';
+  return [p.brand,model,String(p.id||'').includes('::')?p.color:''].filter(Boolean).join(' ');
+}
+function selectionFooter(meta){
+  const section=node('section',undefined,'portfolio-selection');section.setAttribute('aria-label','소재 선택과 시공 제품 정보');
+  const heading=node('h3'),wall=meta.productData?.type==='wall';
+  heading.append(node('span',wall?'우리 집에 어울리는 벽장재,':'우리 집에 어울리는 바닥재,'),node('span','사진과 샘플로 함께 비교해보세요'));
+  const description=node('p',undefined,'portfolio-selection-description');description.append(node('span','공간의 분위기와 생활 방식에 맞춰'),node('span','마루와 벽장재를 편하게 선택할 수 있도록 안내합니다.'));
+  const facts=node('dl',undefined,'portfolio-selection-facts');
+  const add=(label,value,key)=>{const row=node('div');row.dataset.fact=key;row.append(node('dt',label),node('dd',value));facts.append(row);};
+  const product=installedProduct(meta);if(product)add('시공 제품',product,'installed-product');
+  add('상담 가능 자재',consultationBrands.join(' · ')+' 외','consultation-brands');
+  section.append(heading,description,facts);return section;
+}
 window.createPortfolioComparison=function(output){
   if(output.photoLayout?.length!==2||!output.photoLayout.every(p=>p.fit==='pair-contain'))return null;
   const meta=output.previewMeta||{},article=node('article',undefined,'portfolio-comparison');
@@ -22,8 +40,10 @@ window.createPortfolioComparison=function(output){
     image.className='portfolio-photo';image.setAttribute('aria-label',(i?'시공 후':'시공 전')+' 사진 크게 보기');image.tabIndex=0;image.setAttribute('role','button');
     figure.append(label,image);photos.append(figure);
   });
-  const copy=node('div',undefined,'portfolio-case-copy');copy.append(node('h3',meta.title));if(meta.detail)copy.append(node('p',meta.detail));if(meta.product)copy.append(node('small',meta.product));
-  article.append(head,photos,copy);return article;
+  const copy=node('div',undefined,'portfolio-case-copy');
+  // Retain the project's existing title and notes as a photographic caption.
+  if(meta.title||meta.detail){const caption=node('div',undefined,'portfolio-case-caption');if(meta.title)caption.append(node('p',meta.title,'portfolio-caption-title'));if(meta.detail)caption.append(node('p',meta.detail));copy.append(caption);}
+  copy.append(selectionFooter(meta));article.append(head,photos,copy);return article;
 };
 function clearZoom(){zoomRevision++;for(const c of zoom.querySelectorAll('canvas'))releaseCanvas(c);zoom.replaceChildren();}
 zoom.addEventListener('close',clearZoom);

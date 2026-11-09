@@ -28,7 +28,7 @@ async function renderPlatformDesign(content, image, index=0, format='carousel', 
   const fontCopy=[title,product,spec,content.product?.color,content.product?.material,content.carousel?.[index]?.detail,content.carousel?.[index]?.kicker,Writer.SLOGAN,'이 공간의 선택 규격 컬러 소재 청인마루 집을 위한 선택 공간과 함께 고르는 소재 시공을 맡기기 전에 소재를 고르는 안목 이 공간이 마음에 남았다면 지역 현장 사진 원하는 소재를 알려주세요'].filter(Boolean).join(' ');
   await Promise.all([document.fonts.load('400 72px "Studio Serif"',fontCopy),document.fonts.load('400 28px "Studio Sans"',fontCopy)]);
   g.scale(scale,scale);g.fillStyle=EDITORIAL.paper;g.fillRect(0,0,1080,h);g.fontKerning='normal';
-  c.typeLayout=[];c.photoLayout=[];c.previewMeta={title,detail:content.carousel?.[index]?.detail||'',product,site:content.site||content.project?.title||''};
+  c.typeLayout=[];c.photoLayout=[];c.previewMeta={title,detail:content.carousel?.[index]?.detail||'',product,productData:{id:content.product?.id||'',brand:content.product?.brand||'',model:content.product?.model||'',color:content.product?.color||'',type:content.product?.type||''},site:content.site||content.project?.title||''};
   function text(value,x,y,width,size=28,maxLines=2,serif=false,color=EDITORIAL.ink,minSize=size,preferPause=false){
     if(!String(value||'').trim())return 0;
     const family=serif?'Studio Serif':'Studio Sans',font=n=>`400 ${n}px "${family}"`;
