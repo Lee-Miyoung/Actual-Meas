@@ -24,6 +24,7 @@ function showDeviceExport(blob,name,files){
   exportDialog.append(close,heading,note,toolbar,gallery);
   if(!exportDialog.open)exportDialog.showModal();
 }
+exportDialog.addEventListener('close',()=>{for(const url of exportObjectURLs)URL.revokeObjectURL(url);exportObjectURLs=[];pendingPhotoFiles=null;exportDialog.replaceChildren();});
 const downloadBeforeDevice=download;
 download=function(blob,name){
   const files=pendingPhotoFiles||(blob?.type.startsWith('image/')?[{name,blob}]:[]);pendingPhotoFiles=null;
@@ -137,7 +138,7 @@ compareButton.onclick=async()=>{
     apply.onclick=()=>{if(window.selectBrandDirection)window.selectBrandDirection(theme);else{state.theme=theme;persist();}directionSelect.value=theme;directionDialog.close();window.renderProductionWorkspace();};
     page.append(art,caption,apply);options.append(page);pages.push(page);
     try{
-      const full=await card(theme,0,'carousel',true);
+      const full=await card(theme,0,'carousel',true,{maxEdge:900});
       if(revision!==directionRevision){releaseCanvas(full);return;}
       const thumb=node('canvas');thumb.width=720;thumb.height=900;thumb.getContext('2d').drawImage(full,0,0,720,900);thumb.dataset.design=theme;thumb.dataset.renderer=full.dataset.renderer;thumb.setAttribute('aria-label',label+' 출력 미리보기');releaseCanvas(full);art.replaceChildren(thumb);apply.disabled=false;
     }catch(e){preparing.textContent='시안을 만들지 못했습니다. '+e.message;}

@@ -55,12 +55,23 @@ function loadImage(src) {
   });
 }
 // Keep only two decoded working images. Originals remain unchanged in IndexedDB.
+const photoLoads = new Map();
+let photoDecodeQueue = Promise.resolve();
 async function photoImage(p) {
+  const pending = photoLoads.get(p.id);
+  if (pending?.src === p.src) return pending.promise;
+  const promise = photoDecodeQueue.catch(()=>{}).then(()=>decodeWorkingPhoto(p));
+  photoLoads.set(p.id,{src:p.src,promise});
+  photoDecodeQueue=promise.then(()=>{},()=>{});
+  try { return await promise; } finally { if(photoLoads.get(p.id)?.promise===promise)photoLoads.delete(p.id); }
+}
+async function decodeWorkingPhoto(p) {
   if (images.has(p.id)) {
     const cached = images.get(p.id); images.delete(p.id); images.set(p.id, cached);
     return cached;
   }
   const source = await loadImage(p.src);
+  if(source.width*source.height>48000000||Math.max(source.width,source.height)>12000){source.src="";throw Error('사진 크기를 4800만 화소 이하로 줄여 주세요.');}
   p.sourceWidth = source.width; p.sourceHeight = source.height;
   const scale = Math.min(1, 1800 / Math.max(source.width, source.height));
   const working = document.createElement("canvas");
@@ -80,31 +91,34 @@ async function photoImage(p) {
   return working;
 }
 
-function persist() {
+// One IndexedDB structured clone per write; coalesce edits while a write is pending.
+let saveDirty=false,saveRunning=false;
+function flushPendingSave(){
   clearTimeout(saveTimer);
-  $("save-status").textContent = "저장 대기";
-  saveTimer = setTimeout(() => {
-    const snapshot = structuredClone(state);
-    saving = saving
-      .catch(() => {})
-      .then(
-        () =>
-          new Promise((resolve, reject) => {
-            const tx = db.transaction("projects", "readwrite");
-            tx.objectStore("projects").put(snapshot, "current");
-            tx.oncomplete = resolve;
-            tx.onerror = () => reject(tx.error);
-          }),
-      )
-      .then(() => ($("save-status").textContent = "이 기기에 저장됨"))
-      .catch(() => {
-        $("save-status").textContent = "저장 실패 · 백업 필요";
-        toast(
-          "저장 용량 또는 브라우저 권한을 확인하고 JSON 백업을 보관하세요.",
-        );
-      });
-  }, 250);
+  if(!db||!saveDirty||saveRunning)return saving;
+  saveRunning=true;
+  saving=(async()=>{
+    try{
+      while(saveDirty){
+        saveDirty=false;
+        await new Promise((resolve,reject)=>{
+          const tx=db.transaction("projects","readwrite");
+          tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error("저장 중단"));
+          tx.objectStore("projects").put(state,"current");
+        });
+      }
+      $("save-status").textContent="이 기기에 저장됨";
+    }catch(e){saveDirty=true;$("save-status").textContent="저장 실패 · 백업 필요";toast("저장 용량 또는 브라우저 권한을 확인하고 JSON 백업을 보관하세요.");}
+    finally{saveRunning=false;}
+  })();
+  return saving;
 }
+function persist(){
+  saveDirty=true;clearTimeout(saveTimer);$("save-status").textContent="저장 대기";
+  saveTimer=setTimeout(flushPendingSave,250);
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flushPendingSave();});
+window.addEventListener('pagehide',flushPendingSave);
 function download(blob, name) {
   const url = URL.createObjectURL(blob),
     a = document.createElement("a");
@@ -113,11 +127,8 @@ function download(blob, name) {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
-function exportCanvas(c, name) {
-  c.toBlob(
-    (b) => (b ? download(b, name) : toast("이미지 생성에 실패했습니다.")),
-    "image/png",
-  );
+function exportCanvas(c,name){
+  return new Promise(resolve=>{try{c.toBlob(b=>{c.width=c.height=1;if(b)download(b,name);else toast("이미지 생성에 실패했습니다.");resolve();},"image/png");}catch(e){c.width=c.height=1;toast(e.message);resolve();}});
 }
 function correctedCanvas(img, p, max = 1800) {
   const scale = Math.min(1, max / Math.max(img.width, img.height)),
@@ -189,7 +200,9 @@ function transformed(img, p, max = 1800) {
   source.width = source.height = 1;
   return c;
 }
+let editorPreviewRevision=0;
 async function preview() {
+  const revision=++editorPreviewRevision;
   const c = $("photo-preview"),
     ctx = c.getContext("2d");
   ctx.clearRect(0, 0, c.width, c.height);
@@ -197,11 +210,15 @@ async function preview() {
   if (!state.photos.length) return;
   const p = state.photos[selected];
   if (!p) return;
-  const img = await photoImage(p),
-    out = transformed(img, p.adjust, 1200);
-  c.width = out.width;
-  c.height = out.height;
-  ctx.drawImage(out, 0, 0);
+  const img = await photoImage(p);
+  if(revision!==editorPreviewRevision)return;
+  const out = transformed(img, p.adjust, 1200);
+  try{
+    if(revision!==editorPreviewRevision)return;
+    c.width = out.width;
+    c.height = out.height;
+    ctx.drawImage(out, 0, 0);
+  }finally{out.width=out.height=1;}
   for (const [key] of controls) {
     $(key).value = p.adjust[key];
     $(`${key}-value`).textContent = p.adjust[key];
