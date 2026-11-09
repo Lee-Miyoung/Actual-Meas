@@ -103,12 +103,13 @@ validate = function (s) {
       !s.settings ||
       !s.target ||
       !Number.isInteger(s.slideCount) ||
-      s.slideCount < 3 ||
-      s.slideCount > 6
+      s.slideCount < (s.signatureDesign?.schema === "cheonginmaru-signature-v1" ? 1 : 3) ||
+      s.slideCount > (s.signatureDesign?.schema === "cheonginmaru-signature-v1" ? 16 : 6)
     )
       throw Error("설정값을 확인하세요.");
-    for (const v of Object.values(s.settings))
-      if (typeof v !== "string") throw Error("연결 주소 형식 오류");
+    for (const [key,v] of Object.entries(s.settings))
+      if (key !== "brandDesign" && typeof v !== "string") throw Error("연결 주소 형식 오류");
+    if (s.settings.brandDesign && (typeof s.settings.brandDesign !== "object" || !s.settings.brandDesign.current || !Array.isArray(s.settings.brandDesign.history))) throw Error("브랜드 디자인 설정 형식 오류");
     for (const k of ["kakao", "instagram", "website", "aiUrl"])
       safeUrl(s.settings[k]);
     for (const p of s.posts)
@@ -1212,7 +1213,7 @@ $("restore").onchange = async (e) => {
       validate(item.state);
     }
     for (const s of [bundle.current, ...bundle.projects.map((x) => x.state)])
-      await Promise.all(s.photos.map((p) => loadImage(p.src)));
+      for (const p of s.photos) { const image=await loadImage(p.src); image.src=""; }
     const assets = bundle.workflowAssets || [];
     if (!Array.isArray(assets) || assets.length > 5000)
       throw Error("원본 사진 보관함 형식 오류");
@@ -1224,7 +1225,7 @@ $("restore").onchange = async (e) => {
         !/^data:image\/(jpeg|png|webp);base64,/.test(a.value.src)
       )
         throw Error("원본 사진 형식 오류");
-      await loadImage(a.value.src);
+      { const image=await loadImage(a.value.src); image.src=""; }
       const existing = await dbGet(a.key);
       if (existing && existing.src !== a.value.src)
         throw Error("원본 사진 식별자 충돌: 기존 자료를 보존했습니다.");

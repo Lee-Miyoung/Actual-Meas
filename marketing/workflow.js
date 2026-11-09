@@ -98,6 +98,7 @@ async function assetRefs(photos) {
       sourceHashes.set(cacheObject, cache);
     }
     refs.push({
+      sourceId: p.id,
       key: cache.key,
       originalKey: cache.originalKey,
       adjust: structuredClone(p.adjust),
@@ -110,6 +111,7 @@ async function prepareChannels() {
   if (!workflowReady || workflowBusy) return;
   if (!state.photos.length || !state.authoring.draft) return;
   const source = structuredClone(state.authoring.draft);
+  const signatureSource = window.signatureSource?.() || null;
   if (source.inputSignature !== currentWritingSignature()) return;
   workflowBusy = true;
   const id = state.projectId,
@@ -128,6 +130,7 @@ async function prepareChannels() {
       source,
       refs,
       question,
+      signatureSource,
     });
     const stableKey = await digest(comparable);
     if (
@@ -136,6 +139,7 @@ async function prepareChannels() {
     )
       return;
     if (
+      JSON.stringify(window.signatureSource?.() || null) !== JSON.stringify(signatureSource) ||
       state.projectId !== id ||
       state.photos.length !== photos.length ||
       photos.some(p => {

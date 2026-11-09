@@ -197,22 +197,26 @@ $("brand-export-all").onclick = async () => {
   if (!state.photos.length) return toast("사진을 먼저 등록하세요.");
   if (state.brandSlides?.some(s => s.photo && !ProductionCore.matchPhoto(s.photo, state.photos))) return toast("사진 연결을 확인한 뒤 저장하세요.");
   button.disabled = true;
+  const signatureBatch=window.signatureExportRenderer?.(),captions=Object.fromEntries(Object.keys(OUTPUT_PRESETS).map(k=>[k,platformCaption(k)]));
   try {
     await waitEasyReady();
     const files = [];
     for (const target of ["naver", "naverCover", "carousel", "kakao", "kakaoWide", "youtube", "youtubeCover", "story", "reels", "shorts"]) {
-      for (let i = 0; i < (state.slideCount || 5); i++) {
-        const canvas = await card(state.theme, i, target);
-        files.push({ name: `${target}/scene-${i + 1}-${canvas.width}x${canvas.height}.png`, blob: await canvasBlob(canvas) });
+      for (let i = 0; i < (signatureBatch?.count || state.slideCount || 5); i++) {
+        const canvas = signatureBatch?await signatureBatch.render(i,target):await card(state.theme, i, target);
+        try { files.push({ name: `${target}/scene-${i + 1}-${canvas.width}x${canvas.height}.png`, blob: await canvasBlob(canvas) }); } finally { releaseCanvas(canvas); }
+        await new Promise(resolve=>setTimeout(resolve,0));
       }
       $("brand-preset-note").textContent = OUTPUT_PRESETS[target].label + " 준비 완료";
     }
     for (const target of Object.keys(OUTPUT_PRESETS)) {
-      files.push({ name: `${target}/설명글.txt`, blob: new Blob([platformCaption(target) || state.authoring?.draft?.caption || ""], { type: "text/plain;charset=utf-8" }) });
+      files.push({ name: `${target}/설명글.txt`, blob: new Blob([captions[target] || state.authoring?.draft?.caption || ""], { type: "text/plain;charset=utf-8" }) });
     }
+    files.push({name:"출력안내.txt",blob:new Blob(["플랫폼별 PNG 정지 이미지와 설명글입니다. reels·shorts·story 폴더도 정지 이미지/표지이며 MP4가 아닙니다. 실제 동영상은 앱의 릴스·쇼츠 MP4 만들기를 이용하세요. 원본 사진과 프로젝트는 앱에 보존됩니다."],{type:"text/plain;charset=utf-8"})});
+    if(signatureBatch)files.push({name:"브랜드디자인.json",blob:new Blob([JSON.stringify(signatureBatch.design,null,2)],{type:"application/json"})});
     download(await storedZip(files), "cheonginmaru-platforms.zip");
   } catch (error) { toast("플랫폼 파일 생성 실패: " + error.message); }
-  finally { button.disabled = false; syncBrandControls(); }
+  finally { signatureBatch?.dispose();button.disabled = false; syncBrandControls(); }
 };
 syncBrandControls();
 
@@ -241,6 +245,7 @@ function applyBrandKit(kit) {
     state.format = kit.format;
     state.slideCount = kit.slides.length;
     $("slide-count").value = String(state.slideCount);
+    if(kit.signaturePackage)window.signatureImportPackage?.(kit.signaturePackage);
     syncBrandControls(); brandChanged();
     $("brand-import-status").textContent = `${kit.slides.length}장 문구와 ${Object.keys(kit.captions).length}개 플랫폼 설명글을 적용했습니다. 사진은 파일명 순서로 확인하세요.`;
 }

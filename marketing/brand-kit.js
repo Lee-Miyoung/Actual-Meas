@@ -13,7 +13,7 @@
       if (typeof input !== "string" || input.length > max) throw Error(label + " 입력을 확인하세요.");
       return input.trim();
     };
-    if (!Array.isArray(value.slides) || value.slides.length < 3 || value.slides.length > 6) throw Error("사진별 문구는 3~6개가 필요합니다.");
+    if (!Array.isArray(value.slides) || value.slides.length < (value.signaturePackage?1:3) || value.slides.length > (value.signaturePackage?16:6)) throw Error("사진별 문구는 3~6개가 필요합니다.");
     const slides = value.slides.map((slide) => {
       const result = { title: string(slide.title, 100, "제목"), photo: string(slide.photo || "", 200, "사진 파일명") };
       if (slide.layout !== undefined) {
@@ -33,7 +33,14 @@
     }
     const format = value.format || "carousel";
     if (!platforms.includes(format)) throw Error("출력 플랫폼을 확인하세요.");
-    return { schema: value.schema, format, product: string(value.product || "", 150, "제품명"), size: string(value.size || "", 200, "규격"), slides, captions };
+    let signaturePackage;
+    if(value.signaturePackage){
+      const pack=value.signaturePackage,core=globalThis.SignatureCore;if(!core)throw Error('시그니처 설정을 불러온 뒤 다시 시도하세요.');
+      core.validate(pack.design);if(!Array.isArray(pack.photos)||pack.photos.length>10||!Array.isArray(pack.sequence)||pack.sequence.length!==slides.length)throw Error('시그니처 사진 구성 형식 오류');
+      if(pack.photos.some(p=>typeof p.name!=='string'||p.name.length>200)||pack.sequence.some(s=>!Array.isArray(s.photoNames)||s.photoNames.some(n=>typeof n!=='string'||!pack.photos.some(p=>p.name===n))))throw Error('시그니처 사진 연결 오류');
+      signaturePackage=pack;
+    }
+    return { ...(signaturePackage?{signaturePackage}:{}),schema: value.schema, format, product: string(value.product || "", 150, "제품명"), size: string(value.size || "", 200, "규격"), slides, captions };
   }
   function dimensions(preset, width, height) {
     if (!preset.natural) return [preset.width, preset.height];

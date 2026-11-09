@@ -140,6 +140,7 @@ function updateProductionSlide(patch) {
   const slides = productionSlides(); slides[productionSlide] = { ...slides[productionSlide], ...patch };
   state.brandSlides = slides;
   state.brandOutput = { ...brandSettings(), titles: slides.map(s => s.title).join('\n') };
+  window.signatureSlideEdited?.(productionSlide,patch);
   persist(); syncBrandControls(); renderProductionWorkspace();
 }
 $('production-title').onchange = e => updateProductionSlide({ title: e.target.value.trim() || '시공 기록' });
@@ -162,6 +163,7 @@ function renderProductionWorkspace(){
 async function renderProductionFrame(revision) {
   if (!easyReady || !writingReady) return;
   if (productionImportBusy) return;
+  window.ensureSignatureProject?.();
   if(productionProject!==state.projectId){productionProject=state.projectId;productionSlide=Number.isInteger(state.productionView?.slide)?state.productionView.slide:0;}
   document.body.classList.toggle("has-site-photos",state.photos.length>0);
   $('package-drop').querySelector('strong').textContent=state.photos.length?'현장 사진 '+state.photos.length+'장':'01　현장 사진 불러오기';
@@ -195,12 +197,14 @@ async function renderProductionFrame(revision) {
     const p = match || state.photos[i % state.photos.length];
     const button = document.createElement('button'); button.className = i === productionSlide ? 'active' : '';
     button.setAttribute('aria-label', `${i + 1}번 사진 ${item.title}`); button.setAttribute('aria-pressed', String(i === productionSlide));
-    const img = document.createElement('img'); if(p.thumbnail)img.src=p.thumbnail; img.alt = '';img.loading='lazy';img.decoding='async';img.width=96;img.height=72;
+    const information=state.signatureDesign?.schema==='cheonginmaru-signature-v1'&&state.signatureSequence?.[i]?.role==='information';
+    const img = document.createElement(information?'span':'img');
+    if(information){img.className='signature-info-thumb';img.textContent='정보';}else{if(p.thumbnail)img.src=p.thumbnail;img.alt='';img.loading='lazy';img.decoding='async';img.width=96;img.height=72;}
     const number = document.createElement('span'); number.textContent = String(i + 1).padStart(2, '0');
-    if(!p.thumbnail)window.ensurePortfolioThumb?.(img,p);
+    if(!information&&!p.thumbnail)window.ensurePortfolioThumb?.(img,p);
     button.append(img, number); button.onclick = () => selectProductionSlide(i); $('production-filmstrip').append(button);
   });
-  const natural = state.format === 'naver' || brandSettings().fit === 'contain';
+  const natural = state.format === 'naver' || (state.signatureDesign?.schema==='cheonginmaru-signature-v1'?state.signatureDesign.layout.fit==='contain':brandSettings().fit==='contain');
   $('production-crop-note').textContent = natural ? '사진 전체를 보존합니다. 원본 비율과 기존 보정 설정을 유지합니다.' : '플랫폼 비율에 맞춰 가장자리를 일부 자릅니다. 바닥·창이 잘리면 위 슬라이더로 구도를 옮기거나 전체 사진 보존을 선택하세요.';
   try {
     const canvas = await card(state.theme, productionSlide,state.format,false,{maxEdge:960});
@@ -209,7 +213,7 @@ async function renderProductionFrame(revision) {
     canvas.dataset.slide=productionSlide;canvas.tabIndex=0;canvas.setAttribute('role','button');canvas.setAttribute('title','사진 크게 보기');
     canvas.setAttribute('aria-label', `${OUTPUT_PRESETS[state.format].label} ${productionSlide + 1}번 출력 미리보기`);
     $('designs').classList.remove('production-empty'); for(const old of $('designs').querySelectorAll('canvas'))old.width=old.height=1; $('designs').replaceChildren(canvas);
-    const comparison=window.createPortfolioComparison?.(canvas);$('designs').classList.toggle('has-comparison',!!comparison);if(comparison){canvas.classList.add('output-proof');$('designs').append(comparison);}
+    const comparison=canvas.dataset.renderer==='cheongin-signature-v1'?null:window.createPortfolioComparison?.(canvas);$('designs').classList.toggle('has-comparison',!!comparison);if(comparison){canvas.classList.add('output-proof');$('designs').append(comparison);}
     $('production-dimensions').textContent = `${canvas.dataset.exportWidth||canvas.width} × ${canvas.dataset.exportHeight||canvas.height} px`;
     easyStatus(missing ? `연결할 사진 ${missing}장이 없습니다. ‘사진 연결’에서 올바른 파일을 골라 주세요.` : `사진 ${state.photos.length}장 · ${OUTPUT_PRESETS[state.format].label} 준비 완료` , !!missing);
     const strip=$('production-filmstrip'),active=strip.querySelector('.active');if(active){const a=active.getBoundingClientRect(),r=strip.getBoundingClientRect();if(a.left<r.left)strip.scrollLeft+=a.left-r.left;else if(a.right>r.right)strip.scrollLeft+=a.right-r.right;}
@@ -226,23 +230,23 @@ window.renderProductionWorkspace = renderProductionWorkspace;
 generate = renderProductionWorkspace;
 async function exportProductionPlatform() {
   const button = currentExport; button.disabled = true;
+  const signatureBatch=window.signatureExportRenderer?.(),format=state.format,caption=platformCaption();
   try {
     if (!state.photos.length) throw Error('사진을 먼저 불러오세요.');
     const missing = productionSlides().filter(s => s.photo && !ProductionCore.matchPhoto(s.photo, state.photos));
     if (missing.length) throw Error('연결되지 않은 사진이 있습니다. 사진 연결을 확인해 주세요.');
     const files = [];
-    for (let i = 0; i < (state.slideCount || 5); i++) {
+    for (let i = 0; i < (signatureBatch?.count || state.slideCount || 5); i++) {
       button.textContent = `${i + 1}/${state.slideCount || 5}장 저장 준비 중…`;
-      const canvas = await card(state.theme, i);
-      files.push({ name: `${String(i + 1).padStart(2, '0')}-${canvas.width}x${canvas.height}.png`, blob: await canvasBlob(canvas) });
-      canvas.width=canvas.height=1; await new Promise(resolve=>setTimeout(resolve,0));
+      const canvas = signatureBatch?await signatureBatch.render(i,format):await card(state.theme, i,format);
+      try { files.push({ name: `${String(i + 1).padStart(2, '0')}-${canvas.width}x${canvas.height}.png`, blob: await canvasBlob(canvas) }); } finally { releaseCanvas(canvas); } await new Promise(resolve=>setTimeout(resolve,0));
     }
-    files.push({ name: '캡션.txt', blob: new Blob([platformCaption()], { type: 'text/plain;charset=utf-8' }) });
+    files.push({ name: '캡션.txt', blob: new Blob([caption], { type: 'text/plain;charset=utf-8' }) });
     offerPhotoFiles(files);
-    download(await storedZip(files), `청인마루_${state.format}.zip`);
+    download(await storedZip(files), `청인마루_${format}.zip`);
     $('download-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch (error) { toast(error.message); }
-  finally { button.disabled = false; button.textContent = '선택한 플랫폼 사진 + 캡션 저장'; }
+  finally { signatureBatch?.dispose();button.disabled = false; button.textContent = '선택한 플랫폼 사진 + 캡션 저장'; }
 }
 currentExport.onclick = exportProductionPlatform;
 $('save-design-zip').onclick = exportProductionPlatform;
@@ -303,6 +307,7 @@ async function importProductionFiles(files) {
       state.brandOutput = { ...brandSettings(), titles: state.brandSlides.map(s => s.title).join('\n') };
       await window.prepareBrandStories?.({apply:true,resetPhotos:true});
     }
+    window.signaturePhotoImport?.({kit:!!kit});if(kit?.signaturePackage)window.signatureImportPackage?.(kit.signaturePackage);
     state.usePreparedPhotos = true; persist(); syncBrandControls();
     productionSlide = 0;state.productionView={slide:0};
     status.textContent = `${photos.length || state.photos.length}장 사진${kit ? ' · 제품 규격 · 플랫폼별 캡션' : ''}을 불러왔습니다. 아래 미리보기에서 확인하세요.`;

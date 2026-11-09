@@ -1,0 +1,18 @@
+"""Actual owner controls: per-photo catalogue, role/note, native photo links and manual copy."""
+from playwright.sync_api import sync_playwright
+from pathlib import Path
+from PIL import Image
+import os,json
+out=Path(os.environ.get('STUDIO_TEST_OUTPUT','/tmp/signature-controls'));out.mkdir(parents=True,exist_ok=True)
+files=[]
+for i in range(3):
+ f=out/f'qa-room-{i}.jpg';Image.new('RGB',(1800,1200),(195-i*10,185,172)).save(f);files.append(f)
+with sync_playwright()as p:
+ b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox']);a=b.new_page(viewport={'width':1440,'height':1050});a.on('dialog',lambda d:d.accept());errors=[];a.on('pageerror',lambda e:errors.append(str(e)));a.goto('http://127.0.0.1:8000/marketing/');a.wait_for_function('window.signatureReady');a.locator('#production-files').set_input_files([str(f)for f in files]);a.wait_for_function('state.photos.length===3&&!document.getElementById("production-files").disabled');a.locator('.signature-bindings summary').click();a.wait_for_selector('.signature-photo-row');assert a.locator('#signature-product-options option').count()>100
+ floor=a.evaluate("state.catalog.find(p=>p.model==='스킨마루165').id");a.locator('#quick-product').select_option(floor);a.wait_for_function('(key)=>state.signatureProjectProduct?.id===key',arg=floor)
+ wall=a.evaluate("state.catalog.find(p=>p.type==='wall'&&p.model).id");row=a.locator('.signature-photo-row').last;row.locator('input').nth(1).fill(wall);row.locator('input').nth(1).blur();a.wait_for_function('(key)=>state.signaturePhotos[state.photos.at(-1).id]?.productKey===key',arg=wall);row=a.locator('.signature-photo-row').last;row.locator('select').select_option('detail');row=a.locator('.signature-photo-row').last;row.locator('input').first.fill('현관 벽면');row.locator('input').first.blur();row=a.locator('.signature-photo-row').last;row.locator('input').last.fill('벽면과 문틀이 만나는 부분');row.locator('input').last.blur();a.wait_for_function('Object.values(state.signaturePhotos).some(b=>b.note==="벽면과 문틀이 만나는 부분")')
+ ctx=a.evaluate('signatureSource().context');assert len(ctx['products'])==2;assert ctx['photoProducts'][a.evaluate('state.photos.at(-1).id')]['type']=='wall';assert '벽면과 문틀' in a.evaluate('platformCaption("naver")');assert '165 × 1205' in a.evaluate('platformCaption("carousel")')
+ # Native photo link and focal controls continue changing the actual exported source mapping.
+ a.locator('#production-filmstrip button').first.click();a.wait_for_function('document.querySelector("#designs canvas")?.dataset.slide==="0"');a.locator('#production-photo').select_option(files[1].name);a.wait_for_function('state.signatureSequence[0].photoIds[0]===state.photos[1].id');a.locator('#production-focus').fill('70');a.locator('#production-focus').dispatch_event('input');a.wait_for_function('state.signaturePhotos[state.photos[1].id]?.focus===.7')
+ a.locator('#production-title').fill('대표가 확인한 사진 설명');a.locator('#production-title').blur();a.wait_for_function('state.signatureSequence[0].title==="대표가 확인한 사진 설명"');a.evaluate('async()=>{persist();await flushPendingSave();}');a.reload();a.wait_for_function('window.signatureReady&&document.querySelector("#designs canvas")');assert a.locator('#production-title').input_value()=='대표가 확인한 사진 설명';assert a.evaluate('state.signaturePhotos[state.photos[1].id].focus')==.7
+ assert not errors,errors;b.close();r={'per_photo_product_search':'PASS','verified_global_product':'PASS','mixed_floor_wall':'PASS','role_area_notes':'PASS','shared_channel_facts':'PASS','native_photo_link_focus':'PASS','manual_title_reload':'PASS','errors':errors};(out/'results.json').write_text(json.dumps(r,ensure_ascii=False,indent=2));print(json.dumps(r))
