@@ -26,17 +26,21 @@ function projectProducts(input){
  return {schema:'cheonginmaru.product-feed.v1',generatedAt:new Date().toISOString(),source:'Lee-Miyoung/maru_calc',digest:crypto.createHash('sha256').update(JSON.stringify(rows)).digest('hex'),rows};
 }
 function assertPublic(feed){
+ if(Object.keys(feed).some(k=>!['schema','generatedAt','source','digest','rows'].includes(k)))throw Error('Unexpected feed metadata');
  if(feed.schema!=='cheonginmaru.product-feed.v1'||!Array.isArray(feed.rows)||!feed.rows.length)throw Error('Invalid public feed');
  for(const r of feed.rows)if(Object.keys(r).sort().join('|')!==FIELDS.slice().sort().join('|')||FIELDS.some(k=>typeof r[k]!=='string'))throw Error('Unexpected public product field');
  return feed;
 }
 module.exports={FIELDS,projectProducts,assertPublic};
+let syncPhase='initialization';
 if(require.main===module)(async()=>{
  const fs=require('node:fs/promises'),path=require('node:path');
  // Follow the existing source application's configured endpoint without changing that app or sheet.
- const source=await fetch('https://raw.githubusercontent.com/Lee-Miyoung/maru_calc/main/index.html',{signal:AbortSignal.timeout(30000)});if(!source.ok)throw Error('Source application unavailable');const html=await source.text(),match=html.match(/const\s+SHEET_URL\s*=\s*["'](https:\/\/script\.google\.com\/macros\/s\/[^"']+)["']/);if(!match)throw Error('Source endpoint configuration unavailable');
- const response=await fetch(match[1],{signal:AbortSignal.timeout(60000)});if(!response.ok)throw Error('Source sheet unavailable');const raw=await response.json(),feed=assertPublic(projectProducts(raw));
+ syncPhase='source-app-fetch';
+ const source=await fetch('https://raw.githubusercontent.com/Lee-Miyoung/maru_calc/main/index.html',{signal:AbortSignal.timeout(30000)});if(!source.ok)throw Error('Source application unavailable');syncPhase='source-app-parse';const html=await source.text(),match=html.match(/const\s+SHEET_URL\s*=\s*["'](https:\/\/script\.google\.com\/macros\/s\/[^"']+)["']/);if(!match)throw Error('Source endpoint configuration unavailable');
+ syncPhase='sheet-fetch';
+ const response=await fetch(match[1],{signal:AbortSignal.timeout(60000)});if(!response.ok)throw Error('Source sheet unavailable');syncPhase='sheet-json';const raw=await response.json();syncPhase='field-projection';const feed=assertPublic(projectProducts(raw));
  const target=path.resolve(process.argv[2]||'marketing/data/products.json');await fs.mkdir(path.dirname(target),{recursive:true});
  try{const prior=JSON.parse(await fs.readFile(target,'utf8'));if(prior.digest===feed.digest){console.log('Public product feed unchanged');return;}}catch{}
  await fs.writeFile(target+'.tmp',JSON.stringify(feed,null,2)+'\n');await fs.rename(target+'.tmp',target);console.log('Published allowlisted product rows: '+feed.rows.length);
-})().catch(()=>{console.error('Product synchronization failed; previous public feed is preserved. No source payload was logged.');process.exitCode=1;});
+})().catch(async()=>{const message='Product synchronization failed at '+syncPhase+'. Previous public feed is preserved. No source payload was logged.';console.error(message);if(process.env.GITHUB_STEP_SUMMARY)await require('node:fs/promises').appendFile(process.env.GITHUB_STEP_SUMMARY,'### Product feed status\n'+message+'\n');process.exitCode=1;});
