@@ -1,0 +1,40 @@
+name: Marketing product-only feed
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 */6 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/marketing-products.yml'
+      - 'marketing/server/project-products.cjs'
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: marketing-products
+  cancel-in-progress: false
+jobs:
+  project-public-fields:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify the price-field boundary
+        run: node --test marketing/tests/product_feed.test.cjs
+      - name: Read sheet on server and emit five fields only
+        run: node marketing/server/project-products.cjs marketing/data/products.json
+      - name: Commit only sanitized product feed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- marketing/data/products.json; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add marketing/data/products.json
+          git commit -m 'Refresh marketing product-only feed'
+          git pull --rebase origin main
+          git push origin HEAD:main
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" --silent
