@@ -55,3 +55,12 @@
 Actual-Meas 백업: `backup/before-photo-signature-v2-20261110`.
 마루견적 백업: `backup/before-product-endpoint-20261110`.
 문제 시 각 저장소의 해당 백업에서 변경 대상 파일만 복구하고 main에 커밋한다. Actual-Meas는 `marketing/`와 제품 동기화 워크플로만 복구하고 루트 실측 파일은 건드리지 않는다. maru_calc는 `_worker.js`만 복구한다. 데이터가 필요한 경우 앱의 전체 백업 JSON으로 복원한다. 코드 복구만으로 브라우저 저장 데이터가 삭제되지는 않는다.
+
+## 배포 결과
+
+- Actual-Meas main: `1574da4`.
+- GitHub Pages 배포: [42782590375](https://github.com/Lee-Miyoung/Actual-Meas/actions/runs/42782590375) Success.
+- 제품 전용 피드 작업: [42782590577](https://github.com/Lee-Miyoung/Actual-Meas/actions/runs/42782590577) Success. 연결 주소가 비어 있으므로 데이터 갱신을 건너뛰고 기존 피드를 보존한 결과다. 실제 시트 연결 성공이라는 의미는 아니다.
+- maru_calc main: `d0d420c` (`_worker.js`만 변경).
+- 앱 주소: https://lee-miyoung.github.io/Actual-Meas/marketing/
+- 이 실행 환경은 해당 github.io 호스트에 대한 CONNECT를 403으로 차단한다. GitHub 배포 성공은 확인했으나 공개 주소의 실제 새 화면은 이 환경에서 확인하지 못했다. 로컬 브라우저 검증과 공개 배포 확인을 구분한다.
