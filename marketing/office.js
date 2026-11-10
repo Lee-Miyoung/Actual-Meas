@@ -108,7 +108,7 @@ validate = function (s) {
     )
       throw Error("설정값을 확인하세요.");
     for (const [key,v] of Object.entries(s.settings))
-      if (key !== "brandDesign" && typeof v !== "string") throw Error("연결 주소 형식 오류");
+      if (!["brandDesign","productSync"].includes(key) && typeof v !== "string") throw Error("연결 주소 형식 오류");
     if (s.settings.brandDesign && (typeof s.settings.brandDesign !== "object" || !s.settings.brandDesign.current || !Array.isArray(s.settings.brandDesign.history))) throw Error("브랜드 디자인 설정 형식 오류");
     for (const k of ["kakao", "instagram", "website", "aiUrl"])
       safeUrl(s.settings[k]);

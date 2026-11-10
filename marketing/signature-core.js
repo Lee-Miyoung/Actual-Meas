@@ -4,13 +4,13 @@
 const IDS=['editorial-studio','modern-gallery','material-journal'];
 const PLATFORMS={carousel:{width:1080,height:1350},reels:{width:1080,height:1920},story:{width:1080,height:1920},naver:{width:1600,natural:true},naverCover:{width:1200,height:1200},kakao:{width:800,height:800},kakaoWide:{width:800,height:600},shorts:{width:1080,height:1920},youtube:{width:1080,height:1080},youtubeCover:{width:1280,height:720}};
 const copy=v=>JSON.parse(JSON.stringify(v));
-function create(id='editorial-studio'){
+function create(id='editorial-studio',version=2){
  if(!IDS.includes(id))throw Error('지원하지 않는 디자인 ID입니다.');
- return {schema:'cheonginmaru-signature-v1',id,version:1,revision:1,palette:{paper:'#F5F3ED',stone:'#D9D6CE',ink:'#34342F',accent:'#A38A70'},type:{title:'Studio Serif',body:'Studio Sans',titleSize:58,minTitle:42,bodySize:28,minBody:24,leading:1.35},layout:{margin:64,gap:24,fit:'contain',placement:'caption'},show:{logo:true,site:true,product:true,spec:true,brands:false},platforms:copy(PLATFORMS)};
+ return {schema:'cheonginmaru-signature-v1',id,version,revision:1,palette:version===1?{paper:'#F5F3ED',stone:'#D9D6CE',ink:'#34342F',accent:'#A38A70'}:{paper:'#F5F3ED',stone:'#FAF9F6',ink:'#292B28',accent:'#967F69'},type:{title:'Studio Serif',body:'Studio Sans',titleSize:58,minTitle:42,bodySize:28,minBody:24,leading:1.35},layout:{margin:64,gap:24,fit:version===1?'contain':'smart',placement:'caption'},show:{logo:true,site:true,product:true,spec:true,brands:false},platforms:copy(PLATFORMS),...(version===2?{tokens:{canvasWidth:1080,canvasHeight:1350,safeMargin:64,logoSize:128,logoPosition:'top-left',titleFont:'Studio Serif',titleSize:58,titleLineHeight:1.35,titleMaxLines:2,metadataFont:'Studio Sans',metadataSize:28,metadataGap:24,overlayStrength:.32,imageFocusX:.5,imageFocusY:.68,zoom:1,panX:0,panY:0,textPosition:'bottom',cropLimit:.35,logoOpacity:.9}}:{})};
 }
 function validate(raw){
- if(!raw||raw.schema!=='cheonginmaru-signature-v1'||raw.version!==1||!IDS.includes(raw.id))throw Error('지원하는 시그니처 설정 파일(v1)이 아닙니다.');
- const c=create(raw.id);c.revision=Number.isInteger(raw.revision)&&raw.revision>0?raw.revision:1;
+ if(!raw||raw.schema!=='cheonginmaru-signature-v1'||![1,2].includes(raw.version)||!IDS.includes(raw.id))throw Error('지원하는 시그니처 설정 파일(v1/v2)이 아닙니다.');
+ const c=create(raw.id,raw.version);c.revision=Number.isInteger(raw.revision)&&raw.revision>0?raw.revision:1;
  for(const key of Object.keys(c.palette)){if(!/^#[0-9a-f]{6}$/i.test(raw.palette?.[key]||''))throw Error('팔레트 색상은 #RRGGBB 형식이어야 합니다.');c.palette[key]=raw.palette[key];}
  const luminance=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
  for(const bg of [c.palette.paper,c.palette.stone]){const a=luminance(bg),b=luminance(c.palette.ink);if((Math.max(a,b)+.05)/(Math.min(a,b)+.05)<4.5)throw Error('바탕과 글자 색의 대비를 충분히 설정하세요.');}
@@ -18,11 +18,17 @@ function validate(raw){
  for(const [key,min,max]of [['titleSize',42,76],['minTitle',36,42],['bodySize',26,36],['minBody',24,28],['leading',1.2,1.6]]){const v=raw.type?.[key];if(!Number.isFinite(v)||v<min||v>max)throw Error('타이포그래피 범위를 확인하세요: '+key);c.type[key]=v;}
  if(c.type.minTitle>c.type.titleSize||c.type.minBody>c.type.bodySize)throw Error('최소 글자 크기는 기본 크기보다 클 수 없습니다.');
  for(const [key,min,max]of [['margin',48,88],['gap',16,40]]){const v=raw.layout?.[key];if(!Number.isFinite(v)||v<min||v>max)throw Error('여백 범위를 확인하세요.');c.layout[key]=v;}
- if(!['contain','cover'].includes(raw.layout?.fit)||!['caption','header'].includes(raw.layout?.placement))throw Error('사진 배치 규칙을 확인하세요.');
+ if(!(raw.version===2?['smart','contain','cover']:['contain','cover']).includes(raw.layout?.fit)||!['caption','header'].includes(raw.layout?.placement))throw Error('사진 배치 규칙을 확인하세요.');
  c.layout.fit=raw.layout.fit;c.layout.placement=raw.layout.placement;
  for(const key of Object.keys(c.show)){if(typeof raw.show?.[key]!=='boolean')throw Error('정보 표시 설정을 확인하세요.');c.show[key]=raw.show[key];}
  // Export dimensions are part of renderer v1; reject incompatible rules instead of silently stretching.
  if(!raw.platforms||Object.keys(raw.platforms).length!==Object.keys(c.platforms).length||Object.entries(c.platforms).some(([key,rule])=>Object.entries(rule).some(([k,v])=>raw.platforms[key]?.[k]!==v)))throw Error('플랫폼 규격은 시그니처 v1 고정 규격과 일치해야 합니다.');
+ if(raw.version===2){
+  const t=raw.tokens||{};
+  for(const [key,min,max]of [['logoSize',96,160],['overlayStrength',0,.7],['imageFocusX',0,1],['imageFocusY',0,1],['zoom',.8,1.3],['panX',-.2,.2],['panY',-.2,.2],['cropLimit',.1,.5],['logoOpacity',.5,1]]){if(!Number.isFinite(t[key])||t[key]<min||t[key]>max)throw Error('사진 중심 토큰 범위를 확인하세요: '+key);c.tokens[key]=t[key];}
+  if(t.logoPosition!=='top-left'||!['bottom','top','caption'].includes(t.textPosition))throw Error('고정된 로고·텍스트 위치를 선택하세요.');c.tokens.textPosition=t.textPosition;
+  Object.assign(c.tokens,{safeMargin:c.layout.margin,titleFont:c.type.title,titleSize:c.type.titleSize,titleLineHeight:c.type.leading,metadataFont:c.type.body,metadataSize:c.type.bodySize});
+ }
  return c;
 }
 function product(p){if(!p)return null;const out={};for(const k of ['id','type','brand','category','model','color','size','pack','coverage','material'])out[k]=String(p[k]||'').trim().slice(0,2000);if(!out.model||out.id.startsWith('category:')||out.id==='unconfirmed')return null;return out;}

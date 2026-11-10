@@ -8,6 +8,7 @@ on:
     paths:
       - '.github/workflows/marketing-products.yml'
       - 'marketing/server/project-products.cjs'
+      - 'marketing/data/product-source.json'
 permissions:
   contents: write
   pages: write

@@ -35,11 +35,13 @@ module.exports={FIELDS,projectProducts,assertPublic};
 let syncPhase='initialization';
 if(require.main===module)(async()=>{
  const fs=require('node:fs/promises'),path=require('node:path');
- // Follow the existing source application's configured endpoint without changing that app or sheet.
- syncPhase='source-app-fetch';
- const source=await fetch('https://raw.githubusercontent.com/Lee-Miyoung/maru_calc/main/index.html',{signal:AbortSignal.timeout(30000)});if(!source.ok)throw Error('Source application unavailable');syncPhase='source-app-parse';const html=await source.text(),match=html.match(/const\s+SHEET_URL\s*=\s*["'](https:\/\/script\.google\.com\/macros\/s\/[^"']+)["']/);if(!match)throw Error('Source endpoint configuration unavailable');
- syncPhase='sheet-fetch';
- const response=await fetch(match[1],{signal:AbortSignal.timeout(60000)});if(!response.ok)throw Error('Source sheet unavailable');syncPhase='sheet-json';const raw=await response.json();syncPhase='field-projection';const feed=assertPublic(projectProducts(raw));
+ // Read only the dedicated allowlisted endpoint; private source code and priced sheets are never fetched here.
+ const configuration=JSON.parse(await fs.readFile(path.resolve('marketing/data/product-source.json'),'utf8'));
+ if(!configuration.endpoint){console.log('Product endpoint setup pending; existing feed preserved');return;}
+ const endpoint=new URL(configuration.endpoint);
+ if(endpoint.protocol!=='https:'||endpoint.pathname!=='/api/marketing-products'||endpoint.username||endpoint.password||endpoint.search||endpoint.hash)throw Error('Invalid metadata endpoint');
+ syncPhase='public-product-endpoint';
+ const response=await fetch(endpoint,{signal:AbortSignal.timeout(60000),redirect:'error'});if(!response.ok)throw Error('Product endpoint unavailable');const feed=assertPublic(await response.json());
  const target=path.resolve(process.argv[2]||'marketing/data/products.json');await fs.mkdir(path.dirname(target),{recursive:true});
  try{const prior=JSON.parse(await fs.readFile(target,'utf8'));if(prior.digest===feed.digest){console.log('Public product feed unchanged');return;}}catch{}
  await fs.writeFile(target+'.tmp',JSON.stringify(feed,null,2)+'\n');await fs.rename(target+'.tmp',target);console.log('Published allowlisted product rows: '+feed.rows.length);
