@@ -150,7 +150,7 @@ async function startWriting() {
     } else ensureWriting(state);
     writingReady = true;
     syncWriting();
-    toast("자동 작성 엔진을 준비했습니다. 기존 자료는 보존했습니다.");
+    if (!stored?.contentEngineVersion) toast("자동 작성 엔진을 준비했습니다. 기존 자료는 보존했습니다.");
   } catch (e) {
     toast("콘텐츠 엔진 초기화 실패: " + e.message);
     $("make-copy").disabled = true;

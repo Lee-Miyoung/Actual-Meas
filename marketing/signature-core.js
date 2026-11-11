@@ -14,7 +14,7 @@ function validate(raw){
  for(const key of Object.keys(c.palette)){if(!/^#[0-9a-f]{6}$/i.test(raw.palette?.[key]||''))throw Error('팔레트 색상은 #RRGGBB 형식이어야 합니다.');c.palette[key]=raw.palette[key];}
  const luminance=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
  for(const bg of [c.palette.paper,c.palette.stone]){const a=luminance(bg),b=luminance(c.palette.ink);if((Math.max(a,b)+.05)/(Math.min(a,b)+.05)<4.5)throw Error('바탕과 글자 색의 대비를 충분히 설정하세요.');}
- for(const key of ['title','body']){if(!['Studio Serif','Studio Sans'].includes(raw.type?.[key]))throw Error('라이선스를 확인한 기본 서체를 선택하세요.');c.type[key]=raw.type[key];}
+ for(const key of ['title','body']){if(!['Studio Serif','Studio Sans','Pretendard'].includes(raw.type?.[key]))throw Error('라이선스를 확인한 기본 서체를 선택하세요.');c.type[key]=raw.type[key];}
  for(const [key,min,max]of [['titleSize',42,76],['minTitle',36,42],['bodySize',26,36],['minBody',24,28],['leading',1.2,1.6]]){const v=raw.type?.[key];if(!Number.isFinite(v)||v<min||v>max)throw Error('타이포그래피 범위를 확인하세요: '+key);c.type[key]=v;}
  if(c.type.minTitle>c.type.titleSize||c.type.minBody>c.type.bodySize)throw Error('최소 글자 크기는 기본 크기보다 클 수 없습니다.');
  for(const [key,min,max]of [['margin',48,88],['gap',16,40]]){const v=raw.layout?.[key];if(!Number.isFinite(v)||v<min||v>max)throw Error('여백 범위를 확인하세요.');c.layout[key]=v;}
@@ -29,6 +29,7 @@ function validate(raw){
   if(t.logoPosition!=='top-left'||!['bottom','top','caption'].includes(t.textPosition))throw Error('고정된 로고·텍스트 위치를 선택하세요.');c.tokens.textPosition=t.textPosition;
   Object.assign(c.tokens,{safeMargin:c.layout.margin,titleFont:c.type.title,titleSize:c.type.titleSize,titleLineHeight:c.type.leading,metadataFont:c.type.body,metadataSize:c.type.bodySize});
  }
+ if(raw.archiveVersion!==undefined){if(raw.archiveVersion!==1||raw.version!==2)throw Error('지원하지 않는 아카이브 디자인입니다.');c.archiveVersion=1;}
  return c;
 }
 function product(p){if(!p)return null;const out={};for(const k of ['id','type','brand','category','model','color','size','pack','coverage','material'])out[k]=String(p[k]||'').trim().slice(0,2000);if(!out.model||out.id.startsWith('category:')||out.id==='unconfirmed')return null;return out;}
