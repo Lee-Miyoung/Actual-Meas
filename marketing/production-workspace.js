@@ -173,7 +173,7 @@ async function renderProductionFrame(revision) {
   migrateProductionDesign(); syncBrandControls();
   layoutSelect.value = ['editorial','gallery','journal'].includes(state.theme) ? state.theme : 'editorial';
   for (const [key, button] of platformButtons) { button.classList.toggle('active', key === state.format); button.setAttribute('aria-pressed', String(key === state.format)); }
-  if (!state.photos.length) {
+  if (!state.photos.length || (state.photoLibrary && !state.signatureSequence?.length)) {
     for(const c of $('designs').querySelectorAll('canvas'))releaseCanvas(c);
     $('designs').textContent = '현장 사진을 불러오면 이곳에 시공 기록을 펼쳐드립니다.';
     window.resetPortfolioThumbs?.();$('production-filmstrip').replaceChildren();$('production-page').textContent='사진을 불러오세요';$('production-dimensions').textContent='';$('production-prev').disabled=$('production-next').disabled=true;
@@ -284,7 +284,8 @@ async function importProductionFiles(files) {
       if (jsons[0]) { if (jsons[0].size > 150000) throw Error('제작 설정 파일이 너무 큽니다.'); kit = CheonginBrandKit.parse(await jsons[0].text()); }
       source = source.filter(f => !/\.json$/i.test(f.name));
     }
-    if (source.length > 10) throw Error('사진은 10장 이하로 선택하세요.');
+    if(source.reduce((n,f)=>n+f.size,0)>80*1024*1024)throw Error('현장 사진 합계 80MB 한도입니다.');
+    if (source.length > 30) throw Error('사진은 30장 이하로 선택하세요.');
     if (!source.length && !kit) throw Error('사진, 제작 JSON 또는 제작 ZIP을 선택하세요.');
     const photos = [];
     for (const file of source) {

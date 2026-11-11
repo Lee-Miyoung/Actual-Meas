@@ -686,7 +686,7 @@ function validate(s) {
     !s ||
     s.version !== 1 ||
     !Array.isArray(s.photos) ||
-    s.photos.length > 10 ||
+    s.photos.length > 30 ||
     !Array.isArray(s.records) ||
     s.records.length > 10000
   )

@@ -10,7 +10,7 @@ function defaultConfig(){return Core.validate(profile().current);}
 function projectProduct(){return Core.product(window.campaignProduct?campaignProduct():selectedProduct());}
 function photoProduct(id){const key=state.signaturePhotos?.[id]?.productKey;if(key)return Core.product(Writer.resolveProduct(state.catalog,key));return projectProduct();}
 function context(){
- const photos=state.photos.map(p=>({id:p.id,name:p.name,width:p.sourceWidth||1200,height:p.sourceHeight||900,score:Number(p.analysis?.score)||0,duplicate:!!p.analysis?.duplicateOf})),bindings=Core.copy(state.signaturePhotos||{}),photoProducts={},unique=new Map(),areas={};
+ const photos=(window.PhotoLibrary?PhotoLibrary.activePhotos():state.photos).map(p=>({id:p.id,name:p.name,width:p.sourceWidth||1200,height:p.sourceHeight||900,...(p.library?{materialCovered:!!p.library.covered}:{}),score:Number(p.analysis?.score)||0,duplicate:!!p.analysis?.duplicateOf})),bindings=Core.copy(state.signaturePhotos||{}),photoProducts={},unique=new Map(),areas={};
  for(const p of photos){const product=photoProduct(p.id);if(product){photoProducts[p.id]=product;const key=[product.id,product.brand,product.model,product.color,product.size].join('|');product.renderKey=key;unique.set(key,product);if(bindings[p.id]?.area)areas[key]=[areas[key],bindings[p.id].area].filter(Boolean).join(' · ');}}
  return {...Core.publicSite(state),photos,bindings,photoProducts,products:[...unique.values()],areas};
 }
@@ -19,7 +19,7 @@ function buildSequence(preserve=true){
  if(!active()||!state.photos.length)return;
  const custom=brandSettings().titles.split(/\r?\n/),before=(state.brandSlides||[]).map((s,i)=>({...s,title:custom[i]||s.title})),previousAuto=state.signatureAutoTitles||{},previousSequence=state.signatureSequence||[],nextAuto={},ctx=context();state.signatureSequence=Core.plan(ctx.photos,ctx.bindings,{...ctx,materialCount:ctx.products.length});
  state.brandSlides=state.signatureSequence.map((slot,i)=>{const p=state.photos.find(p=>p.id===slot.photoIds[0]),key=p?.id||'info:'+slot.productPage,old=preserve?(p?before.find(s=>s.photo===p.name):before[previousSequence.findIndex(s=>s.role==='information'&&s.productPage===slot.productPage)]):null;nextAuto[key]=slot.title;return {photo:p?.name||'',title:old?.title&&old.title!==previousAuto[key]?old.title:slot.title,layout:slot.role==='comparison'&&slot.photoIds.length===1?'pair':'photo'};});state.signatureAutoTitles=nextAuto;
- state.slideCount=state.signatureSequence.length;state.brandOutput={...brandSettings(),titles:state.brandSlides.map(s=>s.title).join('\n')};
+ state.slideCount=Math.max(1,state.signatureSequence.length);state.brandOutput={...brandSettings(),titles:state.brandSlides.map(s=>s.title).join('\n')};
  const select=$('slide-count');for(const n of [1,2,7,8,9,10])if(![...select.options].some(o=>o.value===String(n)))select.add(new Option(String(n),String(n)));select.value=String(state.slideCount);
 }
 function refreshCaptions(){
@@ -28,7 +28,8 @@ function refreshCaptions(){
  if(ctx.memo&&!notes.includes(ctx.memo))notes.push(ctx.memo);
  const contact=state.settings.kakao||state.settings.website||'지역·현장 사진·원하는 소재를 알려주시면 확인해 안내합니다.',title=effectiveSequence()[0]?.title||heading,works=ctx.works.length?'확인한 작업: '+ctx.works.join(' · '):'',tags=['청인마루',...ctx.products.map(p=>p.brand),ctx.region].filter(Boolean).map(s=>'#'+s.replace(/[^\p{L}\p{N}]/gu,'')).join(' ');
  const caption=[heading,...notes,facts.length?'시공 제품\n'+facts.join('\n'):'',works,'시공 상담\n'+contact,tags].filter(Boolean).join('\n\n');
- const blog=[heading,'현장 기록\n'+notes.join('\n'),facts.length?'제품과 규격\n'+facts.join('\n'):'',works,'사진을 보는 순서\n'+effectiveSequence().map((s,i)=>`${i+1}. ${s.title}`).join('\n'),'소재를 선택하기 전 실제 샘플과 현장 조건을 함께 확인하세요.','문의\n'+contact].filter(Boolean).join('\n\n');
+ const blogOrder=state.signatureDesign?.studioVersion&&window.ScenePhotoCore?ScenePhotoCore.blogSlots(ctx).map((slot,i)=>`${i+1}. ${ScenePhotoCore.caption(slot,ctx)}`).join('\n'):effectiveSequence().map((s,i)=>`${i+1}. ${s.title}`).join('\n');
+ const blog=[heading,'현장 기록\n'+notes.join('\n'),facts.length?'제품과 규격\n'+facts.join('\n'):'',works,'사진을 보는 순서\n'+blogOrder,'소재를 선택하기 전 실제 샘플과 현장 조건을 함께 확인하세요.','문의\n'+contact].filter(Boolean).join('\n\n');
  const short=[title,heading,models.join(' · '),contact].filter(Boolean).join('\n'),kakao=[heading,models.join(' · '),'현장 사진과 원하는 자재를 보내주시면 상담을 안내합니다.',contact].filter(Boolean).join('\n\n');
  const generated={carousel:caption,naver:blog,naverCover:heading,kakao,kakaoWide:kakao,youtube:caption,youtubeCover:title,story:short,reels:short,shorts:short};state.brandCaptions??={};for(const [format,text]of Object.entries(generated))if(!state.signatureEditedCaptions?.[format])state.brandCaptions[format]=text;state.signatureCaptionKey=key;
 }
@@ -43,7 +44,7 @@ function ensure(){
  $('brand-fit').closest('label').hidden=active();$('brand-example').hidden=active();document.querySelector('.production-advanced .brand-controls').hidden=active();
  if(active())refreshCaptions();
  $('slide-count').disabled=active();badge.textContent=active()?names[state.signatureDesign.id]+' · v'+state.signatureDesign.version+' / '+state.signatureDesign.revision:'기존 프로젝트 디자인 유지';
- if(active()&&state.signatureSequence){state.slideCount=state.signatureSequence.length;}
+ if(active()&&state.signatureSequence){state.slideCount=Math.max(1,state.signatureSequence.length);}
  refreshBindings();refreshProjects();
 }
 window.signatureSlideEdited=function(index,patch){
@@ -61,7 +62,7 @@ window.signatureSource=()=>active()?{design:Core.copy(state.signatureDesign),seq
 async function renderCurrent(config,index,format,options={}){
  const ctx=context(),slot=state.signatureSequence?.[index];if(!slot)throw Error('사진 구성을 먼저 준비하세요.');
  const custom=brandSettings().titles.split(/\r?\n/)[index];const entry={...slot,title:custom||slot.title};
- return renderSignature(config,ctx,entry,index,format,async(id,max)=>{const p=state.photos.find(p=>p.id===id);if(!p)throw Error('연결된 사진이 없습니다.');const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}},options);
+ return renderSignature(config,ctx,entry,index,format,async(id,max)=>{const p=state.photos.find(p=>p.id===id);if(!p)throw Error('연결된 사진이 없습니다.');if(window.PhotoLibrary)return PhotoLibrary.renderPhoto(p,max);const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}},options);
 }
 card=async function(theme,index,format=state.format,proposed=false,options={}){ensure();if(!active())return legacyCard(theme,index,format,proposed,options);return renderCurrent(state.signatureDesign,index,format,options);};
 workflowCard=async function(content,index,format='carousel'){
@@ -71,8 +72,8 @@ workflowCard=async function(content,index,format='carousel'){
 };
 window.signatureExportRenderer=function(){
  if(!active())return null;const source=Core.copy(window.signatureSource()),prefix='signature-export:'+crypto.randomUUID()+':';
- const photos=state.photos.map(p=>({id:prefix+p.id,sourceId:p.id,src:p.src,adjust:Core.copy(p.adjust),thumbnail:p.thumbnail,sourceWidth:p.sourceWidth,sourceHeight:p.sourceHeight}));
- return {count:source.sequence.length,design:source.design,render:(index,format)=>renderSignature(source.design,source.context,source.sequence[index],index,format,async(id,max)=>{const p=photos.find(p=>p.sourceId===id);if(!p)throw Error('출력 원본을 찾지 못했습니다.');const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}}),dispose:()=>{for(const [key,c]of images)if(String(key).startsWith(prefix)){releaseCanvas(c);images.delete(key);}}};
+ const photos=state.photos.map(p=>({id:prefix+p.id,sourceId:p.id,src:p.src,adjust:Core.copy(p.adjust),thumbnail:p.thumbnail,sourceWidth:p.sourceWidth,sourceHeight:p.sourceHeight,library:Core.copy(p.library||{})}));
+ return {count:source.sequence.length,design:source.design,render:(index,format)=>renderSignature(source.design,source.context,source.sequence[index],index,format,async(id,max)=>{const p=photos.find(p=>p.sourceId===id);if(!p)throw Error('출력 원본을 찾지 못했습니다.');if(window.PhotoLibrary)return PhotoLibrary.renderPhoto(p,max);const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}}),dispose:()=>{for(const [key,c]of images)if(String(key).startsWith(prefix)){releaseCanvas(c);images.delete(key);}}};
 };
 const legacyEasyGenerate=easyGenerate;
 easyGenerate=async function(force=false){
@@ -90,8 +91,8 @@ Flow.drafts=function(project,draft,assets,question){
  const works=ctx.works.length?'확인한 작업: '+ctx.works.join(' · '):'';
  const contact=state.settings.kakao||state.settings.website||'지역과 현장 사진, 원하는 소재를 보내주시면 확인해 안내하겠습니다.';
  const tags=['청인마루',...ctx.products.map(p=>p.brand),ctx.region].filter(Boolean).map(s=>'#'+s.replace(/[^\p{L}\p{N}]/gu,'')).join(' ');
- const order=d.signatureSequence.map((s,i)=>`${i+1}. ${s.title}`).join('\n');
- if(d.channel==='instagram'){d.title=d.signatureSequence[0]?.title||heading;d.body=[heading,...details,materials.length?'시공 제품\n'+materials.join('\n'):'',works,'시공 상담\n'+contact,tags].filter(Boolean).join('\n\n');d.hook=d.title;d.script=d.signatureSequence.map((s,i)=>`${i*3}–${i*3+3}초 · ${s.title}`).join('\n');d.story=[d.title,heading].join('\n');}
+ const order=source.design.studioVersion&&window.ScenePhotoCore?ScenePhotoCore.blogSlots(ctx).map((slot,i)=>`${i+1}. ${ScenePhotoCore.caption(slot,ctx)}`).join('\n'):d.signatureSequence.map((s,i)=>`${i+1}. ${s.title}`).join('\n');
+ if(d.channel==='instagram'){d.title=d.signatureSequence[0]?.title||heading;d.body=[heading,...details,materials.length?'시공 제품\n'+materials.join('\n'):'',works,'시공 상담\n'+contact,tags].filter(Boolean).join('\n\n');d.hook=d.title;d.script=d.signatureSequence.map((s,i)=>`${i*3}–${i*3+3}초 · ${s.title}`).join('\n');if(source.design.studioVersion&&window.ScenePhotoCore){const seconds=state.photoLibrary?.videoDuration||15,span=(seconds-.75)/Math.max(1,d.signatureSequence.length);d.script=d.signatureSequence.map((s,i)=>`${(i*span).toFixed(1)}–${((i+1)*span).toFixed(1)}초 · ${ScenePhotoCore.caption(s,ctx)}`).join('\n')+`\n${(seconds-.75).toFixed(1)}–${seconds.toFixed(1)}초 · 청인마루 공식 로고`; }d.story=[d.title,heading].join('\n');}
  if(d.channel==='naver'){d.title=[ctx.region,ctx.space,...ctx.products.map(p=>p.model),'현장 기록'].filter(Boolean).join(' ');d.body=[heading,'현장 안내\n'+[ctx.space,...details].filter(Boolean).join('\n'),materials.length?'이 현장의 제품과 규격\n'+materials.join('\n'):'제품 정보는 확인 후 안내합니다.',works,'사진을 보는 순서\n'+order,'상담 전 준비할 것\n지역·현장 사진·원하는 자재를 함께 알려주세요.\n'+contact].filter(Boolean).join('\n\n');}
  if(d.channel==='website'){d.title=heading;d.body=[heading,...details,materials.length?'시공 제품\n'+materials.join('\n'):'',works,'시공 상담\n'+contact].filter(Boolean).join('\n\n');}
  if(d.channel==='kakao'){d.title=heading+' · 시공 상담';d.body=[heading,...details.slice(0,2),materials.join('\n'),'어떤 소재를 선택할지 고민된다면 현장 사진과 함께 문의해 주세요.',contact].filter(Boolean).join('\n\n');}
@@ -121,7 +122,7 @@ function previews(){const rev=++previewRevision;proofQueue=proofQueue.catch(()=>
 async function drawPreviews(rev){
  const host=$('signature-proofs');for(const c of host.querySelectorAll('canvas'))releaseCanvas(c);host.replaceChildren();
  if(!state.photos.length){host.append(node('p','현장 사진을 불러오면 세 디자인을 같은 사진으로 비교합니다.'));return;}
- try{const base=read(),ctx=context(),slot=(state.signatureSequence||Core.plan(ctx.photos,ctx.bindings,ctx))[0];for(const id of Core.IDS){const cfg={...base,id},article=node('article');article.append(node('h4',names[id]));host.append(article);const c=await renderSignature(cfg,ctx,slot,0,'carousel',async(pid,max)=>{const p=state.photos.find(p=>p.id===pid);const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}},{maxEdge:720});if(rev!==previewRevision){releaseCanvas(c);return;}article.append(c);}}catch(e){$('signature-status').textContent=e.message;}
+ try{const base=read(),ctx=context(),slot=(state.signatureSequence||Core.plan(ctx.photos,ctx.bindings,ctx))[0];for(const id of Core.IDS){const cfg={...base,id},article=node('article');article.append(node('h4',names[id]));host.append(article);const c=await renderSignature(cfg,ctx,slot,0,'carousel',async(pid,max)=>{const p=state.photos.find(p=>p.id===pid);if(window.PhotoLibrary)return PhotoLibrary.renderPhoto(p,max);const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}},{maxEdge:720});if(rev!==previewRevision){releaseCanvas(c);return;}article.append(c);}}catch(e){$('signature-status').textContent=e.message;}
 }
 $('signature-preview').onclick=previews;
 function projectDesignBackup(){const data={photoIds:state.photos.map(p=>p.id)};for(const k of ['signatureDesign','signatureSequence','signaturePhotos','signatureProjectProduct','signatureProductSourceKey','signatureEditedCaptions','signatureAutoTitles','brandOutput','brandSlides','brandCaptions','slideCount'])if(state[k]!==undefined)data[k]=Core.copy(state[k]);return data;}
@@ -170,7 +171,7 @@ currentBrandKit=function(){const kit=originalKit();if(active()){kit.signaturePac
 window.signatureImportPackage=function(pack){
  if(!pack)return;state.signatureDesign=Core.validate(pack.design);state.signaturePhotos={};for(const item of pack.photos||[]){const p=ProductionCore.matchPhoto(item.name,state.photos);if(p)state.signaturePhotos[p.id]={...item.binding,productSnapshot:Core.product(item.product)};}
  const info=pack.project||{};state.marketingSite=String(info.site||'');state.region=String(info.region||'');state.space=String(info.space||'');state.siteStage=String(info.stage||'unknown');
- state.signatureSequence=(pack.sequence||[]).map(s=>({...s,photoIds:s.photoNames.map(name=>ProductionCore.matchPhoto(name,state.photos)?.id).filter(Boolean)}));if(!state.signatureSequence.length)buildSequence(true);else state.slideCount=state.signatureSequence.length;
+ state.signatureSequence=(pack.sequence||[]).map(s=>({...s,photoIds:s.photoNames.map(name=>ProductionCore.matchPhoto(name,state.photos)?.id).filter(Boolean)}));if(!state.signatureSequence.length)buildSequence(true);else state.slideCount=Math.max(1,state.signatureSequence.length);
 };
 const originalPhotoProduct=photoProduct;
 // Product snapshots take precedence over later edits to the shared catalogue.

@@ -533,7 +533,7 @@ async function copyWriting(text, field) {
 }
 async function generateWriting(force = false) {
   if (!writingReady) return toast("저장소를 준비하고 있습니다.");
-  if (state.photos.length < 1 || state.photos.length > 10)
+  if (state.photos.length < 1 || state.photos.length > 30)
     return toast("현장 사진을 먼저 등록하세요.");
   if (!selectedProduct())
     return toast("제품을 선택하거나 제품 도감에 등록하세요.");

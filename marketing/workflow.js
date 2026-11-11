@@ -102,6 +102,7 @@ async function assetRefs(photos) {
       key: cache.key,
       originalKey: cache.originalKey,
       adjust: structuredClone(p.adjust),
+      ...(p.library?.correction?.approved?{libraryCorrection:structuredClone(p.library.correction),sourceWidth:p.sourceWidth,sourceHeight:p.sourceHeight}:{}),
       focus: structuredClone(p.focus || { x: 0.5, y: 0.5 }),
     });
   }
@@ -120,6 +121,7 @@ async function prepareChannels() {
       ...p,
       cacheObject: p,
       adjust: structuredClone(p.adjust),
+      ...(p.library?.correction?.approved?{libraryCorrection:structuredClone(p.library.correction),sourceWidth:p.sourceWidth,sourceHeight:p.sourceHeight}:{}),
       focus: structuredClone(p.focus || { x: 0.5, y: 0.5 }),
     })),
     question = state.consumerQuestion || "";
@@ -336,8 +338,8 @@ $("site-form").onsubmit = async (e) => {
   e.preventDefault();
   const files = $("site-photos").files,
     key = $("site-product").value;
-  if (files.length < 1 || files.length > 10)
-    return progress("사진 1–10장을 선택하세요.", true);
+  if (files.length < 1 || files.length > 30)
+    return progress("사진 1–30장을 선택하세요.", true);
   if (!key) return progress("제품 또는 제품군을 선택하세요.", true);
   const button = $("register-site");
   button.disabled = true;
@@ -882,6 +884,7 @@ async function workflowImage(ref, max = 1800) {
   const record = await dbGet(ref.key);
   if (!record)
     throw Error("보관된 현장 사진을 찾지 못했습니다. 전체 백업을 복원하세요.");
+  if(ref.libraryCorrection&&window.PhotoLibrary)return PhotoLibrary.renderPhoto({id:ref.key,src:record.src,adjust:ref.adjust,sourceWidth:ref.sourceWidth,sourceHeight:ref.sourceHeight,library:{correction:ref.libraryCorrection}},max);
   const image = await loadImage(record.src),
     was = original;
   original = false;

@@ -30,6 +30,7 @@ function validate(raw){
   Object.assign(c.tokens,{safeMargin:c.layout.margin,titleFont:c.type.title,titleSize:c.type.titleSize,titleLineHeight:c.type.leading,metadataFont:c.type.body,metadataSize:c.type.bodySize});
  }
  if(raw.archiveVersion!==undefined){if(raw.archiveVersion!==1||raw.version!==2)throw Error('지원하지 않는 아카이브 디자인입니다.');c.archiveVersion=1;}
+ if(raw.studioVersion!==undefined){if(raw.studioVersion!==1||raw.version!==2)throw Error('지원하지 않는 통합 디자인 버전입니다.');c.studioVersion=1;const d=raw.studio||{};c.studio={};for(const [key,min,max]of [['logoWidth',60,140],['logoOpacity',.5,1],['titleSize',28,44],['overlay',0,.25]]){if(!Number.isFinite(d[key])||d[key]<min||d[key]>max)throw Error('통합 디자인 범위 오류');c.studio[key]=d[key];}if(!['bottom-left','bottom-center'].includes(d.logoPosition))throw Error('로고 위치를 확인하세요.');c.studio.logoPosition=d.logoPosition;if(d.logoOtherCards!==undefined&&typeof d.logoOtherCards!=='boolean')throw Error('로고 표시 형식 오류');c.studio.logoOtherCards=!!d.logoOtherCards;}
  return c;
 }
 function product(p){if(!p)return null;const out={};for(const k of ['id','type','brand','category','model','color','size','pack','coverage','material'])out[k]=String(p[k]||'').trim().slice(0,2000);if(!out.model||out.id.startsWith('category:')||out.id==='unconfirmed')return null;return out;}

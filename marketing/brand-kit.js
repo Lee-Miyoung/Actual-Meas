@@ -36,7 +36,7 @@
     let signaturePackage;
     if(value.signaturePackage){
       const pack=value.signaturePackage,core=globalThis.SignatureCore;if(!core)throw Error('시그니처 설정을 불러온 뒤 다시 시도하세요.');
-      core.validate(pack.design);if(!Array.isArray(pack.photos)||pack.photos.length>10||!Array.isArray(pack.sequence)||pack.sequence.length!==slides.length)throw Error('시그니처 사진 구성 형식 오류');
+      core.validate(pack.design);if(!Array.isArray(pack.photos)||pack.photos.length>30||!Array.isArray(pack.sequence)||pack.sequence.length!==slides.length)throw Error('시그니처 사진 구성 형식 오류');
       if(pack.photos.some(p=>typeof p.name!=='string'||p.name.length>200)||pack.sequence.some(s=>!Array.isArray(s.photoNames)||s.photoNames.some(n=>typeof n!=='string'||!pack.photos.some(p=>p.name===n))))throw Error('시그니처 사진 연결 오류');
       signaturePackage=pack;
     }

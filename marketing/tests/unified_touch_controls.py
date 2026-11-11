@@ -1,0 +1,14 @@
+"""iPad/iPhone interaction paths; share is mocked, OS Photos is not asserted."""
+from pathlib import Path
+from playwright.sync_api import sync_playwright
+import json
+out=Path('/workspace/unified-studio-review');saved=json.loads((out/'workspace.json').read_text())['current']
+with sync_playwright() as p:
+ b=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox']);reports={}
+ for name in ['iPad Pro 11','iPhone 13']:
+  c=b.new_context(**p.devices[name],accept_downloads=True);a=c.new_page();errors=[];a.on('pageerror',lambda e:errors.append(str(e)));a.on('dialog',lambda d:d.accept());a.add_init_script('Object.defineProperty(navigator,"canShare",{value:()=>true});Object.defineProperty(navigator,"share",{value:async d=>{window.sharedQA=d.files.map(f=>({type:f.type,size:f.size}));}})');a.goto('http://127.0.0.1:8000/marketing/');a.wait_for_function('window.signatureReady');a.wait_for_timeout(1500);a.evaluate('async s=>{await flushPendingSave();await dbPut("current",s);}',saved);a.reload();a.wait_for_function('window.signatureReady&&state.photos.length===10');a.locator('[data-tab="studio"]').click();a.locator('#scene-output').select_option('carousel');a.locator('#scene-export').click();a.locator('#device-export').wait_for(state='visible',timeout=120000);assert 1<=a.locator('.device-export-gallery img').count()<=6;a.locator('.device-export-actions button').click();assert a.evaluate('sharedQA.every(f=>f.type==="image/png"&&f.size>1000)');a.locator('#device-export .export-close').click()
+  # Named controls and fixed design admins are operable, including optional logo on other cards.
+  a.locator('#unified-other-logo').evaluate('e=>e.closest("details").open=true');a.locator('#unified-other-logo').check();logo=a.evaluate('''async()=>{const src=signatureSource(),slot={role:'detail',photoIds:[state.photos[3].id]},c=await renderSignature(src.design,src.context,slot,2,'carousel',async(id,max)=>PhotoLibrary.renderPhoto(state.photos.find(p=>p.id===id),max));const n=c.typeLayout.filter(x=>x.kind==='official-logo').length;releaseCanvas(c);return n;}''');assert logo==1;a.locator('#unified-other-logo').uncheck()
+  a.locator('#scene-video-duration').evaluate('e=>e.closest("details").open=true');a.locator('#scene-video-transition').fill('0.5');a.locator('#scene-video-transition').blur();assert a.evaluate('state.photoLibrary.videoTransition')==.5
+  a.locator('#title').fill('직접 수정한 현장명');a.locator('#title').blur();assert a.evaluate('signatureSource().context.site')=='직접 수정한 현장명';assert a.evaluate('document.documentElement.scrollWidth<=innerWidth+1');assert not errors,errors;reports[name]={'image_export_dialog':'PASS','share_payload_mock':'PASS','optional_noncover_logo':'PASS','transition_setting':'PASS','edited_site_binding':'PASS','page_overflow':'NONE','physical_device':'UNVERIFIED','errors':errors};c.close()
+ b.close();(out/'touch-results.json').write_text(json.dumps(reports,indent=2));print(json.dumps(reports))

@@ -33,62 +33,45 @@ download=function(blob,name){
   else downloadBeforeDevice(blob,name);
 };
 // Encode fixed timestamps, then write one MP4. No real-time recording fragments.
-async function recordMarketingVideo(renderFrame,count,onProgress=()=>{}){
-  if(!window.VideoEncoder||!window.VideoFrame||!window.Mp4Muxer)throw Error('이 브라우저는 호환되는 MP4 출력을 지원하지 않습니다. 사진 PNG로 저장하거나 Safari를 업데이트해 주세요.');
-  const config={codec:'avc1.420028',width:1080,height:1920,bitrate:5000000,framerate:24,avc:{format:'avc'}};
-  const support=await VideoEncoder.isConfigSupported(config);
-  if(!support.supported)throw Error('이 기기에 호환되는 H.264 인코더가 없습니다. 사진 PNG 출력은 사용할 수 있습니다.');
-  const target=new Mp4Muxer.ArrayBufferTarget();
-  const muxer=new Mp4Muxer.Muxer({target,video:{codec:'avc',width:1080,height:1920,frameRate:24},fastStart:'in-memory',firstTimestampBehavior:'offset'});
-  let encoder,encodeError,cancelled=false,stage,canvas,visibilityListener;
-  const started=performance.now();
+async function recordMarketingVideo(renderFrame,count,onProgress=()=>{},options={}){
+  if(!Number.isInteger(count)||count<1||count>16)throw Error('실제 영상 사진 구성을 확인하세요.');
+  if(!window.VideoEncoder||!window.VideoFrame||!window.Mp4Muxer)throw Error('이 브라우저는 MP4 출력을 지원하지 않습니다. PNG 출력은 사용할 수 있습니다.');
+  const duration=options.duration??count*3,fade=Math.min(1,Math.max(0,options.transition??0)),fps=24;
+  if(!Number.isFinite(duration)||duration<3||duration>60)throw Error('영상 길이는 3–60초 범위입니다.');
+  const config={codec:'avc1.420028',width:1080,height:1920,bitrate:5000000,framerate:fps,avc:{format:'avc'}},support=await VideoEncoder.isConfigSupported(config);
+  if(!support.supported)throw Error('이 기기에 호환되는 H.264 인코더가 없습니다.');
+  const target=new Mp4Muxer.ArrayBufferTarget(),muxer=new Mp4Muxer.Muxer({target,video:{codec:'avc',width:1080,height:1920,frameRate:fps},fastStart:'in-memory',firstTimestampBehavior:'offset'});
+  let encoder,encodeError,cancelled=false,stage,canvas,visibilityListener,previous=null,current=null;const started=performance.now();
   try{
-    encoder=new VideoEncoder({output:(chunk,meta)=>{try{muxer.addVideoChunk(chunk,meta);}catch(e){encodeError=e;}},error:e=>{encodeError=e;}});
-    encoder.configure(support.config);
-    stage=node('dialog');stage.id='video-stage';const title=node('h2','릴스 영상 만드는 중');const status=node('p','사진과 문구를 영상 파일로 준비합니다. 화면을 열어 두세요.');const cancel=node('button','출력 중단');
-    canvas=node('canvas');canvas.width=1080;canvas.height=1920;
-    cancel.onclick=()=>{cancelled=true;};stage.addEventListener('cancel',()=>{cancelled=true;});stage.append(title,status,canvas,cancel);document.body.append(stage);stage.showModal();
-    visibilityListener=()=>{if(document.hidden)cancelled=true;};document.addEventListener('visibilitychange',visibilityListener);
-    const ctx=canvas.getContext('2d'),perSlide=72,total=count*perSlide;
-    for(let slide=0;slide<count;slide++){
-      if(cancelled)throw Error('영상 출력을 중단했습니다. 원본과 편집 내용은 유지됩니다.');
-      const source=await renderFrame(slide);
-      try{
-        const scale=Math.min(1080/source.width,1920/source.height),w=source.width*scale,h=source.height*scale;
-        ctx.fillStyle=EDITORIAL.paper;ctx.fillRect(0,0,1080,1920);ctx.drawImage(source,(1080-w)/2,(1920-h)/2,w,h);
-      }finally{releaseCanvas(source);}
-      for(let frame=0;frame<perSlide;frame++){
-        if(cancelled)throw Error('영상 출력을 중단했습니다. 원본과 편집 내용은 유지됩니다.');
-        if(encodeError)throw encodeError;
-        if(performance.now()-started>180000)throw Error('영상 출력 시간이 초과됐습니다. 다른 앱을 닫은 뒤 다시 시도하세요.');
-        const number=slide*perSlide+frame,timestamp=Math.round(number*1000000/24),duration=Math.round((number+1)*1000000/24)-timestamp;
-        const image=new VideoFrame(canvas,{timestamp,duration});
-        try{encoder.encode(image,{keyFrame:frame===0});}finally{image.close();}
-        if((frame+1)%6===0){
-          await encoder.flush();if(encodeError)throw encodeError;
-          const message=`MP4 파일 준비 중 · ${Math.round((number+1)/total*100)}%`;status.textContent=message;onProgress(message);await new Promise(r=>setTimeout(r,0));
-        }
+    encoder=new VideoEncoder({output:(chunk,meta)=>{try{muxer.addVideoChunk(chunk,meta);}catch(e){encodeError=e;}},error:e=>encodeError=e});encoder.configure(support.config);
+    stage=node('dialog');stage.id='video-stage';const title=node('h2','릴스·쇼츠 MP4 만드는 중'),status=node('p','실제 사진을 영상으로 저장합니다. 화면을 열어 두세요.'),cancel=node('button','출력 중단');canvas=node('canvas');canvas.width=1080;canvas.height=1920;cancel.onclick=()=>cancelled=true;stage.addEventListener('cancel',()=>cancelled=true);stage.append(title,status,canvas,cancel);document.body.append(stage);stage.showModal();visibilityListener=()=>{if(document.hidden)cancelled=true;};document.addEventListener('visibilitychange',visibilityListener);
+    const ctx=canvas.getContext('2d'),total=Math.round(duration*fps),outro=options.outro?Math.min(18,Math.floor(total*.12)):0,contentFrames=total-outro,segments=count+(outro?1:0),fadeFrames=Math.round(fade*fps);let number=0;
+    const draw=source=>{const r=Math.min(1080/source.width,1920/source.height),w=source.width*r,h=source.height*r;ctx.drawImage(source,(1080-w)/2,(1920-h)/2,w,h);};
+    for(let slide=0;slide<segments;slide++){
+      if(cancelled)throw Error('영상 출력을 중단했습니다. 원본과 보정값은 보존됩니다.');current=await(slide===count?options.outro():renderFrame(slide));const frames=slide===count?outro:Math.floor((slide+1)*contentFrames/count)-Math.floor(slide*contentFrames/count);
+      for(let frame=0;frame<frames;frame++){
+        if(cancelled)throw Error('영상 출력을 중단했습니다.');if(encodeError)throw encodeError;if(performance.now()-started>180000)throw Error('영상 출력 시간이 초과됐습니다.');
+        ctx.globalAlpha=1;ctx.fillStyle=EDITORIAL.paper;ctx.fillRect(0,0,1080,1920);if(previous&&frame<fadeFrames){draw(previous);ctx.globalAlpha=(frame+1)/fadeFrames;}draw(current);ctx.globalAlpha=1;
+        const timestamp=Math.round(number*1000000/fps),frameDuration=Math.round((number+1)*1000000/fps)-timestamp,image=new VideoFrame(canvas,{timestamp,duration:frameDuration});try{encoder.encode(image,{keyFrame:frame===0});}finally{image.close();}number++;
+        if(number%6===0){await encoder.flush();if(encodeError)throw encodeError;const message=`MP4 파일 준비 중 · ${Math.round(number/total*100)}%`;status.textContent=message;onProgress(message);await new Promise(r=>setTimeout(r,0));}
       }
+      releaseCanvas(previous);previous=current;current=null;
     }
-    await encoder.flush();if(encodeError)throw encodeError;muxer.finalize();
-    const blob=new Blob([target.buffer],{type:'video/mp4'});if(blob.size<1000)throw Error('영상 데이터가 부족합니다. 다시 시도하세요.');return blob;
-  }finally{
-    if(visibilityListener)document.removeEventListener('visibilitychange',visibilityListener);
-    if(encoder&&encoder.state!=='closed')encoder.close();releaseCanvas(canvas);if(stage){stage.close();stage.remove();}
-  }
+    await encoder.flush();if(encodeError)throw encodeError;muxer.finalize();const blob=new Blob([target.buffer],{type:'video/mp4'});if(blob.size<1000)throw Error('영상 데이터가 부족합니다.');return blob;
+  }finally{if(visibilityListener)document.removeEventListener('visibilitychange',visibilityListener);if(encoder&&encoder.state!=='closed')encoder.close();releaseCanvas(previous);releaseCanvas(current);releaseCanvas(canvas);if(stage){stage.close();stage.remove();}}
 }
 $('export-reel').onclick=async()=>{
   if(videoBusy)return;if(!state.photos.length)return toast('사진을 먼저 등록하세요.');videoBusy=true;
   const controls=[...document.querySelectorAll('.production-desk input,.production-desk select,.production-desk button')].map(el=>({el,disabled:el.disabled}));
   controls.forEach(({el})=>el.disabled=true);$('export-reel').disabled=true;
-  try{const blob=await recordMarketingVideo(i=>card(state.theme,i,'reels'),state.slideCount||5,msg=>{$('video-status').textContent=msg;});download(blob,'청인마루_릴스_1080x1920.mp4');$('video-status').textContent='MP4 파일 준비 완료 · 음악 없음';}
+  try{var renderer=state.signatureDesign?.studioVersion?window.studioVideoRenderer?.():null;const opts=state.signatureDesign?.studioVersion?{duration:state.photoLibrary?.videoDuration||15,transition:state.photoLibrary?.videoTransition??.3,outro:()=>renderStudioOutro(renderer?.design||state.signatureDesign)}:{};const blob=await recordMarketingVideo(renderer?renderer.render:i=>card(state.theme,i,'reels'),renderer?.count||state.slideCount||5,msg=>{$('video-status').textContent=msg;},opts);download(blob,'청인마루_릴스_1080x1920.mp4');$('video-status').textContent='MP4 파일 준비 완료 · 음악 없음';}
   catch(e){toast(e.message);$('video-status').textContent=e.message;}
-  finally{videoBusy=false;controls.forEach(({el,disabled})=>el.disabled=disabled);$('export-reel').disabled=false;}
+  finally{renderer?.dispose?.();videoBusy=false;controls.forEach(({el,disabled})=>el.disabled=disabled);$('export-reel').disabled=false;}
 };
 exportJobVideo=async function(job){
   if(workflowVideoBusy)throw Error('영상 출력 중입니다.');workflowVideoBusy=true;
   const content=structuredClone(jobContent(job));
-  try{const blob=await recordMarketingVideo(i=>workflowCard(content,i,'story'),content.carousel?.length||5,progress);download(blob,'청인마루_현장릴스.mp4');progress('MP4 파일 준비 완료 · 음악 없음');}finally{workflowVideoBusy=false;}
+  try{const blob=await recordMarketingVideo(i=>workflowCard(content,i,'story'),content.carousel?.length||5,progress,content.signatureDesign?.studioVersion?{duration:15,transition:.3,outro:()=>renderStudioOutro(content.signatureDesign)}:{});download(blob,'청인마루_현장릴스.mp4');progress('MP4 파일 준비 완료 · 음악 없음');}finally{workflowVideoBusy=false;}
 };
 
 // Progressive disclosure keeps photo work at the centre of the touch screen.
@@ -148,7 +131,7 @@ compareButton.onclick=async()=>{
 
 // Refreshing a saved job returns to the same workspace rather than an empty-looking dashboard.
 for(const button of document.querySelectorAll('[data-tab]'))button.addEventListener('click',()=>{try{sessionStorage.setItem('cheonginmaru-marketing-tab',button.dataset.tab);}catch{}});
-try{const last=sessionStorage.getItem('cheonginmaru-marketing-tab')||'studio';const button=[...document.querySelectorAll('[data-tab]')].find(b=>b.dataset.tab===last);button?.click();}catch{}
+try{const last=sessionStorage.getItem('cheonginmaru-marketing-tab')||'dashboard';const button=[...document.querySelectorAll('[data-tab]')].find(b=>b.dataset.tab===last);button?.click();}catch{}
 
 if(!window.VideoEncoder||!window.VideoFrame){
   $('brand-video').disabled=true;$('export-reel').disabled=true;$('brand-video').textContent='MP4 · 최신 Safari 필요';

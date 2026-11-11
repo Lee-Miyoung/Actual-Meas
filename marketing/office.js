@@ -1484,6 +1484,7 @@ $("run-ai").onclick = async () => {
       photoId: p.id,
       src: composite.toDataURL("image/png"),
       before: img.toDataURL("image/png"),
+      mask: activeMask.toDataURL("image/png"),
     };
     const position = state.photos.findIndex((photo) => photo.id === p.id);
     if (position < 0) {
