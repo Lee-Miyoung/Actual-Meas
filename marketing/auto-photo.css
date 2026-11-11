@@ -4,3 +4,4 @@
 @media(max-width:1050px){.auto-workspace{grid-template-columns:minmax(0,1fr)}.auto-list{flex-direction:row;max-height:none;overflow-x:auto;max-width:100%;padding-bottom:8px}.auto-photo-item{width:190px;flex:0 0 190px}.auto-photo-heading{gap:12px}.auto-local{display:none}}
 @media(max-width:500px){.auto-photo{padding:20px 14px}.auto-photo-heading h2{font-size:25px}.auto-toolbar button,.auto-upload{font-size:12px;padding:10px}.auto-slider{display:block}.auto-slider input{width:100%;display:block;margin-top:12px}.auto-footer button{width:100%}}
 .auto-comparison.show-protection #ap-after{visibility:hidden}.auto-comparison.show-protection .auto-after-label{display:none}
+.auto-photo label.auto-check{display:flex;flex-direction:row;align-items:flex-start;justify-content:flex-start;gap:10px}.auto-photo label.auto-check input[type=checkbox]{flex:0 0 18px;margin:3px 0 0}

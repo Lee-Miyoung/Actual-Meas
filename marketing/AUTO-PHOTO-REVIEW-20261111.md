@@ -100,3 +100,7 @@ python marketing/tests/auto_photo_webkit.py
 ## 복구
 
 기준 커밋 `5e2a016`에 기존 배포 코드와 제품 피드가 보존되어 있다. 이번 자동 보정 변경 커밋만 revert하면 된다. 원본 실측·견적 파일을 백업에서 덮어쓰지 않는다. 앱 데이터가 필요하면 기존 전체 백업 JSON으로 복원한다. 새 모듈을 사용하기 전 상태로 코드만 되돌려도 브라우저 저장 원본이 자동 삭제되지는 않는다.
+
+## 배포 확인
+
+사용자의 후속 배포 지시에 따라 `8833e08`을 main에 반영했다. [GitHub Pages 실행 42969806724](https://github.com/Lee-Miyoung/Actual-Meas/actions/runs/42969806724)의 Success를 확인했다. 앱 주소는 https://lee-miyoung.github.io/Actual-Meas/marketing/ 이다. 이 환경의 외부 호스트 정책상 github.io 공개 화면 직접 접속은 제한되어, 공개 주소 브라우저 확인과 로컬/엔진 검증을 구분한다.
