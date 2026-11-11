@@ -1,0 +1,1 @@
+'use strict';importScripts('auto-photo-core.js');onmessage=e=>{const {id,data,width,height}=e.data;try{postMessage({id,result:AutoPhotoCore.analyze(new Uint8ClampedArray(data),width,height)});}catch(error){postMessage({id,error:error.message});}};

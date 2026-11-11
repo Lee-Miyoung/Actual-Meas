@@ -11,6 +11,7 @@ with sync_playwright() as p:
   a=b.new_page(viewport={'width':width,'height':height},accept_downloads=True);errors=[];requests=[]
   a.on('pageerror',lambda e:errors.append(str(e)));a.on('request',lambda r:requests.append(r.url));a.on('dialog',lambda d:d.accept())
   a.route('**/data/product-source.json',lambda r:r.fulfill(json={'endpoint':'https://quote.example/api/marketing-products'}))
+  a.route('**/data/products.json?*',lambda r:r.fulfill(status=503,json={'error':'unavailable'}))
   current=json.loads(json.dumps(feed));fail=[False]
   a.route('https://quote.example/api/marketing-products',lambda r:r.fulfill(status=503 if fail[0] else 200,json={'error':'unavailable'} if fail[0] else current))
   a.goto('http://127.0.0.1:8000/marketing/');a.wait_for_function('window.signatureReady&&workflowReady&&document.getElementById("product-feed-date").textContent.length>0');a.wait_for_function('state.catalog.some(p=>p.brand==="연동검증")')
