@@ -185,7 +185,7 @@ async function preparePhotos() {
     const untouched = Object.entries(defaults()).every(
       ([key, value]) => p.adjust[key] === value,
     );
-    if (!p.autoPrepared && !p.approved && untouched) {
+    if (!state.signatureDesign?.archiveVersion && !p.autoPrepared && !p.approved && untouched) {
       const r = p.analysis.recommended;
       p.adjust.exposure = Math.max(-0.25, Math.min(0.25, r.exposure));
       p.adjust.warmth = Math.max(-3, Math.min(3, r.warmth));
