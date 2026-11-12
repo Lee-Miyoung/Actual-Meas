@@ -22,23 +22,25 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  Object.assign(c.dataset,{renderer:'cheongin-photo-edition-v2',exportWidth:ww,exportHeight:hh,platform:format,slide:index});
  const info=ctx.photoProducts[slot.photoIds?.at(-1)]||ctx.products[0],manual=ctx.manualOverlay||{},manualTitles=Array.isArray(manual.slideTitles)?manual.slideTitles:[];
  const autoTitle=slot.archiveNote??slot.title??'';
- const title=manualTitles[index]||((index===0&&manual.title)?manual.title:autoTitle);
+ const savedTitle=manualTitles[index]||((index===0&&manual.title)?manual.title:autoTitle);
+ const title=window.CheonginPostCopy?.cleanPhotoCaption(savedTitle)??savedTitle;
  const product=manual.product||((info?[info.brand,info.model,info.color].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · '):''));
  const manualDetail=[manual.spec,manual.structure].filter(Boolean).join(' · ');
  const detail=manualDetail||[info?.size,ctx.structure].filter(Boolean).join(' · ');
  const location=manual.location||[ctx.region,ctx.space].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · ');
  const all=[title,product,detail,location,'시공 전 시공 후 청인마루 공간의 위로가 되다'].join(' ');
  await Promise.all([document.fonts.load('400 44px "Studio Serif"',all),document.fonts.load('400 26px "Studio Sans"',all)]);
- function text(value,x,y,w,size,rows=1,weight=400,align='left',alpha=1,family='Studio Sans'){
+ function text(value,x,y,w,size,{rows=1,weight=400,align='left',alpha=1,family='Studio Sans',field=null,above=false}={}){
   if(!value)return 0;
   const layout=CheonginType.layout(String(value),{width:w,fontSize:size,minFontSize:Math.min(size,wide?18:21),maxLines:rows,leading:1.32,measure:(s,n)=>{g.font=`${weight} ${n}px "${family}"`;return g.measureText(s).width;}});
+  const height=layout.lines.length*layout.lineHeight,top=above?y-height:y;
   g.save();g.font=`${weight} ${layout.size}px "${family}"`;g.fillStyle=`rgba(255,255,255,${alpha})`;g.textBaseline='top';
   for(const [i,line]of layout.lines.entries()){
-   const yy=y+i*layout.lineHeight,mt=g.measureText(line),xx=align==='right'?x+w-mt.width:x;
+   const yy=top+i*layout.lineHeight,mt=g.measureText(line),xx=align==='right'?x+w-mt.width:x;
    window.CheonginCoverStyle.drawText(g,line,xx,yy);
-   c.typeLayout.push({field:value===title?'title':value===product?'product':value===detail?'spec':value===location?'location':null,kind:'overlay',source:String(value),x:xx,y:yy,width:mt.width,height:layout.lineHeight,size:layout.size});
+   c.typeLayout.push({field,kind:'overlay',source:String(value),x:xx,y:yy,width:mt.width,height:layout.lineHeight,size:layout.size});
   }
-  g.restore();if(layout.truncated)c.dataset.textTruncated='true';return layout.lines.length*layout.lineHeight;
+  g.restore();if(layout.truncated)c.dataset.textTruncated='true';return height;
  }
  async function photo(id,x,y,w,h,half=null){
   let im;
@@ -61,7 +63,7 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
   const {height:logoH}=style.drawLogo(g,c,mark,1080,m,topY);
   const page=String(index+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
   const pageY=topY+Math.max(0,(logoH-pageSize)/2)-1;
-  text(page,wide?900:900,pageY,1080-(wide?900:900)-m,pageSize,1,400,'right',.82,'Studio Sans');
+  text(page,900,pageY,180-m,pageSize,{align:'right',alpha:.82});
   return topY+logoH;
  }
  try{
@@ -73,28 +75,25 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
    await photo(pair?slot.photoIds[0]:slot.photoIds[1],horizontal?546:0,horizontal?0:h+10,w,h,pair?1:null);
    g.fillStyle='rgba(20,23,20,.58)';
    const labelTop=wide?82:105;
-   if(horizontal){g.fillRect(26,labelTop-8,105,42);g.fillRect(572,labelTop-8,105,42);text('시공 전',40,labelTop,90,20,1,400);text('시공 후',586,labelTop,90,20,1,400);}
-   else{g.fillRect(26,labelTop-8,105,42);g.fillRect(26,h+36,105,42);text('시공 전',40,labelTop,90,20,1,400);text('시공 후',40,h+44,90,20,1,400);}
+   if(horizontal){g.fillRect(26,labelTop-8,105,42);g.fillRect(572,labelTop-8,105,42);text('시공 전',40,labelTop,90,20);text('시공 후',586,labelTop,90,20);}
+   else{g.fillRect(26,labelTop-8,105,42);g.fillRect(26,h+36,105,42);text('시공 전',40,labelTop,90,20);text('시공 후',40,h+44,90,20);}
   }else await photo(lead.id,0,0,1080,H);
 
-  if(!rule.natural||format==='naverCover'){
-   await topBrand();
-
-   const detailY=H-(wide?44:vertical?76:70);
-   const productY=detailY-(wide?35:42);
-   const titleY=productY-(wide?58:88);
-   if(location)text(location,m,titleY-(wide?28:32),wide?780:760,wide?16:18,1,400,'left',.78,'Studio Sans');
-   if(title)text(title,m,titleY,wide?780:760,wide?34:43,2,400,'left',.96,'Studio Serif');
-   if(cfg.show.product&&product)text(product,m,productY,wide?760:760,wide?21:26,1,600,'left',.95);
-   if(cfg.show.spec&&detail)text(detail,m,detailY,wide?760:760,wide?17:21,1,400,'left',.84);
-  }else{
-   await topBrand();
-   const detailY=H-70,productY=detailY-42,titleY=productY-88;
-   if(location)text(location,m,titleY-32,760,18,1,400,'left',.78,'Studio Sans');
-   if(title)text(title,m,titleY,760,43,2,400,'left',.96,'Studio Serif');
-   if(cfg.show.product&&product)text(product,m,productY,760,26,1,600);
-   if(cfg.show.spec&&detail)text(detail,m,detailY,760,21,1,400,'left',.84);
+  await topBrand();
+  // Anchor the last visible row. Each block reserves its measured height, including wrapped lines.
+  let bottom=H-(wide?22:vertical?48:42);
+  const width=wide?780:760,gap=wide?8:12;
+  function place(field,value,size,options){
+   if(!value)return;
+   bottom-=text(value,m,bottom,width,size,{...options,field,above:true})+gap;
   }
+  const comparable=value=>String(value||'').normalize('NFC').replace(/[\s·ㆍ|]+/gu,'');
+  if(cfg.show.spec)place('spec',detail,wide?17:21,{rows:2,alpha:.84});
+  if(cfg.show.product && comparable(product)!==comparable(title)){
+   place('product',product,wide?21:26,{rows:2,weight:600,alpha:.95});
+  }
+  place('title',title,wide?34:43,{rows:2,alpha:.96,family:'Studio Serif'});
+  place('location',location,wide?16:18,{alpha:.78});
   c.previewMeta={title,product,spec:manual.spec||info?.size||'',location,productData:info||{},site:ctx.site,structure:ctx.structure||''};
   return c;
  }catch(e){releaseCanvas(c);throw e;}

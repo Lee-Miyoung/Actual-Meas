@@ -9,11 +9,17 @@ const aliases={
  pinnedComment:['고정댓글'],hashtags:['해시태그']
 };
 const lookup=new Map(Object.entries(aliases).flatMap(([key,names])=>names.map(n=>[n,key])));
+// Only remove list markers at the start of a photo line. Keep measurements and floor numbers.
+function cleanPhotoCaption(value){
+ const text=String(value??'').trim().replace(/^[-*•·]\s+/u,'').replace(/^\*\*([^*]+?)\*\*/u,'$1');
+ const marker=/^(?:\[(?:(?:사진|슬라이드)\s*)?\d{1,2}(?:\s*(?:장|번|컷))?\]|\(\d{1,2}\)|[①-⑳]|\d\uFE0F?\u20E3|(?:(?:사진|슬라이드)\s*\d{1,2}(?:\s*(?:장|번|컷))?|\d{1,2}\s*(?:장|번(?:\s*사진)?|컷))\s*[·ㆍ:：.．)–—-]|\d{1,2}[.)](?!\d))\s*/u;
+ return text.replace(marker,'').trim();
+}
 function parse(raw){
  const groups={},plain=[];let active;
  for(const original of raw.replace(/\r/g,'').split('\n')){
   if(/^\s*(?:```.*|[-─]{3,})\s*$/.test(original))continue;
-  const text=original.trim().replace(/^#{1,6}\s+|^[-*]\s+(?=\[|\*\*)/,'').replace(/\*\*/g,'');
+  const text=cleanPhotoCaption(original).replace(/^#{1,6}\s+|^[-*]\s+(?=\[|\*\*)/,'').replace(/\*\*/g,'');
   const m=text.match(/^\[([^\]]+)\]\s*[:：]?\s*(.*)$/)||text.match(/^([^:：|]+)\s*[:：|]\s*(.*)$/);
   const name=(m?m[1]:text).replace(/\s/g,'');
   const key=lookup.get(name);
@@ -23,7 +29,13 @@ function parse(raw){
  const result={};
  for(const [key,lines] of Object.entries(groups)){
   const value=lines.join('\n').trim();
-  if(value)result[key]=key==='slideTitles'?value.split('\n').map(s=>s.replace(/^\s*(?:[-•·]|\d+[.)])\s*/,'').trim()).filter(Boolean):value;
+  if(!value)continue;
+  if(key==='slideTitles'){
+   const titles=value.split('\n').map(cleanPhotoCaption).filter(Boolean);
+   if(titles.length)result[key]=titles;
+  }else if(key==='thumbnailTitle'){
+   const title=cleanPhotoCaption(value);if(title)result[key]=title;
+  }else result[key]=value;
  }
  return {result,legacy:Object.keys(groups).length?[]:plain};
 }
@@ -35,10 +47,10 @@ function prompt(editor){
  ...details,'구성 · '+(p.pairConcept==='compare'?'시공 전·후':'현장 미리보기'),
  '먼저 사진을 보고 바닥이나 벽의 색·결 또는 공간에서 실제로 보이는 특징 하나를 골라 줘. 과장, 가격, 박스 수, 확인되지 않은 시공 정보는 빼 줘.',
  '썸네일 제목은 고객이 궁금해할 자연스러운 한 문장으로 짧게. 인스타 캡션은 짧은 문단 두세 개, 유튜브 설명은 영상 소개용, 고정댓글은 사진과 연결된 질문 하나로 써 줘.',
- '아래 대괄호 제목을 그대로 사용하고 답변 전체를 복사할 수 있게 한 블록으로 줘. 사진문구는 표지를 포함해 '+slides+'장 순서대로 한 줄씩 써 줘.',
+ '아래 대괄호 제목을 그대로 사용하고 답변 전체를 복사할 수 있게 한 블록으로 줘. 사진문구는 표지를 포함해 '+slides+'장 순서대로, 각 줄에 사진 위에 표시할 문장만 써 줘. 줄 앞에 번호, ‘1장 ·’, ‘사진 1’, 글머리표를 붙이지 마. 제품명과 규격은 앱에서 따로 표시하니 사진문구에는 사진에서 보이는 특징을 짧게 써 줘.',
  ...[postLabels.thumbnailTitle,'사진문구',...Object.values(postLabels).slice(1)].map(v=>'['+v+']')].join('\n');
 }
-window.CheonginPostCopy={postLabels,parse};
+window.CheonginPostCopy={postLabels,parse,cleanPhotoCaption};
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
 let mounted=false;
 function mount(){
@@ -66,7 +78,7 @@ function mount(){
   if(!Object.keys(v).length && allowLegacy && parsed.legacy.length){
    const [location,thumbnailTitle,product,spec,structure,...slideTitles]=parsed.legacy;
    Object.assign(v,Object.fromEntries(Object.entries({location,thumbnailTitle,product,spec,structure}).filter(([,value])=>value)));
-   if(slideTitles.length)v.slideTitles=slideTitles;
+   if(slideTitles.length)v.slideTitles=slideTitles.map(cleanPhotoCaption);
   }
   if(!Object.keys(v).length){
    entry(raw);legacy.hidden=!parsed.legacy.length;status.textContent='항목 이름을 확인하세요. 현장·제목·제품·규격 순서의 예전 문구는 기존 현장 양식으로 적용할 수 있습니다.';return;
