@@ -18,7 +18,7 @@ desk.innerHTML = `
     <div class="preview-heading"><strong>02　시공 포트폴리오</strong><span id="production-dimensions"></span></div>
     <div id="production-platforms" class="platform-pills" aria-label="게시 플랫폼"></div>
     <div id="production-preview"></div>
-    <div class="preview-navigation"><button id="production-prev" aria-label="이전 사진">←</button><span id="production-page">사진을 불러오세요</span><button id="production-next" aria-label="다음 사진">→</button></div>
+    <div class="preview-navigation"><button id="production-prev" aria-label="이전 사진">←</button><span id="production-page">사진을 불러오세요</span><button id="production-next" aria-label="다음 사진">→</button><label class="short-caption-setting" hidden>대사 위치<select id="short-caption-position"><option value="top">위</option><option value="middle">가운데</option><option value="bottom">아래</option></select></label><button id="contact-card-jump" type="button" hidden>상담 카드</button></div>
     <div id="production-filmstrip" class="production-filmstrip" aria-label="사진 순서"></div>
     <div class="slide-editor"><label>현재 사진 문구<input id="production-title" maxlength="100" placeholder="사진 아래에 들어갈 짧은 문구"></label><label>사진 연결<select id="production-photo"></select></label>
     <div class="slide-tools"><label>사진 종류<select id="production-kind"><option value="auto">자동 구분</option><option value="photo">일반 사진</option><option value="pair">전후 비교 · 좌우 합성본</option></select></label><label>구도 · 위아래 이동<input id="production-focus" type="range" min="0" max="100" value="45"></label></div>
@@ -152,6 +152,34 @@ function selectProductionSlide(index){
   state.productionView={...state.productionView,slide:productionSlide};
   persist();renderProductionWorkspace();
 }
+window.showContactCard=()=>{
+  window.ensureSignatureProject?.();
+  const i=state.signatureSequence?.findIndex(s=>s.role==='ending')??-1;
+  if(i>=0)selectProductionSlide(i);
+};
+$('contact-card-jump').onclick=window.showContactCard;
+const captionPosition=$('short-caption-position');
+captionPosition.onchange=()=>{
+  const id=state.signatureSequence?.[productionSlide]?.photoIds[0];
+  if(!id)return;
+  state.signaturePhotos??={};state.signaturePhotos[id]??={};
+  state.signaturePhotos[id].shortCaptionPosition=captionPosition.value;
+  persist();renderProductionWorkspace();
+};
+let animation=0;
+function playScene(canvas){
+  cancelAnimationFrame(animation);
+  if(!canvas?.drawCaptionProgress||!canvas.getClientRects().length||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const start=performance.now();
+  function frame(now){
+    if(!canvas.isConnected||!canvas.getClientRects().length)return;
+    const fraction=Math.min(1,(now-start)/1500);
+    canvas.drawCaptionProgress(fraction);
+    if(fraction<1)animation=requestAnimationFrame(frame);
+  }
+  animation=requestAnimationFrame(frame);
+}
+window.replaySceneCaption=()=>playScene($('designs').querySelector('canvas'));
 $('production-prev').onclick=()=>selectProductionSlide(productionSlide-1);
 $('production-next').onclick=()=>selectProductionSlide(productionSlide+1);
 // Only the running frame and the latest requested frame. No parallel render backlog.
@@ -174,12 +202,18 @@ async function renderProductionFrame(revision) {
   layoutSelect.value = ['editorial','gallery','journal'].includes(state.theme) ? state.theme : 'editorial';
   for (const [key, button] of platformButtons) { button.classList.toggle('active', key === state.format); button.setAttribute('aria-pressed', String(key === state.format)); }
   if (!state.photos.length) {
+    captionPosition.parentElement.hidden=true;$('contact-card-jump').hidden=true;
     for(const c of $('designs').querySelectorAll('canvas'))releaseCanvas(c);
     $('designs').textContent = '현장 사진을 불러오면 이곳에 시공 기록을 펼쳐드립니다.';
     window.resetPortfolioThumbs?.();$('production-filmstrip').replaceChildren();$('production-page').textContent='사진을 불러오세요';$('production-dimensions').textContent='';$('production-prev').disabled=$('production-next').disabled=true;
     $('designs').classList.add('production-empty'); return;
   }
   const count = state.slideCount || 5; productionSlide = Math.min(productionSlide, count - 1);
+  const currentSlot=state.signatureSequence?.[productionSlide],ending=currentSlot?.role==='ending';
+  $('contact-card-jump').hidden=!state.signatureSequence?.some(s=>s.role==='ending');
+  $('contact-card-jump').disabled=ending;
+  captionPosition.parentElement.hidden=!(currentSlot&&productionSlide>0&&!ending&&['reels','shorts'].includes(state.format));
+  captionPosition.value=state.signaturePhotos?.[currentSlot?.photoIds?.[0]]?.shortCaptionPosition||'middle';
   const slides = productionSlides(), slide = slides[productionSlide];
   const photo = ProductionCore.matchPhoto(slide.photo, state.photos) || state.photos[productionSlide % state.photos.length];
   $('production-title').value = slide.title;
@@ -199,6 +233,7 @@ async function renderProductionFrame(revision) {
     button.setAttribute('aria-label', `${i + 1}번 사진 ${item.title}`); button.setAttribute('aria-pressed', String(i === productionSlide));
     const information=state.signatureDesign?.schema==='cheonginmaru-signature-v1'&&state.signatureSequence?.[i]?.role==='information';
     const img = document.createElement(information?'span':'img');
+    if(state.signatureSequence?.[i]?.role==='ending'){button.setAttribute('aria-label','마지막 상담 카드');}
     if(information){img.className='signature-info-thumb';img.textContent='정보';}else{if(p.thumbnail)img.src=p.thumbnail;img.alt='';img.loading='lazy';img.decoding='async';img.width=96;img.height=72;}
     const number = document.createElement('span'); number.textContent = String(i + 1).padStart(2, '0');
     if(!information&&!p.thumbnail)window.ensurePortfolioThumb?.(img,p);
@@ -213,6 +248,7 @@ async function renderProductionFrame(revision) {
     canvas.dataset.slide=productionSlide;canvas.tabIndex=0;canvas.setAttribute('role','button');canvas.setAttribute('title','사진을 끌거나 모서리로 크기 조절 · 글씨를 눌러 수정');
     canvas.setAttribute('aria-label', `${OUTPUT_PRESETS[state.format].label} ${productionSlide + 1}번 출력 미리보기`);
     $('designs').classList.remove('production-empty'); for(const old of $('designs').querySelectorAll('canvas'))old.width=old.height=1; $('designs').replaceChildren(canvas);
+    playScene(canvas);
     const comparison=canvas.dataset.renderer==='cheongin-signature-v1'?null:window.createPortfolioComparison?.(canvas);$('designs').classList.toggle('has-comparison',!!comparison);if(comparison){canvas.classList.add('output-proof');$('designs').append(comparison);}
     $('production-dimensions').textContent = `${canvas.dataset.exportWidth||canvas.width} × ${canvas.dataset.exportHeight||canvas.height} px`;
     easyStatus(missing ? `연결할 사진 ${missing}장이 없습니다. ‘사진 연결’에서 올바른 파일을 골라 주세요.` : `사진 ${state.photos.length}장 · ${OUTPUT_PRESETS[state.format].label} 준비 완료` , !!missing);
@@ -228,7 +264,8 @@ async function renderProductionFrame(revision) {
 }
 window.renderProductionWorkspace = renderProductionWorkspace;
 generate = renderProductionWorkspace;
-async function exportProductionPlatform() {
+async function exportProductionPlatform({share=false}={}) {
+  if(currentExport.disabled)return;
   const button = currentExport; button.disabled = true;
   const signatureBatch=window.signatureExportRenderer?.(),format=state.format;
   const pack=document.body.classList.contains('simple-marketing-mode')?{...state.thumbnailPosting?.pack,pinnedComment:window.CheonginCoverStyle.pinnedComment}:{};
@@ -248,13 +285,15 @@ async function exportProductionPlatform() {
     }
     files.push({ name: '캡션.txt', blob: new Blob([caption], { type: 'text/plain;charset=utf-8' }) });
     if(postText)files.push({name:'게시문구.txt',blob:new Blob([postText],{type:'text/plain;charset=utf-8'})});
-    offerPhotoFiles(files);
-    download(await storedZip(files), `청인마루_${format}.zip`);
+    const name='청인마루_'+format+'.zip',zip=await storedZip(files);
+    if(share){showDeviceExport(zip,name,files.filter(f=>f.blob.type.startsWith('image/')),{share:true,caption,comment:pack.pinnedComment});}
+    else {offerPhotoFiles(files);download(zip,name);}
     $('download-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } catch (error) { toast(error.message); }
   finally { signatureBatch?.dispose();button.disabled = false; button.textContent = '선택한 플랫폼 사진 + 캡션 저장'; }
 }
-currentExport.onclick = exportProductionPlatform;
+currentExport.onclick=()=>exportProductionPlatform();
+window.shareProductionPhotos=()=>exportProductionPlatform({share:true});
 $('save-design-zip').onclick = exportProductionPlatform;
 function fileAsDataURL(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(Error('사진 읽기 실패')); reader.readAsDataURL(file); }); }
 async function importProductionFiles(files) {

@@ -71,7 +71,7 @@
     return {image:await logos.get(key),key};
   }
   function drawLogo(g,canvas,mark,units,x,y) {
-    const width=units*.15,height=width*mark.image.height/mark.image.width;
+    const width=units*(canvas.height/canvas.width>1.7 ? .225 : .15),height=width*mark.image.height/mark.image.width;
     const box={units,x,y,width,height};
     g.save();g.globalAlpha=1;
     if(lightInk(colors[mark.key][1]) && brightBehind(g,x,y,width,height))softShadow(g);

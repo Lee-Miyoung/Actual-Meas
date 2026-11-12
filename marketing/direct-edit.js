@@ -42,10 +42,10 @@ function init(host,thumb){
  function fit(){
   const c=canvas();if(!c)return;
   const desk=host.closest('.desk-preview');
-  const tablet=window.innerWidth>=700 && window.innerWidth<=1366;
-  const bounded=tablet && host.clientHeight>0;
-  const w=bounded?Math.max(1,host.clientWidth-20):Math.max(150,(desk?.clientWidth||host.clientWidth||440)-32);
-  const h=bounded?Math.max(1,host.clientHeight-20):Math.max(200,Math.min(720,window.innerHeight*.5));
+  if(!host.clientWidth||!host.clientHeight)return;
+  const fixed=!!desk && document.body.classList.contains('simple-marketing-mode');
+  const w=fixed?host.clientWidth-16:Math.max(150,(desk?.clientWidth||host.clientWidth)-32);
+  const h=fixed?host.clientHeight-16:Math.max(200,Math.min(720,window.innerHeight*.5));
   const ratio=c.width/c.height,width=Math.min(w,h*ratio);
   c.style.setProperty('width',width+'px','important');c.style.setProperty('height',width/ratio+'px','important');
   c.style.setProperty('max-height','none','important');c.style.setProperty('max-width','100%','important');c.style.setProperty('object-fit','fill','important');

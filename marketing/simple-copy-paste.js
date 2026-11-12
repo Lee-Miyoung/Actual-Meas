@@ -94,6 +94,7 @@ function prompt(editor){
  ];
  const file=id=>id&&(photos.find(photo=>photo.id===id)?.name||(p.exteriorPhoto?.id===id?p.exteriorPhoto.name:''));
  const order=sequence.map((slot,index)=>{
+  if(slot.role==='ending')return '마지막 장 · 상담 카드 (선택한 마무리 문구와 고정 연락처)';
   const ids=index===0 && file(p.photoId)?[p.photoId]:(slot.photoIds||[]);
   const names=ids.map(file).filter(Boolean);
   const note=names.length?names.join(' / '):slot.role==='information'?'현장·제품 정보 장면':'';

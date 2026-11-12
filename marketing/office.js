@@ -104,7 +104,7 @@ validate = function (s) {
       !s.target ||
       !Number.isInteger(s.slideCount) ||
       s.slideCount < (s.signatureDesign?.schema === "cheonginmaru-signature-v1" ? 1 : 3) ||
-      s.slideCount > (s.signatureDesign?.schema === "cheonginmaru-signature-v1" ? 16 : 6)
+      s.slideCount > (s.signatureDesign?.schema === "cheonginmaru-signature-v1" ? (s.signatureSequence?.at(-1)?.role === "ending" ? 17 : 16) : 6)
     )
       throw Error("설정값을 확인하세요.");
     for (const [key,v] of Object.entries(s.settings))

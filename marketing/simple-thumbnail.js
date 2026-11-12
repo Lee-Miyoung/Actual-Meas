@@ -73,7 +73,7 @@ function mount(){
  }
  function showEnding(){
   persist();showThumbnail(false);
-  if(state.photos.length&&typeof selectProductionSlide==='function')selectProductionSlide((state.slideCount||1)-1);
+  if(state.photos.length&&window.showContactCard)window.showContactCard();
   else window.renderProductionWorkspace?.();
  }
  endingPhrase.onchange=()=>{
@@ -130,7 +130,7 @@ function mount(){
  const deskPreview=document.querySelector('.desk-preview'),tabs=el('div',undefined,'thumbnail-live-tabs'),thumbTab=el('button','썸네일'),contentTab=el('button','본문 콘텐츠'),livePane=el('section',undefined,'thumbnail-live-pane'),liveStatus=el('p','사진을 불러오면 썸네일이 자동으로 표시됩니다.','thumbnail-live-status');
  thumbTab.type=contentTab.type='button';tabs.setAttribute('aria-label','미리보기 대상');livePane.setAttribute('aria-label','자동 썸네일 미리보기');liveStatus.setAttribute('role','status');view.setAttribute('aria-busy','false');tabs.append(thumbTab,contentTab);livePane.append(liveStatus,view);
  function showThumbnail(active=true){if(!deskPreview)return;deskPreview.classList.toggle('thumbnail-mode',active);thumbTab.setAttribute('aria-pressed',String(active));contentTab.setAttribute('aria-pressed',String(!active));}
- thumbTab.onclick=()=>showThumbnail();contentTab.onclick=()=>showThumbnail(false);
+ thumbTab.onclick=()=>showThumbnail();contentTab.onclick=()=>{showThumbnail(false);window.replaySceneCaption?.();};
  if(deskPreview){deskPreview.prepend(tabs,livePane);showThumbnail();}else body.prepend(livePane);
  let projectKey='',photoKey='',canvas=null,revision=0,autoTimer=null,autoBusy=false,autoDirty=false,exporting=false,lastKey='',lastSource=null,lastPhoto=null,lastPairSources=[];
  function values(){if(layout.value==='channels'||covers.editorial?.(layout.value))return {...covers.getProjectInfo(photo.value),...(siteInput.value.trim()?{location:siteInput.value.trim()}:{}),title:title.value.trim()||state.manualOverlay?.title||'',material:material.value};const p=typeof selectedProduct==='function'?selectedProduct():null,m=state.manualOverlay||{};return {title:title.value.trim(),location:siteInput.value.trim()||m.location||state.marketingSite||[state.region,state.space].filter(Boolean).join(' · ')||state.title||'',product:m.product||(p?[p.brand,p.model,p.color].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · '):''),spec:cleanDisplaySpec(m.spec||p?.size||''),structure:m.structure||state.productStructure||'',kind:p?.category||''};}

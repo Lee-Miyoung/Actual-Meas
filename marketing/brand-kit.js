@@ -13,7 +13,7 @@
       if (typeof input !== "string" || input.length > max) throw Error(label + " 입력을 확인하세요.");
       return input.trim();
     };
-    if (!Array.isArray(value.slides) || value.slides.length < (value.signaturePackage?1:3) || value.slides.length > (value.signaturePackage?16:6)) throw Error("사진별 문구는 3~6개가 필요합니다.");
+    if (!Array.isArray(value.slides) || value.slides.length < (value.signaturePackage?1:3) || value.slides.length > (value.signaturePackage?(value.signaturePackage.sequence?.at(-1)?.role==='ending'?17:16):6)) throw Error("사진별 문구는 3~6개가 필요합니다.");
     const slides = value.slides.map((slide) => {
       const result = { title: string(slide.title, 100, "제목"), photo: string(slide.photo || "", 200, "사진 파일명") };
       if (slide.layout !== undefined) {

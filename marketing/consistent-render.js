@@ -1,6 +1,39 @@
 /* Fixed photo-led Korean overlay edition. Previous saved editions retain their original renderer. */
 (function(){
 'use strict';
+/* A single caption layout feeds preview, finished PNG and every MP4 frame. */
+function shortCaption(canvas,g,value,position){
+ if(!value)return;
+ const width=840,height=1920;
+ const font=n=>'500 '+n+'px "Hahmlet Title", "Studio Serif", serif';
+ const layout=CheonginType.layout(value,{width,fontSize:65,minFontSize:34,maxLines:4,leading:1.28,measure:(s,n)=>{g.font=font(n);return g.measureText(s).width;}});
+ const block=layout.lines.length*layout.lineHeight,center=({top:.27,middle:.5,bottom:.70})[position]||.5;
+ const top=height*center-block/2,lines=layout.lines.map((line,i)=>({letters:CheonginType.graphemes(line),x:(1080-layout.widths[i])/2,y:top+i*layout.lineHeight}));
+ const count=lines.reduce((n,l)=>n+l.letters.length,0);
+ const scale=canvas.width/1080,y=Math.max(0,Math.floor((top-30)*scale));
+ const patch=document.createElement('canvas');patch.width=canvas.width;patch.height=Math.min(canvas.height-y,Math.ceil((block+65)*scale));
+ patch.getContext('2d').drawImage(canvas,0,y,patch.width,patch.height,0,0,patch.width,patch.height);
+ lines.forEach((l,i)=>canvas.typeLayout.push({field:'title',kind:'overlay',source:value,x:l.x,y:l.y,width:layout.widths[i],height:layout.lineHeight,size:layout.size}));
+ if(layout.truncated)canvas.dataset.textTruncated='true';
+ let painted=-1;
+ canvas.drawCaptionProgress=fraction=>{
+  const chars=Math.max(0,Math.min(count,Math.floor(fraction*count)));
+  if(chars===painted)return;
+  painted=chars;
+  g.save();g.setTransform(1,0,0,1,0,0);g.drawImage(patch,0,y);g.restore();
+  g.save();g.font=font(layout.size);g.textBaseline='top';g.fillStyle='#FFFDF6';
+  let left=chars;
+  for(const line of lines){
+   if(!left)break;
+   const part=line.letters.slice(0,left).join('');
+   window.CheonginCoverStyle.drawText(g,part,line.x,line.y);
+   left=Math.max(0,left-line.letters.length);
+  }
+  g.restore();
+ };
+ canvas.drawCaptionProgress(1);
+}
+
 const previous=renderSignature;
 renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  if(cfg.photoEdition!==1)return previous(cfg,ctx,slot,index,format,load,options);
@@ -66,7 +99,7 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  async function topBrand(){
   if(!cfg.show.logo)return 0;
   const style=window.CheonginCoverStyle,mark=await style.logo(ctx.logoTone);
-  const topY=wide?30:48,pageSize=wide?17:19;
+  const topY=vertical?128:wide?30:48,pageSize=wide?17:19;
   const {height:logoH}=style.drawLogo(g,c,mark,1080,m,topY);
   const page=String(index+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
   const pageY=topY+Math.max(0,(logoH-pageSize)/2)-1;
@@ -75,7 +108,7 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  }
  try{
   const style=window.CheonginCoverStyle,endMode=Object.hasOwn(style.endings,manual.endingStyle)?manual.endingStyle:'signature';
-  if(index>0&&index===total-1&&style.endings[endMode]){
+  if((slot.role==='ending'||(ctx.separateEnding===undefined&&index>0&&index===total-1))&&style.endings[endMode]){
    const isWall=manual.endingMaterial==='wall'||(manual.endingMaterial!=='floor'&&/벽장재|시그니월|디자인월/.test([info?.category,product,manual.structure,ctx.structure].join(' ')));
    const key='endTitle_'+endMode,detailKey='endLine_'+endMode;
    const heading=manual[key]||style.endingText(endMode,manual['endChoice_'+endMode],isWall);
@@ -148,8 +181,13 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
   if(showMaterial && cfg.show.product && comparable(product)!==comparable(title)){
    place('product',product,wide?21:26,{rows:2,weight:600,alpha:.95});
   }
-  place('title',title,wide?34:43,{rows:2,alpha:.96,family:'Studio Serif'});
+  const shortScene=index>0&&['reels','shorts'].includes(format);
+  if(!shortScene)place('title',title,wide?34:43,{rows:2,alpha:.96,family:'Studio Serif'});
   place('location',location,wide?16:18,{alpha:.78});
+  if(shortScene){
+   await style.loadTitle(title);
+   shortCaption(c,g,title,ctx.bindings[lead.id]?.shortCaptionPosition);
+  }
   c.previewMeta={title,product,spec:manual.spec||info?.size||'',location,productData:info||{},site:ctx.site,structure:ctx.structure||''};
   return c;
  }catch(e){releaseCanvas(c);throw e;}

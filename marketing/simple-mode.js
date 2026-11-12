@@ -148,7 +148,13 @@ function init(){
   const previewBtn=el('button','미리보기 새로고침');
   const saveBtn=el('button','사진 + 캡션 저장','primary');
   previewBtn.type=saveBtn.type='button';
-  actions.append(previewBtn,saveBtn);
+  const movieBtn=el('button','동영상 저장'),shareBtn=el('button','바로 공유');
+  movieBtn.type=shareBtn.type='button';
+  const shortFormat=()=>['reels','shorts'].includes(state.format);
+  const syncOutput=()=>{movieBtn.hidden=!shortFormat();shareBtn.textContent=shortFormat()?'영상 바로 공유':'사진 바로 공유';};
+  movieBtn.onclick=()=>{ensureFixedDesign(false);window.exportShortFilm?.(state.format);};
+  shareBtn.onclick=()=>{ensureFixedDesign(false);if(shortFormat())window.exportShortFilm?.(state.format,true);else window.shareProductionPhotos?.();};
+  actions.append(previewBtn,saveBtn,movieBtn,shareBtn);syncOutput();
   outputCard.append(formatLabel,actions,el('p','선택한 채널의 표지와 본문 콘텐츠를 저장합니다.','simple-help'));
 
   grid.append(photoCard,siteCard,productDetails,outputCard);
@@ -203,7 +209,7 @@ function init(){
   space.onchange=()=>{state.space=space.value.trim();syncStateChange();};
 
   format.onchange=()=>{
-    state.format=format.value;
+    state.format=format.value;syncOutput();
     const real=document.getElementById('format');
     if(real){real.value=format.value;real.onchange?.({target:real});}
     persist();window.dispatchEvent(new CustomEvent('marketing:output-change',{detail:{format:format.value}}));window.renderProductionWorkspace?.();
@@ -243,6 +249,8 @@ function init(){
 
   const baseRender=window.renderProductionWorkspace;
   window.renderProductionWorkspace=function(...args){
+    if(document.body.classList.contains('simple-marketing-mode'))ensureFixedDesign(false);
+    syncOutput();
     region.value=state.region||'';
     space.value=state.space||'';
     format.value=['carousel','reels','shorts','youtubeCover','naverCover','kakao'].includes(state.format)?state.format:'carousel';

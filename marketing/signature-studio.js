@@ -12,13 +12,41 @@ function photoProduct(id){const key=state.signaturePhotos?.[id]?.productKey;if(k
 function context(){
  const photos=state.photos.map(p=>({id:p.id,name:p.name,width:p.sourceWidth||1200,height:p.sourceHeight||900,score:Number(p.analysis?.score)||0,duplicate:!!p.analysis?.duplicateOf})),bindings=Core.copy(state.signaturePhotos||{}),photoProducts={},unique=new Map(),areas={};
  for(const p of photos){const product=photoProduct(p.id);if(product){photoProducts[p.id]=product;const key=[product.id,product.brand,product.model,product.color,product.size].join('|');product.renderKey=key;unique.set(key,product);if(bindings[p.id]?.area)areas[key]=[areas[key],bindings[p.id].area].filter(Boolean).join(' · ');}}
- return {...Core.publicSite(state),logoTone:state.thumbnailPosting?.logoTone||'white',structure:String(state.productStructure||''),manualOverlay:Core.copy(state.manualOverlay||{}),slideCount:Number(state.slideCount||0),photos,bindings,photoProducts,products:[...unique.values()],areas};
+ return {...Core.publicSite(state),logoTone:state.thumbnailPosting?.logoTone||'white',structure:String(state.productStructure||''),manualOverlay:Core.copy(state.manualOverlay||{}),separateEnding:state.signatureSequence?.at(-1)?.role==='ending',slideCount:state.signatureSequence?.length||Number(state.slideCount||0),photos,bindings,photoProducts,products:[...unique.values()],areas};
 }
 function effectiveSequence(){const custom=brandSettings().titles.split(/\r?\n/);return (state.signatureSequence||[]).map((s,i)=>({...s,title:custom[i]||s.title}));}
+// Keep the closing contact card separate from every selected site photograph.
+function closingSlots(slots,photos,includeRemaining=false){
+ if(!state.signatureDesign?.photoEdition||!slots.length||slots.at(-1).role==='ending')return [];
+ const additions=[];
+ if(slots.length===1){
+  const first=slots[0];
+  additions.push({...first,role:first.role==='comparison'?'comparison':'view',title:first.role==='comparison'?'시공 전과 후':'가까이 본 현장'});
+ }
+ if(includeRemaining){
+  const used=new Set(slots.flatMap(s=>s.photoIds));
+  for(const photo of photos)if(!used.has(photo.id))additions.push({role:'view',photoIds:[photo.id],title:state.signaturePhotos?.[photo.id]?.note||'다른 시점의 현장'});
+ }
+ const last=[...slots,...additions].reverse().find(s=>s.photoIds.length);
+ additions.push({role:'ending',photoIds:[last?.photoIds.at(-1)||photos.at(-1).id],title:'상담 카드'});
+ return additions;
+}
+function restoreClosingCard(){
+ const slots=state.signatureSequence;
+ if(!slots?.length||!state.photos.length)return;
+ const additions=closingSlots(slots,state.photos);
+ if(!additions.length)return;
+ const titles=brandSettings().titles.split(/\r?\n/);
+ const slides=slots.map((s,i)=>state.brandSlides?.[i]||{photo:state.photos.find(p=>p.id===s.photoIds[0])?.name||'',title:titles[i]||s.title,layout:'photo'});
+ state.brandSlides=[...slides,...additions.map(s=>({photo:state.photos.find(p=>p.id===s.photoIds[0])?.name||'',title:s.title,layout:'photo'}))];
+ state.brandOutput={...brandSettings(),titles:[...slots.map((s,i)=>titles[i]||slides[i].title||s.title),...additions.map(s=>s.title)].join('\n')};
+ slots.push(...additions);state.slideCount=slots.length;persist();
+}
 function buildSequence(preserve=true){
  if(!active()||!state.photos.length)return;
  const custom=brandSettings().titles.split(/\r?\n/),before=(state.brandSlides||[]).map((s,i)=>({...s,title:custom[i]||s.title})),previousAuto=state.signatureAutoTitles||{},previousSequence=state.signatureSequence||[],nextAuto={},ctx=context();state.signatureSequence=Core.plan(ctx.photos,ctx.bindings,{...ctx,materialCount:ctx.products.length});
- state.brandSlides=state.signatureSequence.map((slot,i)=>{const p=state.photos.find(p=>p.id===slot.photoIds[0]),key=p?.id||'info:'+slot.productPage,old=preserve?(p?before.find(s=>s.photo===p.name):before[previousSequence.findIndex(s=>s.role==='information'&&s.productPage===slot.productPage)]):null;nextAuto[key]=slot.title;return {photo:p?.name||'',title:old?.title&&old.title!==previousAuto[key]?old.title:slot.title,layout:slot.role==='comparison'&&slot.photoIds.length===1?'pair':'photo'};});state.signatureAutoTitles=nextAuto;
+ state.signatureSequence.push(...closingSlots(state.signatureSequence,ctx.photos,true));
+ state.brandSlides=state.signatureSequence.map((slot,i)=>{const p=state.photos.find(p=>p.id===slot.photoIds[0]),key=p?.id||'info:'+slot.productPage,old=preserve?(p?before.find(s=>s.photo===p.name):before[previousSequence.findIndex(s=>s.role==='information'&&s.productPage===slot.productPage)]):null;nextAuto[key]=slot.title;return {photo:p?.name||'',title:slot.role==='ending'?slot.title:old?.title&&old.title!==previousAuto[key]?old.title:slot.title,layout:slot.role==='comparison'&&slot.photoIds.length===1?'pair':'photo'};});state.signatureAutoTitles=nextAuto;
  state.slideCount=state.signatureSequence.length;state.brandOutput={...brandSettings(),titles:state.brandSlides.map(s=>s.title).join('\n')};
  const select=$('slide-count');for(const n of [1,2,7,8,9,10])if(![...select.options].some(o=>o.value===String(n)))select.add(new Option(String(n),String(n)));select.value=String(state.slideCount);
 }
@@ -38,6 +66,7 @@ function ensure(){
  const productSourceKey=JSON.stringify([state.authoring?.productKey,brandSettings().product,brandSettings().size]);
  if(active()&&(state.signatureProjectProduct===undefined||state.signatureProductSourceKey!==productSourceKey)){state.signatureProjectProduct=projectProduct();state.signatureProductSourceKey=productSourceKey;}
  if(active()&&state.photos.length&&(!state.signatureSequence?.length||state.signatureSequence.some(s=>s.photoIds.some(id=>!state.photos.some(p=>p.id===id))))){state.signaturePhotos??={};for(const p of state.photos)state.signaturePhotos[p.id]??={role:Core.infer(p.name,p.sourceWidth,p.sourceHeight),area:'',productKey:'',note:'',source:'filename'};buildSequence(true);}
+ if(active())restoreClosingCard();
  document.querySelector('.campaign-summary').hidden=active();document.querySelector('.story-drawer').hidden=active();
  const daily=$('production-style');daily.disabled=active();daily.closest('label').hidden=active();document.querySelector('.direction-trigger').hidden=true;
  $('brand-fit').closest('label').hidden=active();$('brand-example').hidden=active();document.querySelector('.production-advanced .brand-controls').hidden=active();
@@ -72,7 +101,7 @@ workflowCard=async function(content,index,format='carousel'){
 window.signatureExportRenderer=function(){
  if(!active())return null;const source=Core.copy(window.signatureSource()),prefix='signature-export:'+crypto.randomUUID()+':';
  const photos=state.photos.map(p=>({id:prefix+p.id,sourceId:p.id,src:p.src,adjust:Core.copy(p.adjust),thumbnail:p.thumbnail,sourceWidth:p.sourceWidth,sourceHeight:p.sourceHeight}));
- return {count:source.sequence.length,design:source.design,render:(index,format)=>renderSignature(source.design,source.context,source.sequence[index],index,format,async(id,max)=>{const p=photos.find(p=>p.sourceId===id);if(!p)throw Error('출력 원본을 찾지 못했습니다.');const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}}),dispose:()=>{for(const [key,c]of images)if(String(key).startsWith(prefix)){releaseCanvas(c);images.delete(key);}}};
+ return {count:source.sequence.length,design:source.design,render:(index,format,options={})=>renderSignature(source.design,source.context,source.sequence[index],index,format,async(id,max)=>{const p=photos.find(p=>p.sourceId===id);if(!p)throw Error('출력 원본을 찾지 못했습니다.');const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}},options),dispose:()=>{for(const [key,c]of images)if(String(key).startsWith(prefix)){releaseCanvas(c);images.delete(key);}}};
 };
 const legacyEasyGenerate=easyGenerate;
 easyGenerate=async function(force=false){
@@ -164,7 +193,7 @@ for(const id of ['quick-product','engine-product','brand-product','brand-size'])
 const oldCampaignAllowed=canUseBrandCampaign;canUseBrandCampaign=function(){return active()?false:oldCampaignAllowed();};window.canUseBrandCampaign=canUseBrandCampaign;
 $('brand-caption').addEventListener('change',()=>{if(active()){state.signatureEditedCaptions??={};state.signatureEditedCaptions[state.format]=true;persist();}});
 const baseValidate=validate;
-validate=function(s){baseValidate(s);if(s.signatureDesign?.schema)Core.validate(s.signatureDesign);if(s.settings?.brandDesign){Core.validate(s.settings.brandDesign.current);for(const c of s.settings.brandDesign.history||[])Core.validate(c);}if(s.signatureSequence&&(!Array.isArray(s.signatureSequence)||s.signatureSequence.length>16||s.signatureSequence.some(slot=>!Array.isArray(slot.photoIds)||slot.photoIds.some(id=>typeof id!=='string'))))throw Error('사진 구성 형식 오류');return s;};
+validate=function(s){baseValidate(s);if(s.signatureDesign?.schema)Core.validate(s.signatureDesign);if(s.settings?.brandDesign){Core.validate(s.settings.brandDesign.current);for(const c of s.settings.brandDesign.history||[])Core.validate(c);}if(s.signatureSequence&&(!Array.isArray(s.signatureSequence)||s.signatureSequence.length>(s.signatureSequence.at(-1)?.role==='ending'?17:16)||s.signatureSequence.some(slot=>!Array.isArray(slot.photoIds)||slot.photoIds.some(id=>typeof id!=='string'))))throw Error('사진 구성 형식 오류');return s;};
 const originalKit=currentBrandKit;
 currentBrandKit=function(){const kit=originalKit();if(active()){kit.signaturePackage={design:Core.copy(state.signatureDesign),project:Core.publicSite(state),products:context().products,photos:state.photos.map(p=>({name:p.name,binding:Core.copy(state.signaturePhotos?.[p.id]||{}),product:photoProduct(p.id)})),sequence:state.signatureSequence.map(s=>({...s,photoNames:s.photoIds.map(id=>state.photos.find(p=>p.id===id)?.name||'')}))};}return kit;};
 window.signatureImportPackage=function(pack){
