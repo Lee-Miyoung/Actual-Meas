@@ -40,7 +40,7 @@
     const product = selected && [selected.brand, selected.model, selected.color].filter((s,i,a) => s && a.indexOf(s) === i).join(' ');
     return {
       product:manual.product || product || '', kind:selected?.category || (selected?.type==='wall' ? '벽장재' : ''),
-      structure:manual.structure || state.productStructure || '',
+      spec:manual.spec || selected?.size || '', structure:manual.structure || state.productStructure || '',
       location:manual.location || state.marketingSite || join(state.region, state.space) || state.title || '',
       title:manual.title || ''
     };
@@ -100,7 +100,7 @@
         const xx = align==='right' ? x+w-measured.widths[i] : x;
         const yy=y+i*measured.lineHeight;
         g.fillText(line,xx,yy);
-        canvas.typeLayout.push({source:value,x:xx,y:yy,width:measured.widths[i],height:measured.lineHeight,size:measured.size});
+        canvas.typeLayout.push({field:value===headline?'title':value===info.product?'product':value===info.spec?'spec':value===where?'location':null,source:value,x:xx,y:yy,width:measured.widths[i],height:measured.lineHeight,size:measured.size});
       });
       g.shadowBlur=0;
       if (measured.truncated) canvas.dataset.textTruncated='true';
@@ -127,7 +127,8 @@
       type(headline,58,170,920,78,{rows:2,serif:true,color:white});
       rect(0,1150,W,H-1150,paper);
       type(where||materialLabel,60,1184,960,27,{color:muted});
-      type(info.product||materialLabel,58,1231,964,50,{rows:2,serif:true,leading:1.12});
+      type(info.product||materialLabel,58,1231,964,36,{rows:1,serif:true,leading:1.12});
+      type(info.spec,60,1284,960,26,{color:muted});
     } else if (channel==='reels') {
       photo(main,0,0,W,H);
       wash(0,0,W,495,'rgba(20,25,20,.12)','rgba(20,25,20,0)');
@@ -138,7 +139,7 @@
       type(where||materialLabel,70,1010,770,31,{color:white});
       fineLine(70,1074,80,white);
       const used=type(headline,67,1110,795,94,{rows:2,serif:true,color:white});
-      type(info.product,70,1110+used+32,780,35,{rows:2,color:white});
+      const productHeight=type(info.product,70,1110+used+32,780,35,{rows:2,color:white});type(info.spec,70,1110+used+productHeight+48,780,27,{color:white});
     } else if (channel==='shorts') {
       rect(0,0,W,H,paper);
       photo(pair?photos.before:main,0,0,W,790,{focusY:(pair?photos.before:main).focusY ?? .4});
@@ -158,7 +159,7 @@
       brand(40,36,144);
       type(materialLabel,40,186,side-72,25,{color:'#eddfbd'});
       const used=type(headline,39,244,side-76,72,{rows:3,serif:true,color:white,leading:1.20});
-      type(info.product,40,244+used+30,side-72,25,{rows:2,color:white});
+      const productHeight=type(info.product,40,244+used+30,side-72,25,{rows:2,color:white});type(info.spec,40,244+used+productHeight+44,side-72,22,{color:white});
       if (pair) {tag('시공 전',39,632);tag('시공 후',side+34,632);}
     } else if (channel==='naverCover') {
       const top=715;
@@ -195,7 +196,7 @@
       badgeLines.forEach((t,i)=>{g.font=(i?'400 ':'500 ')+(i?21:25)*unit+'px '+useSans;g.fillText(t,bx+bw/2,y+(badgeLines.length===2?27+i*33:27)*unit);});
       g.restore();
     }
-    canvas.previewMeta={title:headline,product:info.product,site:info.location};
+    canvas.previewMeta={title:headline,product:info.product,spec:info.spec,location:info.location,site:info.location};
     return canvas;
   }
 
