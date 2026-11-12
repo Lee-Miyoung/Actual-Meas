@@ -23,8 +23,10 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  const info=ctx.photoProducts[slot.photoIds?.at(-1)]||ctx.products[0],manual=ctx.manualOverlay||{},manualTitles=Array.isArray(manual.slideTitles)?manual.slideTitles:[];
  const autoTitle=slot.archiveNote??slot.title??'';
  const savedTitle=manualTitles[index]||((index===0&&manual.title)?manual.title:autoTitle);
- const title=window.CheonginPostCopy?.cleanPhotoCaption(savedTitle)??savedTitle;
  const product=manual.product||((info?[info.brand,info.model,info.color].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · '):''));
+ const copy=window.CheonginPostCopy;
+ const title=(index>0&&manualTitles[index]?copy?.sceneCaption?.(savedTitle,product):copy?.cleanPhotoCaption(savedTitle))??savedTitle;
+ const showMaterial=index===0 || (ctx.products.length>1 && !manual.product);
  const manualDetail=[manual.spec,manual.structure].filter(Boolean).join(' · ');
  const detail=manualDetail||[info?.size,ctx.structure].filter(Boolean).join(' · ');
  const location=manual.location||[ctx.region,ctx.space].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · ');
@@ -88,8 +90,8 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
    bottom-=text(value,m,bottom,width,size,{...options,field,above:true})+gap;
   }
   const comparable=value=>String(value||'').normalize('NFC').replace(/[\s·ㆍ|]+/gu,'');
-  if(cfg.show.spec)place('spec',detail,wide?17:21,{rows:2,alpha:.84});
-  if(cfg.show.product && comparable(product)!==comparable(title)){
+  if(showMaterial&&cfg.show.spec)place('spec',detail,wide?17:21,{rows:2,alpha:.84});
+  if(showMaterial && cfg.show.product && comparable(product)!==comparable(title)){
    place('product',product,wide?21:26,{rows:2,weight:600,alpha:.95});
   }
   place('title',title,wide?34:43,{rows:2,alpha:.96,family:'Studio Serif'});
