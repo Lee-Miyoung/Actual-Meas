@@ -12,7 +12,7 @@ function photoProduct(id){const key=state.signaturePhotos?.[id]?.productKey;if(k
 function context(){
  const photos=state.photos.map(p=>({id:p.id,name:p.name,width:p.sourceWidth||1200,height:p.sourceHeight||900,score:Number(p.analysis?.score)||0,duplicate:!!p.analysis?.duplicateOf})),bindings=Core.copy(state.signaturePhotos||{}),photoProducts={},unique=new Map(),areas={};
  for(const p of photos){const product=photoProduct(p.id);if(product){photoProducts[p.id]=product;const key=[product.id,product.brand,product.model,product.color,product.size].join('|');product.renderKey=key;unique.set(key,product);if(bindings[p.id]?.area)areas[key]=[areas[key],bindings[p.id].area].filter(Boolean).join(' · ');}}
- return {...Core.publicSite(state),photos,bindings,photoProducts,products:[...unique.values()],areas};
+ return {...Core.publicSite(state),structure:String(state.productStructure||''),slideCount:Number(state.slideCount||0),photos,bindings,photoProducts,products:[...unique.values()],areas};
 }
 function effectiveSequence(){const custom=brandSettings().titles.split(/\r?\n/);return (state.signatureSequence||[]).map((s,i)=>({...s,title:custom[i]||s.title}));}
 function buildSequence(preserve=true){
@@ -24,11 +24,11 @@ function buildSequence(preserve=true){
 }
 function refreshCaptions(){
  const ctx=context();if(!ctx.photos.length)return;const key=JSON.stringify({ctx,sequence:effectiveSequence(),contact:state.settings.kakao||state.settings.website});if(state.signatureCaptionKey===key)return;
- const heading=[ctx.site,ctx.region,ctx.space].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · '),notes=ctx.photos.map(p=>ctx.bindings[p.id]).filter(Boolean).map(b=>[b.area,b.note].filter(Boolean).join(' · ')).filter(Boolean),models=ctx.products.map(p=>[p.brand,p.model,p.color].filter(Boolean).join(' | ')),facts=ctx.products.map(p=>[p.brand,p.model,p.color,p.size].filter(Boolean).join(' | '));
+ const heading=[ctx.site,ctx.region,ctx.space].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · '),notes=ctx.photos.map(p=>ctx.bindings[p.id]).filter(Boolean).map(b=>[b.area,b.note].filter(Boolean).join(' · ')).filter(Boolean),models=ctx.products.map(p=>[p.brand,p.model,p.color].filter(Boolean).join(' | ')),facts=ctx.products.map(p=>[p.brand,p.model,p.color,p.size,ctx.structure].filter(Boolean).join(' | '));
  if(ctx.memo&&!notes.includes(ctx.memo))notes.push(ctx.memo);
- const contact=state.settings.kakao||state.settings.website||'지역·현장 사진·원하는 소재를 알려주시면 확인해 안내합니다.',title=effectiveSequence()[0]?.title||heading,works=ctx.works.length?'확인한 작업: '+ctx.works.join(' · '):'',tags=['청인마루',...ctx.products.map(p=>p.brand),ctx.region].filter(Boolean).map(s=>'#'+s.replace(/[^\p{L}\p{N}]/gu,'')).join(' ');
+ const contact=state.settings.kakao||state.settings.website||'지역·현장 사진·원하는 제품을 알려주시면 확인해 안내합니다.',title=effectiveSequence()[0]?.title||heading,works=ctx.works.length?'확인한 작업: '+ctx.works.join(' · '):'',tags=['청인마루',...ctx.products.map(p=>p.brand),ctx.region].filter(Boolean).map(s=>'#'+s.replace(/[^\p{L}\p{N}]/gu,'')).join(' ');
  const caption=[heading,...notes,facts.length?'시공 제품\n'+facts.join('\n'):'',works,'시공 상담\n'+contact,tags].filter(Boolean).join('\n\n');
- const blog=[heading,'현장 기록\n'+notes.join('\n'),facts.length?'제품과 규격\n'+facts.join('\n'):'',works,'사진을 보는 순서\n'+effectiveSequence().map((s,i)=>`${i+1}. ${s.title}`).join('\n'),'소재를 선택하기 전 실제 샘플과 현장 조건을 함께 확인하세요.','문의\n'+contact].filter(Boolean).join('\n\n');
+ const blog=[heading,'현장 기록\n'+notes.join('\n'),facts.length?'제품과 규격\n'+facts.join('\n'):'',works,'사진을 보는 순서\n'+effectiveSequence().map((s,i)=>`${i+1}. ${s.title}`).join('\n'),'제품을 선택하기 전 실제 샘플과 현장 조건을 함께 확인하세요.','문의\n'+contact].filter(Boolean).join('\n\n');
  const short=[title,heading,models.join(' · '),contact].filter(Boolean).join('\n'),kakao=[heading,models.join(' · '),'현장 사진과 원하는 자재를 보내주시면 상담을 안내합니다.',contact].filter(Boolean).join('\n\n');
  const generated={carousel:caption,naver:blog,naverCover:heading,kakao,kakaoWide:kakao,youtube:caption,youtubeCover:title,story:short,reels:short,shorts:short};state.brandCaptions??={};for(const [format,text]of Object.entries(generated))if(!state.signatureEditedCaptions?.[format])state.brandCaptions[format]=text;state.signatureCaptionKey=key;
 }
@@ -85,10 +85,10 @@ Flow.drafts=function(project,draft,assets,question){
  const list=baseDrafts(project,draft,assets,question),source=window.signatureSource();if(source)for(const d of list){d.signatureDesign=source.design;d.signatureSequence=source.sequence.map((s,i)=>({...s,title:brandSettings().titles.split(/\r?\n/)[i]||s.title}));d.signatureContext=source.context;d.carousel=d.signatureSequence.map((s,i)=>({text:s.title,photo:i+1,role:s.role}));d.photoRefs=d.photoRefs.map((r,i)=>({...r,sourceId:photoOrder()[i]?.id}));const ctx=source.context;
  const details=ctx.photos.map(p=>ctx.bindings[p.id]).filter(Boolean).map(b=>[b.area,b.note].filter(Boolean).join(' · ')).filter(Boolean);
  if(ctx.memo&&!details.includes(ctx.memo))details.push(ctx.memo);
- const materials=ctx.products.map(p=>[p.brand,p.model,p.color,p.size].filter(Boolean).join(' | '));
+ const materials=ctx.products.map(p=>[p.brand,p.model,p.color,p.size,ctx.structure].filter(Boolean).join(' | '));
  const heading=[ctx.region,ctx.space,ctx.site].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · ')||project.number;
  const works=ctx.works.length?'확인한 작업: '+ctx.works.join(' · '):'';
- const contact=state.settings.kakao||state.settings.website||'지역과 현장 사진, 원하는 소재를 보내주시면 확인해 안내하겠습니다.';
+ const contact=state.settings.kakao||state.settings.website||'지역과 현장 사진, 원하는 제품을 보내주시면 확인해 안내하겠습니다.';
  const tags=['청인마루',...ctx.products.map(p=>p.brand),ctx.region].filter(Boolean).map(s=>'#'+s.replace(/[^\p{L}\p{N}]/gu,'')).join(' ');
  const order=d.signatureSequence.map((s,i)=>`${i+1}. ${s.title}`).join('\n');
  if(d.channel==='instagram'){d.title=d.signatureSequence[0]?.title||heading;d.body=[heading,...details,materials.length?'시공 제품\n'+materials.join('\n'):'',works,'시공 상담\n'+contact,tags].filter(Boolean).join('\n\n');d.hook=d.title;d.script=d.signatureSequence.map((s,i)=>`${i*3}–${i*3+3}초 · ${s.title}`).join('\n');d.story=[d.title,heading].join('\n');}
