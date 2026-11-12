@@ -80,13 +80,15 @@
     }
     function photo(p,x,y,w,h,{focusY,zoom=1} = {}) {
       const im = p.image;
-      const fit = Math.max(w/im.width,h/im.height)*zoom;
+      const transform=p.transform||{};
+      const fit = Math.max(w/im.width,h/im.height)*zoom*Math.max(1,Math.min(3,transform.zoom||1));
       const sw=w/fit, sh=h/fit;
-      const anchorY = focusY ?? p.focusY ?? (kind==='floor' ? .69 : kind==='wall' ? .39 : .53);
-      const sx=(im.width-sw)*Math.max(0,Math.min(1,p.focusX ?? .5));
+      const anchorY = transform.y ?? focusY ?? p.focusY ?? (kind==='floor' ? .69 : kind==='wall' ? .39 : .53);
+      const anchorX = transform.x ?? p.focusX ?? .5;
+      const sx=(im.width-sw)*Math.max(0,Math.min(1,anchorX));
       const sy=(im.height-sh)*Math.max(0,Math.min(1,anchorY));
       g.drawImage(im,sx,sy,sw,sh,x,y,w,h);
-      canvas.photoLayout.push({id:p.id,x,y,width:w,height:h,sx,sy,sw,sh,sourceWidth:im.width,sourceHeight:im.height,fit:'cover'});
+      canvas.photoLayout.push({id:p.id,target:p.target||'background',anchorX,anchorY,x,y,width:w,height:h,sx,sy,sw,sh,sourceWidth:im.width,sourceHeight:im.height,fit:'cover'});
     }
     function type(value,x,y,w,size,{rows=1,serif=false,color=ink,align='left',leading=1.24} = {}) {
       if (!value) return 0;
@@ -191,7 +193,7 @@
     const main = get(choice.photoId) || best;
     if (!main) throw Error('표지 사진을 먼저 선택하세요.');
     const info = getProjectInfo(main.id);
-    Object.assign(info,{title:choice.titles?.[channel] || info.title, housing:choice.housing || '', material:choice.material});
+    Object.assign(info,{location:choice.siteText?.trim() || info.location,title:choice.titles?.[channel] || info.title, housing:choice.housing || '', material:choice.material});
     const src = {hero:main};
     if (['shorts','youtubeCover'].includes(channel) && get(choice.beforeId) && get(choice.afterId) && choice.beforeId!==choice.afterId) {
       src.before=get(choice.beforeId); src.after=get(choice.afterId);
@@ -207,7 +209,8 @@
           finally {original=previous;}
         }
         const binding=state.signaturePhotos?.[p.id] || {};
-        photos[role]={id:p.id,image:decoded.get(p.id),focusX:binding.focusX,focusY:binding.focusY ?? binding.focus};
+        const target=role==='hero'?'background':role;
+        photos[role]={id:p.id,target,transform:choice.transforms?.[target],image:decoded.get(p.id),focusX:binding.focusX,focusY:binding.focusY ?? binding.focus};
       }
       return await render(channel,info,photos,options);
     } finally {for (const canvas of decoded.values()) releaseCanvas(canvas);}
