@@ -2,6 +2,10 @@
 (function(){
 'use strict';let mounted=false;
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
+function cleanDisplaySpec(value){
+ return String(value||'').replace(/\([^)]*(?:box|pcs|박스|개입|입수)[^)]*\)/gi,'').replace(/(?:\d+(?:\.\d+)?\s*)?(?:boxes|box|pcs|박스|개입|입수)\b/gi,'').replace(/[,;/|\s]+$/g,'').replace(/\s*\*\s*/g,' × ').replace(/\s+/g,' ').trim();
+}
+window.CheonginDisplaySpec=cleanDisplaySpec;
 function postingPack(v){
  const facts=[v.location,v.product,v.spec,v.structure||v.kind].filter(Boolean).join(' · ');
  const subject=v.product||'마루';
@@ -24,7 +28,7 @@ async function drawSample(g,image,v,h,wide,vertical,start){
  const photoY=top+84,hero={x:m,y:photoY,w:wide?590:1080-2*m,h:wide?h-photoY-bottom:Math.min(720,(h-photoY-bottom)*.60)};
  const crop=sampleCrop(image.width,image.height,hero.w,hero.h,start);g.drawImage(image,crop.sx,crop.sy,crop.sw,crop.sh,hero.x,hero.y,hero.w,hero.h);
  const ix=wide?hero.x+hero.w+gap:m,iy=wide?photoY:hero.y+hero.h+gap,iw=wide?1080-m-ix:Math.round((1080-2*m)*.58);
- let yy=iy;yy+=text(v.title||'이 나뭇결, 집에 깔리면',ix,yy,iw,wide?34:54,2,true)+22;
+ let yy=iy;yy+=text(v.title||'우리 집에 깔리면, 어떤 느낌일까요?',ix,yy,iw,wide?34:54,2,true)+22;
  yy+=text(v.product,ix,yy,iw,wide?24:32,2)+10;
  yy+=text([v.spec,v.structure].filter(Boolean).join(' · '),ix,yy,iw,24,2)+12;
  text(v.location,ix,yy,iw,23);
@@ -56,7 +60,7 @@ function mount(){
  thumbTab.onclick=()=>showThumbnail();contentTab.onclick=()=>showThumbnail(false);
  if(deskPreview){deskPreview.prepend(tabs,livePane);showThumbnail();}else body.prepend(livePane);
  let projectKey='',photoKey='',canvas=null,revision=0,autoTimer=null,autoBusy=false,autoDirty=false,exporting=false,lastKey='',lastSource=null,lastPhoto=null;
- function values(){const p=typeof selectedProduct==='function'?selectedProduct():null,m=state.manualOverlay||{};return {title:title.value.trim(),location:m.location||state.region||'',product:m.product||(p?[p.brand,p.model,p.color].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · '):''),spec:m.spec||p?.size||'',structure:m.structure||state.productStructure||'',kind:p?.category||''};}
+ function values(){const p=typeof selectedProduct==='function'?selectedProduct():null,m=state.manualOverlay||{};return {title:title.value.trim(),location:m.location||state.marketingSite||[state.region,state.space].filter(Boolean).join(' · ')||state.title||'',product:m.product||(p?[p.brand,p.model,p.color].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · '):''),spec:cleanDisplaySpec(m.spec||p?.size||''),structure:m.structure||state.productStructure||'',kind:p?.category||''};}
  function readPack(){return Object.fromEntries(Object.entries(areas).map(([k,a])=>[k,a.value]));}
  function preparePack(){const pack=postingPack(values());for(const [k,a]of Object.entries(areas))a.value=pack[k]||'';state.thumbnailPosting??={};state.thumbnailPosting.pack=pack;persist();}
  prepare.onclick=preparePack;
@@ -85,7 +89,7 @@ function mount(){
   const kind=v.structure||v.kind||'',onPhoto=mode==='full',ink=onPhoto?'#FFFFFF':'#263C31',muted=onPhoto?'#EEE9DF':'#667667';
   c.typeLayout=[];c.photoLayout=[];g.scale(scale,scale);g.fillStyle='#F4F0E8';g.fillRect(0,0,1080,h);
   const source=await photoImage(p),was=original;let image;original=false;try{image=transformed(source,p.adjust,previewOnly?1100:2200);}finally{original=was;}if(image?.then)image=await image;
-  const photoBox=mode==='full'?{x:0,y:0,w:1080,h}:wide?{x:0,y:0,w:620,h}:{x:0,y:0,w:1080,h:Math.round(h*.70)};
+  const photoBox=mode==='full'?{x:0,y:0,w:1080,h}:wide?{x:0,y:0,w:620,h}:{x:0,y:0,w:1080,h:Math.round(h*.68)};
   try{
    let sx,sy,sw,sh;
    if(mode==='photo70'){({sx,sy,sw,sh}=sampleCrop(image.width,image.height,photoBox.w,photoBox.h,floorStart));}
@@ -93,15 +97,15 @@ function mount(){
    g.drawImage(image,sx,sy,sw,sh,photoBox.x,photoBox.y,photoBox.w,photoBox.h);c.photoLayout.push({...photoBox,sourceWidth:image.width,sourceHeight:image.height,sx,sy,sw,sh});
   }finally{releaseCanvas(image);}
   if(onPhoto){const start=Math.max(0,h-(wide?320:vertical?690:550)),grad=g.createLinearGradient(0,start,0,h);grad.addColorStop(0,'rgba(20,36,26,0)');grad.addColorStop(.45,'rgba(20,36,26,.38)');grad.addColorStop(1,'rgba(20,36,26,.82)');g.fillStyle=grad;g.fillRect(0,start,1080,h-start);}
-  const mark=await loadImage(onPhoto?'brand/logo-ivory.svg':'brand/logo-charcoal.svg');try{const w=wide?124:148;g.save();g.globalAlpha=onPhoto ? .58 : .43;g.drawImage(mark,wide&&mode==='photo70'?32:56,top,w,w*mark.height/mark.width);g.restore();}finally{mark.src='';}
+  const mark=await loadImage('brand/logo-ivory.svg');try{const w=wide?124:148;g.save();g.globalAlpha=.58;g.drawImage(mark,wide&&mode==='photo70'?32:56,top,w,w*mark.height/mark.width);g.restore();}finally{mark.src='';}
   await Promise.all([document.fonts.load('400 61px "Studio Serif"',v.product+v.title),document.fonts.load('400 44px "Studio Sans"',kind+v.spec+v.location)]);
   const x=wide&&mode==='photo70'?664:m,w=wide&&mode==='photo70'?1080-x-m:1080-m*2;
-  const y=mode==='photo70'?(wide?108:photoBox.h+34):h-bottom-(wide?215:320),available=h-bottom-y;
-  const rows=[{value:kind,size:wide?24:28,min:22,lines:1,color:muted,gap:14},{value:v.product||v.title,size:wide?46:61,min:34,lines:2,serif:true,color:ink,gap:20},{value:v.spec,size:wide?31:44,min:26,lines:2,color:ink,gap:12},{value:v.spec?'폭 × 길이 × 두께':'',size:wide?18:22,min:18,lines:1,color:muted,gap:22},{value:v.product?v.title:v.location,size:wide?23:29,min:21,lines:2,serif:true,color:muted,gap:0}].filter(r=>r.value);
+  const y=mode==='photo70'?(wide?108:photoBox.h+34):h-bottom-(wide?245:360),available=h-bottom-y;
+  const rows=[{value:v.title||'우리 집에 어울리는 바닥은?',size:wide?42:62,min:42,lines:2,serif:true,color:ink,gap:20},{value:[kind,v.product].filter(Boolean).join(' · '),size:wide?27:40,min:29,lines:2,serif:true,color:ink,gap:14},{value:v.spec,size:wide?28:36,min:26,lines:2,color:ink,gap:14},{value:v.location?('현장 · '+v.location):'',size:wide?22:25,min:21,lines:2,color:muted,gap:0}].filter(r=>r.value);
   function measure(row,factor=1){const family=row.serif?'Studio Serif':'Studio Sans';return CheonginType.layout(String(row.value),{width:w,fontSize:row.size*factor,minFontSize:Math.min(row.min,row.size*factor),maxLines:row.lines,leading:1.25,measure:(s,n)=>{g.font=`400 ${n}px "${family}"`;return g.measureText(s).width;}});}
   let factor=1,layouts=rows.map(r=>measure(r));const total=()=>layouts.reduce((sum,l,i)=>sum+l.lines.length*l.lineHeight+rows[i].gap*factor,0);
   for(let i=0;i<5&&total()>available;i++){factor*=Math.max(.65,Math.min(.98,available/total()));layouts=rows.map(r=>measure(r,factor));}
-  let yy=y;for(let i=0;i<rows.length;i++){const r=rows[i],l=layouts[i];g.font=`400 ${l.size}px "${r.serif?'Studio Serif':'Studio Sans'}"`;g.fillStyle=r.color;g.textBaseline='top';for(const [j,line]of l.lines.entries()){const ty=yy+j*l.lineHeight;g.fillText(line,x,ty);c.typeLayout.push({source:r.value,x,y:ty,width:g.measureText(line).width,height:l.lineHeight,size:l.size});}if(l.truncated)c.dataset.textTruncated='true';yy+=l.lines.length*l.lineHeight+r.gap*factor;}
+  let yy=y;for(let i=0;i<rows.length;i++){const r=rows[i],l=layouts[i];g.font=`400 ${l.size}px "${r.serif?'Studio Serif':'Studio Sans'}"`;g.fillStyle=r.color;g.textBaseline='top';for(const [j,line]of l.lines.entries()){const ty=yy+j*l.lineHeight;const metrics=g.measureText(line),tx=x+(metrics.actualBoundingBoxLeft||0);g.fillText(line,tx,ty);c.typeLayout.push({source:r.value,x,y:ty,width:metrics.width,height:l.lineHeight,size:l.size});}if(l.truncated)c.dataset.textTruncated='true';yy+=l.lines.length*l.lineHeight+r.gap*factor;}
   c.dataset.template=mode;c.dataset.renderer='cheongin-approved-product-cover-v1';return c;
  }
  async function render(){return draw();}
