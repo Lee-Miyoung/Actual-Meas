@@ -16,11 +16,13 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  const m=wide?52:64,total=Math.max(1,Number(ctx.slideCount)||5);
  g.scale(unit,unit);c.typeLayout=[];c.photoLayout=[];
  Object.assign(c.dataset,{renderer:'cheongin-photo-edition-v2',exportWidth:ww,exportHeight:hh,platform:format,slide:index});
- const info=ctx.photoProducts[slot.photoIds?.at(-1)]||ctx.products[0];
- const title=slot.archiveNote??slot.title??'';
- const product=info?[info.brand,info.model,info.color].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · '):'';
- const detail=[info?.size,ctx.structure].filter(Boolean).join(' · ');
- const location=[ctx.region,ctx.space].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · ');
+ const info=ctx.photoProducts[slot.photoIds?.at(-1)]||ctx.products[0],manual=ctx.manualOverlay||{},manualTitles=Array.isArray(manual.slideTitles)?manual.slideTitles:[];
+ const autoTitle=slot.archiveNote??slot.title??'';
+ const title=manualTitles[index]||((index===0&&manual.title)?manual.title:autoTitle);
+ const product=manual.product||((info?[info.brand,info.model,info.color].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · '):''));
+ const manualDetail=[manual.spec,manual.structure].filter(Boolean).join(' · ');
+ const detail=manualDetail||[info?.size,ctx.structure].filter(Boolean).join(' · ');
+ const location=manual.location||[ctx.region,ctx.space].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · ');
  const all=[title,product,detail,location,'시공 전 시공 후 청인마루 공간의 위로가 되다'].join(' ');
  await Promise.all([document.fonts.load('400 44px "Studio Serif"',all),document.fonts.load('400 26px "Studio Sans"',all)]);
  function text(value,x,y,w,size,rows=1,weight=400,align='left',alpha=1,family='Studio Sans'){
