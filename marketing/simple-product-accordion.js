@@ -10,6 +10,36 @@ function variantId(){return String(state.authoring?.productKey||'').split('::')[
 function sync(){state.signatureCaptionKey='';if(typeof indexCurrent==='function')indexCurrent();persist();if(typeof scheduleChannels==='function')scheduleChannels();window.renderProductionWorkspace?.();}
 function step(title){const d=el('details',undefined,'sp-step'),s=el('summary'),a=el('span',title),b=el('small','선택하세요'),body=el('div',undefined,'sp-options');s.append(a,b);d.append(s,body);return{d,s,a,b,body};}
 function opt(text,selected,click){const b=el('button',text,'sp-option'+(selected?' selected':''));b.type='button';b.onclick=click;return b;}
+function makeNotes(){
+ const guide=window.CheonginFloorNotes,box=el('details',undefined,'sp-model-guide');
+ const summary=el('summary'),status=el('small'),inner=el('div',undefined,'sp-guide-inner');
+ summary.append(el('strong','모델별 시공 노트'),status);
+ const label=el('label','노트 찾아보기'),picker=el('select'),content=el('div');
+ picker.add(new Option('모델을 선택하세요',''));
+ for(const entry of guide.entries)picker.add(new Option(entry.name,entry.id));
+ label.append(picker);inner.append(label,content);box.append(summary,inner);
+ let key,active=null;
+ function show(){
+  const note=guide.entries.find(n=>n.id===picker.value);
+  status.textContent=note?.name||guide.entries.length+'개 노트';
+  content.replaceChildren();if(!note)return;
+  if(note!==active)content.append(el('p','참고용으로 열람 중 · 현장에 선택한 제품은 그대로입니다.','sp-guide-context'));
+  const dl=el('dl');
+  for(const [term,value] of [['제품 특징',note.facts],['청인마루 상담',note.experience],['지난 시공 사례',note.site],['고객이 궁금해하는 점',note.question],['함께 보여줄 사진',note.photo]]){
+   if(value)dl.append(el('dt',term),el('dd',value));
+  }
+  content.append(dl);
+  if(note.source){const link=el('a','제조사 제품 자료');link.href=note.source;link.target='_blank';link.rel='noopener noreferrer';content.append(link);}
+ }
+ picker.onchange=show;
+ function update(product){
+  const next=guide.find(product);
+  const nextKey=JSON.stringify([state.projectId,product?.id,product?.model,product?.color,next?.id]);
+  if(key===nextKey)return;
+  key=nextKey;active=next;picker.value=active?.id||'';box.open=Boolean(active);show();
+ }
+ return {box,update};
+}
 function mount(){
  if(mounted)return;
  const host=document.querySelector('.simple-product-body');
@@ -24,11 +54,13 @@ function mount(){
  for(const v of ['', '합판형 강마루','보드형 강마루(HDF)','천연광물','원목마루','SPC','강화마루','벽장재','기타 직접입력'])structureSelect.add(new Option(v||'구조 선택',v));
  const custom=el('input');custom.placeholder='직접 입력';custom.maxLength=60;custom.hidden=true;
  const spec=el('p','규격: 제품을 선택하세요','simple-product-spec');
+ const notes=makeNotes();
  structure.append(structureTitle,structureSelect,custom);
- host.append(brandStep.d,productStep.d,modelStep.d,structure,spec);
+ host.append(brandStep.d,productStep.d,modelStep.d,structure,spec,notes.box);
 
  function refresh(){
   const p=current(),fid=baseId(),vid=variantId(),brand=p?.brand||state.catalog.find(x=>x.id===fid)?.brand||'';
+  notes.update(p);
   brandStep.b.textContent=brand||'선택하세요';
   brandStep.body.replaceChildren();
   for(const b of uniq(live().map(p=>p.brand)))brandStep.body.append(opt(b,b===brand,()=>{state.simpleBrand=b;brandStep.b.textContent=b;brandStep.d.open=false;renderProducts(b);productStep.d.open=true;}));

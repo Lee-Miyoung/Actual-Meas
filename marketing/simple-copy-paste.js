@@ -108,13 +108,15 @@ function prompt(editor){
  if(p.layout==='grain'&&file(p.detailId))order.push('표지의 소재 확대 사진 · '+file(p.detailId));
  const angle=writingAngles[p.writingAngle]?.[1];
  const headings=[postLabels.thumbnailTitle,'사진문구',...Object.values(postLabels).slice(1)];
- const notes=productNotes(f.product);
+ const guide=window.CheonginFloorNotes;
+ const model=guide?.find(f.product);
+ const notes=[productNotes(f.product),guide?.promptNote(model,false)].filter(Boolean).join('\n\n');
  const scope=p.requestScope||'both';
  const fieldInfo=['이번 현장',...rows.filter(([,v])=>v).map(([k,v])=>k+' · '+v)].join('\n');
  const photoOrder=order.length?['앱에서 사용할 사진 순서',...order,'파일명과 순서는 사진을 맞춰 보는 용도입니다. 게시 문구에는 싣지 마세요.'].join('\n'):'';
  if(scope==='photos')return [
   '청인마루는 실제 마루·벽장재 시공 현장을 기록합니다. 첨부한 사진을 아래 기준으로 보정해 주세요.',
-  fieldInfo,photoOrder,photoBrief(compare)
+  fieldInfo,photoOrder,photoBrief(compare),guide?.promptNote(model,true)
  ].filter(Boolean).join('\n\n');
  return [
   '청인마루 시공 사례 한 편을 작성해 주세요. 청인마루는 실제 현장에서 마루와 벽장재를 시공하는 업체입니다. 독자는 우리 집이나 매장에 어떤 마감재가 어울릴지 고민하는 고객입니다. 아래 정보와 이 메시지에 함께 첨부한 사진, 아래에 제공된 제품 자료를 바탕으로, 청인마루가 직접 현장을 소개하는 한국어 게시물을 써 주세요.',
