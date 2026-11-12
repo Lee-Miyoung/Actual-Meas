@@ -161,7 +161,7 @@ function mount(){
   const maxWidth=1080-m*2;
   function lines(value,size,maxLines,bold=false){const weight=bold?600:400;return CheonginType.layout(String(value||''),{width:maxWidth-44,fontSize:size,minFontSize:size*.86,maxLines,leading:bold?1.17:1.22,measure:(s,n)=>{g.font=`${weight} ${n}px "Studio Sans"`;return g.measureText(s).width;}});}
   const heading=lines(headline,wide?48:70,2,true),kind=v.structure||v.kind||'',productLine=[/^(마루|바닥재|기타)$/.test(kind)?'':kind,v.product].filter(Boolean).join(' · ');
-  const details=[{value:productLine,size:wide?25:31,max:2},{value:v.spec,size:wide?21:25,max:1},{value:v.location?'현장 · '+v.location:'',size:wide?20:24,max:1}].filter(r=>r.value).map(r=>({...r,layout:lines(r.value,r.size,r.max)}));
+  const details=[{value:productLine,size:wide?22:26,max:2},{value:v.spec,size:wide?22:26,max:1},{value:v.location?'현장 · '+v.location:'',size:wide?20:24,max:1}].filter(r=>r.value).map(r=>({...r,layout:lines(r.value,r.size,r.max)}));
   const paddingX=22,paddingY=16,rowGap=9,boxH=details.length?paddingY*2+details.reduce((sum,r)=>sum+r.layout.lines.length*r.layout.lineHeight,0)+rowGap*(details.length-1):0;
   let measured=0;for(const r of details){g.font=`400 ${r.layout.size}px "Studio Sans"`;for(const line of r.layout.lines)measured=Math.max(measured,g.measureText(line).width);}
   const boxW=Math.min(maxWidth,Math.max(320,measured+paddingX*2)),pairH=wide?106:230,pairY=h-bottom-pairH,boxBottom=pair?pairY-22:h-bottom,infoY=boxBottom-boxH;
