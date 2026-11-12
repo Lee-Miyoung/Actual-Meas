@@ -133,7 +133,7 @@ function init(){
   productDetails.append(productBody);
 
   const outputCard=el('section',undefined,'simple-card simple-output-card');
-  outputCard.append(el('strong','4. 출력'));
+  outputCard.append(el('strong','5. 출력'));
   const format=el('select'); format.id='simple-format';
   format.replaceChildren(
     option('carousel','인스타 피드 4:5'),
