@@ -13,7 +13,7 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  const c=node('canvas'),scale=Math.min(1,(options.maxEdge||Infinity)/Math.max(ww,hh));
  c.width=Math.round(ww*scale);c.height=Math.round(hh*scale);
  const g=c.getContext('2d'),unit=c.width/1080,H=c.height/unit,wide=H<900,vertical=['reels','shorts','story'].includes(format);
- const m=wide?52:64,total=Math.max(1,Number(ctx.slideCount)||5),last=index===total-1;
+ const m=wide?52:64,total=Math.max(1,Number(ctx.slideCount)||5);
  g.scale(unit,unit);c.typeLayout=[];c.photoLayout=[];
  Object.assign(c.dataset,{renderer:'cheongin-photo-edition-v2',exportWidth:ww,exportHeight:hh,platform:format,slide:index});
  const info=ctx.photoProducts[slot.photoIds?.at(-1)]||ctx.products[0];
@@ -46,6 +46,16 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
    c.photoLayout.push({fit:'cover',sourceWidth:sw,sourceHeight:im.height,x,y,width:w,height:h,cropFraction:1-cw*ch/(sw*im.height)});
   }finally{if(im?.tagName==='IMG')im.src='';else if(im)releaseCanvas(im);}
  }
+ async function topBrand(){
+  if(!cfg.show.logo)return 0;
+  const mark=await designMarks.light;if(!mark)return 0;
+  const logoW=wide?158:176,logoH=logoW*mark.height/mark.width,topY=wide?30:48,pageSize=wide?17:19;
+  g.save();g.globalAlpha=.94;g.shadowColor='rgba(0,0,0,.34)';g.shadowBlur=6;g.drawImage(mark,m,topY,logoW,logoH);g.restore();
+  const page=String(index+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
+  const pageY=topY+Math.max(0,(logoH-pageSize)/2)-1;
+  text(page,wide?900:900,pageY,1080-(wide?900:900)-m,pageSize,1,400,'right',.82,'Studio Sans');
+  return topY+logoH;
+ }
  function bottomGradient(){
   const h=wide?245:vertical?510:380,start=Math.max(0,H-h);
   const gradient=g.createLinearGradient(0,start,0,H);
@@ -62,36 +72,27 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
    await photo(slot.photoIds[0],0,0,w,h,pair?0:null);
    await photo(pair?slot.photoIds[0]:slot.photoIds[1],horizontal?546:0,horizontal?0:h+10,w,h,pair?1:null);
    g.fillStyle='rgba(20,23,20,.58)';
-   if(horizontal){g.fillRect(26,26,105,42);g.fillRect(572,26,105,42);text('시공 전',40,34,90,20,1,500);text('시공 후',586,34,90,20,1,500);}
-   else{g.fillRect(26,26,105,42);g.fillRect(26,h+36,105,42);text('시공 전',40,34,90,20,1,500);text('시공 후',40,h+44,90,20,1,500);}
+   const labelTop=wide?82:105;
+   if(horizontal){g.fillRect(26,labelTop-8,105,42);g.fillRect(572,labelTop-8,105,42);text('시공 전',40,labelTop,90,20,1,400);text('시공 후',586,labelTop,90,20,1,400);}
+   else{g.fillRect(26,labelTop-8,105,42);g.fillRect(26,h+36,105,42);text('시공 전',40,labelTop,90,20,1,400);text('시공 후',40,h+44,90,20,1,400);}
   }else await photo(lead.id,0,0,1080,H);
 
   if(!rule.natural||format==='naverCover'){
    bottomGradient();
-   text('ㅊㅇㅁㄹ',m,wide?34:54,150,wide?18:20,1,500,'left',.78,'Studio Serif');
-   if(location)text(location,wide?620:600,wide?34:54,1080-(wide?620:600)-m,wide?18:20,1,500,'right',.82);
-   text(String(index+1).padStart(2,'0')+' / '+String(total).padStart(2,'0'),wide?900:914,wide?72:92,112,wide?15:17,1,500,'right',.6);
-
-   if(cfg.show.logo){
-    const mark=await designMarks.light;
-    if(mark){
-     const w=wide?310:390,h=w*mark.height/mark.width;
-     g.save();g.globalAlpha=.085;g.drawImage(mark,(1080-w)/2,(H-h)/2,w,h);g.restore();
-    }
-   }
+   await topBrand();
 
    const detailY=H-(wide?44:vertical?76:70);
    const productY=detailY-(wide?35:42);
    const titleY=productY-(wide?58:88);
+   if(location)text(location,m,titleY-(wide?28:32),wide?780:760,wide?16:18,1,400,'left',.78,'Studio Sans');
    if(title)text(title,m,titleY,wide?780:760,wide?34:43,2,400,'left',.96,'Studio Serif');
    if(cfg.show.product&&product)text(product,m,productY,wide?760:760,wide?21:26,1,600,'left',.95);
    if(cfg.show.spec&&detail)text(detail,m,detailY,wide?760:760,wide?17:21,1,400,'left',.84);
   }else{
    bottomGradient();
-   text('ㅊㅇㅁㄹ',m,54,150,20,1,500,'left',.78,'Studio Serif');
-   if(location)text(location,600,54,1080-600-m,20,1,500,'right',.82);
-   if(cfg.show.logo){const mark=await designMarks.light;if(mark){const w=390,h=w*mark.height/mark.width;g.save();g.globalAlpha=.085;g.drawImage(mark,(1080-w)/2,(H-h)/2,w,h);g.restore();}}
+   await topBrand();
    const detailY=H-70,productY=detailY-42,titleY=productY-88;
+   if(location)text(location,m,titleY-32,760,18,1,400,'left',.78,'Studio Sans');
    if(title)text(title,m,titleY,760,43,2,400,'left',.96,'Studio Serif');
    if(cfg.show.product&&product)text(product,m,productY,760,26,1,600);
    if(cfg.show.spec&&detail)text(detail,m,detailY,760,21,1,400,'left',.84);
