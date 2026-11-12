@@ -1,73 +1,97 @@
 (function(){
 'use strict';
-let mounted=false;
-function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
-function parseBlock(raw){
- const out={location:'',title:'',product:'',spec:'',structure:'',slideTitles:[],raw:String(raw||'')};
- const lines=String(raw||'').replace(/\r/g,'').split('\n');
- let photoMode=false,unlabeled=[];
- for(const original of lines){
-  const line=original.trim();if(!line)continue;
-  if(/^사진\s*문구\s*[:：]?$/i.test(line)){photoMode=true;continue;}
-  if(photoMode){out.slideTitles.push(line.replace(/^[-•·]\s*/,''));continue;}
-  const m=line.match(/^(현장|지역|제목|제품|제품명|규격|구조|코어)\s*[:：|]\s*(.+)$/i);
-  if(m){
-   const k=m[1],v=m[2].trim();
-   if(/현장|지역/.test(k))out.location=v;
-   else if(k==='제목')out.title=v;
-   else if(/제품/.test(k))out.product=v;
-   else if(k==='규격')out.spec=v;
-   else out.structure=v;
-  }else unlabeled.push(line);
+const postLabels={thumbnailTitle:'썸네일 제목',postTitle:'게시물·영상 제목',instagramCaption:'인스타 캡션',youtubeDescription:'유튜브 설명글',pinnedComment:'고정댓글',hashtags:'해시태그'};
+const aliases={
+ location:['현장','지역','현장명'],product:['제품','제품명'],spec:['규격'],structure:['구조','코어'],
+ slideTitles:['사진문구','사진별문구'],thumbnailTitle:['썸네일제목','제목','표지제목'],
+ postTitle:['게시물·영상제목','게시물제목','영상제목','게시제목','유튜브제목'],
+ instagramCaption:['인스타캡션','인스타그램캡션','캡션'],youtubeDescription:['유튜브설명글','유튜브설명'],
+ pinnedComment:['고정댓글'],hashtags:['해시태그']
+};
+const lookup=new Map(Object.entries(aliases).flatMap(([key,names])=>names.map(n=>[n,key])));
+function parse(raw){
+ const groups={},plain=[];let active;
+ for(const original of raw.replace(/\r/g,'').split('\n')){
+  if(/^\s*(?:```.*|[-─]{3,})\s*$/.test(original))continue;
+  const text=original.trim().replace(/^#{1,6}\s+|^[-*]\s+(?=\[|\*\*)/,'').replace(/\*\*/g,'');
+  const m=text.match(/^\[([^\]]+)\]\s*[:：]?\s*(.*)$/)||text.match(/^([^:：|]+)\s*[:：|]\s*(.*)$/);
+  const name=(m?m[1]:text).replace(/\s/g,'');
+  const key=lookup.get(name);
+  if(key){active=key;groups[key]=[];if(m?.[2])groups[key].push(m[2]);continue;}
+  if(active)groups[active].push(original.trimEnd());else if(original.trim())plain.push(original.trim());
  }
- if(!out.location&&!out.title&&!out.product&&!out.spec&&!out.structure&&unlabeled.length){
-  [out.location,out.title,out.product,out.spec,out.structure]=unlabeled.slice(0,5);
-  if(unlabeled.length>5)out.slideTitles=unlabeled.slice(5);
+ const result={};
+ for(const [key,lines] of Object.entries(groups)){
+  const value=lines.join('\n').trim();
+  if(value)result[key]=key==='slideTitles'?value.split('\n').map(s=>s.replace(/^\s*(?:[-•·]|\d+[.)])\s*/,'').trim()).filter(Boolean):value;
  }
- return out;
+ return {result,legacy:Object.keys(groups).length?[]:plain};
 }
+function prompt(editor){
+ const f=editor.facts(),p=state.thumbnailPosting||{};
+ const details=[['현장',f.location],['공간',p.housing],['평형',p.areaPyeong&&p.areaPyeong+'평형'],['제품',f.product],['규격',window.CheonginDisplaySpec(f.spec)],['구조',f.structure]].filter(([,v])=>v).map(([k,v])=>k+' · '+v);
+ const slides=state.slideCount||state.photos.length||1;
+ return ['청인마루 시공 게시물 한 세트를 작성해 줘. 첨부한 실제 사진과 다음 현장 정보만 사용해 줘.',
+ ...details,'구성 · '+(p.pairConcept==='compare'?'시공 전·후':'현장 미리보기'),
+ '먼저 사진을 보고 바닥이나 벽의 색·결 또는 공간에서 실제로 보이는 특징 하나를 골라 줘. 과장, 가격, 박스 수, 확인되지 않은 시공 정보는 빼 줘.',
+ '썸네일 제목은 고객이 궁금해할 자연스러운 한 문장으로 짧게. 인스타 캡션은 짧은 문단 두세 개, 유튜브 설명은 영상 소개용, 고정댓글은 사진과 연결된 질문 하나로 써 줘.',
+ '아래 대괄호 제목을 그대로 사용하고 답변 전체를 복사할 수 있게 한 블록으로 줘. 사진문구는 표지를 포함해 '+slides+'장 순서대로 한 줄씩 써 줘.',
+ ...[postLabels.thumbnailTitle,'사진문구',...Object.values(postLabels).slice(1)].map(v=>'['+v+']')].join('\n');
+}
+window.CheonginPostCopy={postLabels,parse};
+function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
+let mounted=false;
 function mount(){
- if(mounted)return;
- const grid=document.querySelector('.simple-input-grid');
- if(!grid||!state)return;
+ const editor=window.CheonginThumbnailEditor,grid=document.querySelector('.simple-input-grid'),pack=document.querySelector('.posting-pack');
+ if(mounted||!grid||!editor||!pack)return;
  mounted=true;
  const card=el('section',undefined,'simple-card simple-copy-card');
- card.append(el('strong','4. 문구 붙여넣기'));
- const hint=el('p','내가 만들어준 문구 블록을 그대로 붙여넣으면 같은 위치와 크기로 출력됩니다.','simple-help');
- const area=el('textarea');area.id='simple-copy-paste';area.rows=8;
- area.placeholder='현장: 춘천 석사동 · 단독주택\n제목: 신축주택 마루 시공\n제품: 구정 블론테 본오크\n규격: 230 × 2420 × 7T\n구조: 합판형 강마루\n\n사진문구:\n빛이 머무는 나뭇결';
- const actions=el('div',undefined,'simple-actions');
- const apply=el('button','붙여넣기 적용','primary'),clear=el('button','복붙 문구 비우기');
- apply.type=clear.type='button';actions.append(apply,clear);
- const status=el('div',undefined,'simple-copy-status');
- card.append(hint,area,actions,status);
- const output=grid.querySelector('.simple-output-card');if(output)grid.insertBefore(card,output);else grid.append(card);
-
- function summary(v){
-  status.replaceChildren();
-  const rows=[['현장',v.location],['제목',v.title],['제품',v.product],['규격',v.spec],['구조',v.structure],['사진별 문구',v.slideTitles?.length?v.slideTitles.join(' / '):'']];
-  for(const [k,val]of rows)if(val){const p=el('p');p.append(el('b',k+' '),document.createTextNode(val));status.append(p);}
-  if(!status.children.length)status.append(el('p','적용된 복붙 문구가 없습니다.','simple-help'));
+ card.append(el('strong','4. 문구 붙여넣기'),el('p','요청문과 현장 사진을 ChatGPT에 보내세요. 답변을 한 번 붙여넣으면 사진과 게시 문구에 반영됩니다.','simple-help'));
+ const actions=el('div',undefined,'simple-actions'),copy=el('button','요청문 복사'),paste=el('button','답변 붙여넣기','primary');
+ const manual=el('div'),input=el('textarea'),apply=el('button','적용'),cancel=el('button','닫기'),legacy=el('button','기존 현장 양식 적용');
+ const row=el('div',undefined,'simple-actions'),status=el('p','','simple-help');
+ for(const b of [copy,paste,apply,cancel,legacy])b.type='button';
+ input.id='simple-copy-paste';input.rows=4;input.setAttribute('aria-label','ChatGPT 문구');input.placeholder='[썸네일 제목]\n[인스타 캡션]\n[고정댓글]';
+ status.setAttribute('role','status');row.append(apply,legacy,cancel);manual.append(input,row);manual.hidden=true;legacy.hidden=true;actions.append(copy,paste);
+ card.append(actions,manual,status,pack);
+ const output=grid.querySelector('.simple-output-card');grid.insertBefore(card,output);
+ let project=null;
+ function close(){input.blur();manual.hidden=true;input.value='';legacy.hidden=true;}
+ function entry(value,copyMode=false){
+  manual.hidden=false;apply.hidden=copyMode;legacy.hidden=true;input.readOnly=copyMode;
+  input.value=value;input.focus({preventScroll:true});if(copyMode)input.select();
  }
- apply.onclick=()=>{
-  const parsed=parseBlock(area.value);
-  if(![parsed.location,parsed.title,parsed.product,parsed.spec,parsed.structure].some(Boolean)&&!parsed.slideTitles.length)return toast('붙여넣은 문구를 확인해 주세요.');
-  state.manualOverlay=parsed;
-  if(parsed.structure)state.productStructure=parsed.structure;
-  state.signatureCaptionKey='';
-  persist();
-  if(typeof scheduleChannels==='function')scheduleChannels();
-  window.renderProductionWorkspace?.();
-  summary(parsed);
-  toast('복붙 문구를 고정 포맷에 적용했습니다.');
+ function importText(raw,allowLegacy=false){
+  const parsed=parse(raw),v=parsed.result;
+  if(!Object.keys(v).length && allowLegacy && parsed.legacy.length){
+   const [location,thumbnailTitle,product,spec,structure,...slideTitles]=parsed.legacy;
+   Object.assign(v,Object.fromEntries(Object.entries({location,thumbnailTitle,product,spec,structure}).filter(([,value])=>value)));
+   if(slideTitles.length)v.slideTitles=slideTitles;
+  }
+  if(!Object.keys(v).length){
+   entry(raw);legacy.hidden=!parsed.legacy.length;status.textContent='항목 이름을 확인하세요. 현장·제목·제품·규격 순서의 예전 문구는 기존 현장 양식으로 적용할 수 있습니다.';return;
+  }
+  editor.applyCopy(v,raw);close();
+  const count=v.slideTitles?.length||0;
+  status.textContent=Object.keys(v).length+'개 항목 적용'+(count?' · 사진 문구 '+count+'장':'');
+ }
+ copy.onclick=async()=>{
+  const value=prompt(editor);try{await navigator.clipboard.writeText(value);status.textContent='요청문을 복사했습니다. ChatGPT에 현장 사진과 함께 보내세요.';}
+  catch{entry(value,true);status.textContent='선택된 요청문을 복사하세요.';}
  };
- clear.onclick=()=>{
-  state.manualOverlay={};area.value='';state.signatureCaptionKey='';persist();window.renderProductionWorkspace?.();summary({});
+ paste.onclick=async()=>{
+  const id=state.projectId;
+  try{const text=await navigator.clipboard.readText();if(state.projectId!==id)return;
+   if(text.trim()){importText(text);return;}}
+  catch{}
+  if(state.projectId!==id)return;
+  entry('');status.textContent='입력칸을 길게 눌러 붙여넣거나 키보드로 붙여넣으세요.';
  };
- const existing=state.manualOverlay||{};
- area.value=existing.raw||'';
- summary(existing);
+ input.onpaste=e=>{if(input.readOnly)return;const text=e.clipboardData?.getData('text/plain');if(text&&Object.keys(parse(text).result).length){e.preventDefault();importText(text);}};
+ apply.onclick=()=>importText(input.value);legacy.onclick=()=>importText(input.value,true);cancel.onclick=close;
+ function syncProject(){if(project===state.projectId)return;project=state.projectId;close();status.textContent='';}
+ syncProject();setInterval(syncProject,500);
 }
-const timer=setInterval(()=>{try{mount();if(mounted)clearInterval(timer);}catch(e){console.error('copy paste mode',e);}},200);
-window.addEventListener('marketing:ready',()=>{try{mount();}catch(e){console.error(e);}});
+const timer=setInterval(()=>{mount();if(mounted)clearInterval(timer);},200);
+window.addEventListener('marketing:ready',mount);
 })();

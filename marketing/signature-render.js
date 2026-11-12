@@ -15,7 +15,7 @@ async function renderSignature(config,content,slot,index,format,load,options={})
   if(!value)return 0;const family=serif?cfg.type.title:cfg.type.body;
   const r=CheonginType.layout(String(value),{width,fontSize:size,minFontSize:min,maxLines:rows,leading:cfg.type.leading,preferPause:serif,measure:(s,n)=>{g.font=`400 ${n}px "${family}"`;return g.measureText(s).width;}});
   g.font=`400 ${r.size}px "${family}"`;g.fillStyle=color;
-  r.lines.forEach((s,i)=>{const baseline=y+i*r.lineHeight,mt=g.measureText(s);g.fillText(s,x,baseline);c.typeLayout.push({kind:serif?'headline':'detail',source:String(value),x:x-(mt.actualBoundingBoxLeft||0),y:baseline-(mt.actualBoundingBoxAscent||r.size*.85),width:(mt.actualBoundingBoxRight||mt.width)+(mt.actualBoundingBoxLeft||0),height:(mt.actualBoundingBoxAscent||r.size*.85)+(mt.actualBoundingBoxDescent||r.size*.2),size:r.size});});
+  r.lines.forEach((s,i)=>{const baseline=y+i*r.lineHeight,mt=g.measureText(s);window.CheonginCoverStyle.drawText(g,s,x,baseline);c.typeLayout.push({kind:serif?'headline':'detail',source:String(value),x:x-(mt.actualBoundingBoxLeft||0),y:baseline-(mt.actualBoundingBoxAscent||r.size*.85),width:(mt.actualBoundingBoxRight||mt.width)+(mt.actualBoundingBoxLeft||0),height:(mt.actualBoundingBoxAscent||r.size*.85)+(mt.actualBoundingBoxDescent||r.size*.2),size:r.size});});
   if(r.truncated)c.dataset.textTruncated='true';return r.lines.length*r.lineHeight;
  }
  async function logo(){if(!cfg.show.logo)return;

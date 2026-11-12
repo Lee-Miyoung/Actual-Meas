@@ -1,7 +1,11 @@
-.simple-copy-card{grid-column:1/-1!important;border-color:#c9cec4!important;background:#fff!important}
-.simple-copy-card>strong{font-size:16px!important;color:#263228}
-.simple-copy-card textarea{width:100%;min-height:180px;box-sizing:border-box;resize:vertical;border:1px solid #cfd4ca;border-radius:8px;background:#fbfbf8;padding:14px;font:400 14px/1.8 "Studio Sans",sans-serif;color:#2d332f}
-.simple-copy-status{margin-top:12px;padding:12px 14px;background:#f2f4ef;border-left:3px solid #52634f}
-.simple-copy-status p{margin:3px 0!important;font-size:12px!important;line-height:1.7!important;color:#596156!important}
-.simple-copy-status b{display:inline-block;min-width:72px;font-weight:600;color:#2f3d31}
-@media(max-width:760px){.simple-copy-card textarea{min-height:150px}}
+.simple-copy-card{grid-column:1/-1!important;background:#fff!important}
+.simple-copy-card [hidden],.posting-pack [hidden]{display:none!important}
+.simple-copy-card>strong{color:#263228}
+.simple-copy-card>.simple-help{margin:6px 0 10px}
+.simple-copy-card .simple-actions{display:flex;flex-wrap:wrap;gap:8px}
+.simple-copy-card textarea{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #cfd4ca;border-radius:7px;background:#fbfbf8;color:#2d332f;font:400 16px/1.55 "Studio Sans",sans-serif;resize:vertical}
+.simple-copy-card .posting-pack{margin-top:12px;padding-top:12px}
+.post-copy-bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.post-copy-bar button,.simple-copy-card button{min-height:42px}
+.simple-copy-card .posting-pack label{margin:8px 0}
+.simple-copy-card .posting-pack>button{font-size:13px}

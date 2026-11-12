@@ -32,10 +32,10 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  function text(value,x,y,w,size,rows=1,weight=400,align='left',alpha=1,family='Studio Sans'){
   if(!value)return 0;
   const layout=CheonginType.layout(String(value),{width:w,fontSize:size,minFontSize:Math.min(size,wide?18:21),maxLines:rows,leading:1.32,measure:(s,n)=>{g.font=`${weight} ${n}px "${family}"`;return g.measureText(s).width;}});
-  g.save();g.font=`${weight} ${layout.size}px "${family}"`;g.fillStyle=`rgba(255,255,255,${alpha})`;g.textBaseline='top';g.shadowColor='rgba(0,0,0,.42)';g.shadowBlur=2;
+  g.save();g.font=`${weight} ${layout.size}px "${family}"`;g.fillStyle=`rgba(255,255,255,${alpha})`;g.textBaseline='top';
   for(const [i,line]of layout.lines.entries()){
    const yy=y+i*layout.lineHeight,mt=g.measureText(line),xx=align==='right'?x+w-mt.width:x;
-   g.fillText(line,xx,yy);
+   window.CheonginCoverStyle.drawText(g,line,xx,yy);
    c.typeLayout.push({field:value===title?'title':value===product?'product':value===detail?'spec':value===location?'location':null,kind:'overlay',source:String(value),x:xx,y:yy,width:mt.width,height:layout.lineHeight,size:layout.size});
   }
   g.restore();if(layout.truncated)c.dataset.textTruncated='true';return layout.lines.length*layout.lineHeight;
@@ -64,14 +64,6 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
   text(page,wide?900:900,pageY,1080-(wide?900:900)-m,pageSize,1,400,'right',.82,'Studio Sans');
   return topY+logoH;
  }
- function bottomGradient(){
-  const h=wide?245:vertical?510:380,start=Math.max(0,H-h);
-  const gradient=g.createLinearGradient(0,start,0,H);
-  gradient.addColorStop(0,'rgba(12,15,12,0)');
-  gradient.addColorStop(.42,'rgba(12,15,12,.03)');
-  gradient.addColorStop(1,'rgba(12,15,12,.10)');
-  g.fillStyle=gradient;g.fillRect(0,start,1080,h);
- }
  try{
   if(slot.role==='comparison'){
    const pair=slot.photoIds.length===1&&ctx.bindings[slot.photoIds[0]]?.role==='pair';
@@ -86,7 +78,6 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
   }else await photo(lead.id,0,0,1080,H);
 
   if(!rule.natural||format==='naverCover'){
-   bottomGradient();
    await topBrand();
 
    const detailY=H-(wide?44:vertical?76:70);
@@ -97,7 +88,6 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
    if(cfg.show.product&&product)text(product,m,productY,wide?760:760,wide?21:26,1,600,'left',.95);
    if(cfg.show.spec&&detail)text(detail,m,detailY,wide?760:760,wide?17:21,1,400,'left',.84);
   }else{
-   bottomGradient();
    await topBrand();
    const detailY=H-70,productY=detailY-42,titleY=productY-88;
    if(location)text(location,m,titleY-32,760,18,1,400,'left',.78,'Studio Sans');

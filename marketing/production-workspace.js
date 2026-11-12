@@ -230,7 +230,12 @@ window.renderProductionWorkspace = renderProductionWorkspace;
 generate = renderProductionWorkspace;
 async function exportProductionPlatform() {
   const button = currentExport; button.disabled = true;
-  const signatureBatch=window.signatureExportRenderer?.(),format=state.format,caption=platformCaption();
+  const signatureBatch=window.signatureExportRenderer?.(),format=state.format;
+  const pack=document.body.classList.contains('simple-marketing-mode')?{...state.thumbnailPosting?.pack}:{};
+  const packField=({carousel:'instagramCaption',reels:'instagramCaption',shorts:'youtubeDescription',youtubeCover:'youtubeDescription'})[format];
+  const caption=pack[packField]?.trim()||platformCaption();
+  const postText=Object.entries(window.CheonginPostCopy?.postLabels||{})
+    .filter(([key])=>pack[key]?.trim()).map(([key,label])=>'['+label+']\n'+pack[key]).join('\n\n');
   try {
     if (!state.photos.length) throw Error('사진을 먼저 불러오세요.');
     const missing = productionSlides().filter(s => s.photo && !ProductionCore.matchPhoto(s.photo, state.photos));
@@ -242,6 +247,7 @@ async function exportProductionPlatform() {
       try { files.push({ name: `${String(i + 1).padStart(2, '0')}-${canvas.width}x${canvas.height}.png`, blob: await canvasBlob(canvas) }); } finally { releaseCanvas(canvas); } await new Promise(resolve=>setTimeout(resolve,0));
     }
     files.push({ name: '캡션.txt', blob: new Blob([caption], { type: 'text/plain;charset=utf-8' }) });
+    if(postText)files.push({name:'게시문구.txt',blob:new Blob([postText],{type:'text/plain;charset=utf-8'})});
     offerPhotoFiles(files);
     download(await storedZip(files), `청인마루_${format}.zip`);
     $('download-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });

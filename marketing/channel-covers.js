@@ -76,11 +76,6 @@
       g.fillStyle = color;
       g.fillRect(x,y,w,h);
     }
-    function wash(x,y,w,h,from,to) {
-      const grad = g.createLinearGradient(x,y,x,y+h);
-      grad.addColorStop(0,from); grad.addColorStop(1,to);
-      rect(x,y,w,h,grad);
-    }
     function photo(p,x,y,w,h,{focusY,zoom=1} = {}) {
       const im = p.image;
       const transform=p.transform||{};
@@ -98,14 +93,14 @@
       const family = serif ? useSerif : useSans;
       const measured = CheonginType.layout(value,{width:w,fontSize:size,minFontSize:Math.max(16,Math.round(size*.66)),maxLines:rows,leading,
         measure:(line,n) => {g.font=value===headline?style.font(n):'400 '+n+'px '+family; return g.measureText(line).width;}});
-      g.shadowColor=color===white?'rgba(0,0,0,.28)':'transparent';g.shadowBlur=color===white?2:0;g.textBaseline='top'; g.fillStyle=color; g.font=value===headline?style.font(measured.size):'400 '+measured.size+'px '+family;
+      g.textBaseline='top'; g.fillStyle=color; g.font=value===headline?style.font(measured.size):'400 '+measured.size+'px '+family;
       measured.lines.forEach((line,i) => {
         const xx = align==='right' ? x+w-measured.widths[i] : x;
         const yy=y+i*measured.lineHeight;
-        g.fillText(line,xx,yy);
+        window.CheonginCoverStyle.drawText(g,line,xx,yy);
         canvas.typeLayout.push({field:value===headline?'title':value===info.product?'product':value===info.spec?'spec':value===where?'location':null,source:value,x:xx,y:yy,width:measured.widths[i],height:measured.lineHeight,size:measured.size});
       });
-      g.shadowBlur=0;
+      
       if (measured.truncated) canvas.dataset.textTruncated='true';
       return measured.lines.length*measured.lineHeight;
     }
@@ -125,7 +120,6 @@
 
     if (channel==='carousel') {
       photo(main,0,0,W,1150);
-      wash(0,0,W,610,'rgba(22,26,22,.12)','rgba(22,26,22,0)');
       brand(60,42,182);
       
       fineLine(60,148,960,'rgba(255,255,247,.52)');
@@ -137,11 +131,8 @@
       type(info.spec,60,1284,960,26,{color:muted});
     } else if (channel==='reels') {
       photo(main,0,0,W,H);
-      wash(0,0,W,495,'rgba(20,25,20,.12)','rgba(20,25,20,0)');
       brand(70,180,170);
       // Keep the lower navigation and the right-hand action rail clear.
-      wash(0,820,W,575,'rgba(20,25,20,0)','rgba(20,25,20,.12)');
-      wash(0,1395,W,525,'rgba(20,25,20,.12)','rgba(20,25,20,.04)');
       if(pair)pairStrip(560,275);
       type(where||materialLabel,70,1010,770,31,{color:white});
       fineLine(70,1074,80,white);
@@ -152,7 +143,6 @@
       photo(pair?photos.before:main,0,0,W,790,{focusY:(pair?photos.before:main).focusY ?? .4});
       const lower=pair ? photos.after : photos.detail || main;
       photo(lower,0,1075,W,H-1075,pair||photos.detail?{}:{zoom:1.65,focusY:kind==='wall' ? .38 : .78});
-      wash(0,0,W,420,'rgba(20,25,20,.12)','rgba(20,25,20,0)');
       brand(68,180,168);
       if (pair) {tag('before',68,699);tag('after',68,1113);}
       type(where||materialLabel,68,822,790,27,{color:muted});
@@ -160,7 +150,6 @@
     } else if (channel==='youtubeCover') {
       const side=548;
       photo(pair?photos.before:main,0,0,side,H);
-      rect(0,0,side,H,'rgba(26,33,27,.12)');
       photo(pair?photos.after:main,side+4,0,W-side-4,H,{focusY:(pair?photos.after:main).focusY ?? .46});
       rect(side,0,4,H,paper);
       brand(40,36,144);
@@ -171,7 +160,6 @@
     } else if (channel==='naverCover') {
       const top=715;
       photo(main,0,0,W,top,{focusY:main.focusY ?? .42});
-      wash(0,0,W,265,'rgba(25,29,24,.12)','rgba(25,29,24,0)');
       brand(60,47,165);
       rect(0,top,W,H-top,paper);
       const left=61, right=836;
@@ -183,7 +171,6 @@
       type(details,right,top+355,305,27,{color:muted});
     } else if (channel==='kakao') {
       photo(main,0,0,W,458,{focusY:main.focusY ?? .44});
-      wash(0,0,W,215,'rgba(20,26,21,.12)','rgba(20,26,21,0)');
       brand(37,32,133);
       rect(0,458,W,272,paper);
       type(where||materialLabel,38,486,724,24,{color:muted});

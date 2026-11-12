@@ -11,3 +11,12 @@
 .keyboard-photo-edit canvas{margin:0!important;flex:none!important}
 .keyboard-photo-edit .direct-text-input{resize:none!important}
 .keyboard-edit-done{position:absolute!important;top:6px!important;right:10px!important;z-index:20!important;min-height:32px!important;padding:4px 18px!important;background:#294a39!important;color:#fff!important;border:0!important;border-radius:7px!important;font-size:15px!important}
+
+/* Keep Safari's document scroller out of the tablet workspace. Each pane owns its scroll. */
+@media (min-width:700px) and (max-width:1366px){
+  body.simple-marketing-mode{position:fixed;inset:0;margin:0;height:auto!important;overflow:hidden!important}
+  body.simple-marketing-mode main{height:100%!important;box-sizing:border-box;overflow:hidden!important;padding:12px 14px!important}
+  body.simple-marketing-mode #studio,body.simple-marketing-mode #studio .production-desk{height:100%!important;min-height:0!important}
+  body.simple-marketing-mode #studio .simple-marketing-panel{box-sizing:border-box}
+}
+.keyboard-photo-edit canvas{display:block;max-height:none!important;max-width:none!important}

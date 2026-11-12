@@ -28,23 +28,42 @@
     g.restore();
     if (choice?.pairConcept === 'preview') canvas.typeLayout.push({field:role==='before'?'firstScene':'secondScene',source:text,x,y,width,height,size});
   }
-  function luminance(r,g,b) {
-    const linear = n => {const v=n/255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;};
-    return .2126*linear(r)+.7152*linear(g)+.0722*linear(b);
-  }
-  function needsBacking(g, canvas, bounds, ink) {
-    const scale=canvas.width/bounds.units;
-    const sample=document.createElement('canvas');sample.width=12;sample.height=5;
-    const ctx=sample.getContext('2d',{willReadFrequently:true});
-    ctx.drawImage(canvas,bounds.x*scale,bounds.y*scale,bounds.width*scale,bounds.height*scale,0,0,12,5);
-    const pixels=ctx.getImageData(0,0,12,5).data;
-    let weak=0;
-    for(let i=0;i<pixels.length;i+=4){
-      const bg=luminance(pixels[i],pixels[i+1],pixels[i+2]);
-      if((Math.max(ink,bg)+.05)/(Math.min(ink,bg)+.05)<3)weak++;
+  let sample;
+  function brightBehind(g,x,y,width,height) {
+    if (!(width>0 && height>0)) return false;
+    if (!sample) {
+      const probe=document.createElement('canvas');
+      probe.width=8; probe.height=3;
+      sample=probe.getContext('2d',{willReadFrequently:true});
     }
-    sample.width=sample.height=1;
-    return weak>=12;
+    const t=g.getTransform();
+    sample.clearRect(0,0,8,3);
+    sample.drawImage(g.canvas,x*t.a+t.e,y*t.d+t.f,width*t.a,height*t.d,0,0,8,3);
+    const pixels=sample.getImageData(0,0,8,3).data;
+    let bright=0;
+    for(let i=0;i<pixels.length;i+=4){
+      if(pixels[i+3]>160 && .2126*pixels[i]+.7152*pixels[i+1]+.0722*pixels[i+2]>=208)bright++;
+    }
+    return bright>=10;
+  }
+  function softShadow(g) {
+    const scale=g.getTransform().a;
+    g.shadowColor='rgba(24,22,18,0.20)';
+    g.shadowBlur=1.8*scale;g.shadowOffsetX=0;g.shadowOffsetY=.8*scale;
+  }
+  function lightInk(color) {
+    if(typeof color!=='string')return false;
+    const rgb=color.startsWith('#') ? (color.length===4?color.slice(1).split('').map(v=>parseInt(v+v,16)):
+      [1,3,5].map(i=>parseInt(color.slice(i,i+2),16))) : color.match(/[\d.]+/g)?.slice(0,3).map(Number);
+    return rgb && Math.min(...rgb)>=175;
+  }
+  function drawText(g,line,x,y) {
+    if(!lightInk(g.fillStyle)){g.fillText(line,x,y);return;}
+    const m=g.measureText(line),top=y-m.actualBoundingBoxAscent;
+    const height=m.actualBoundingBoxAscent+m.actualBoundingBoxDescent;
+    g.save();
+    if(brightBehind(g,x,top,m.width,height))softShadow(g);
+    g.fillText(line,x,y);g.restore();
   }
   async function logo(tone) {
     const key=Object.hasOwn(colors,tone)?tone:'white';
@@ -53,14 +72,10 @@
   }
   function drawLogo(g,canvas,mark,units,x,y) {
     const width=units*.15,height=width*mark.image.height/mark.image.width;
-    const box={units,x,y,width,height};const hex=colors[mark.key][1];
-    const ink=luminance(...[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)));
-    g.save();g.globalAlpha=1;g.shadowColor='transparent';g.shadowBlur=0;g.shadowOffsetY=0;
-    if(needsBacking(g,canvas,box,ink)){
-      const pad=units*.008;g.fillStyle=ink>.179?'rgba(24,29,25,.85)':'rgba(250,248,241,.92)';
-      g.beginPath();g.roundRect(x-pad,y-pad,width+2*pad,height+2*pad,pad);g.fill();
-    }
+    const box={units,x,y,width,height};
+    g.save();g.globalAlpha=1;
+    if(lightInk(colors[mark.key][1]) && brightBehind(g,x,y,width,height))softShadow(g);
     g.drawImage(mark.image,x,y,width,height);g.restore();canvas.logoBox=box;return box;
   }
-  window.CheonginCoverStyle={colors,font,loadTitle,pairLabel,drawLabel,logo,drawLogo};
+  window.CheonginCoverStyle={colors,font,loadTitle,pairLabel,drawLabel,logo,drawLogo,drawText};
 })();
