@@ -64,7 +64,7 @@
     const details = {floor:'바닥의 결',wall:'벽면 질감',both:'소재 디테일'}[kind];
     const allText = [headline, where, info.product, materialLabel, details, '시공 전후 현장 사진으로 상담하기'].join(' ');
     await Promise.all(['Studio Serif','Studio Sans'].map(f => document.fonts.load('400 40px "'+f+'"', allText)));
-    const logo = showLogo ? await loadImage('brand/logo-ivory.svg') : null;
+    const logo = showLogo ? await loadImage('brand/logo-white.svg') : null;
     const useSerif = '"Studio Serif", "Noto Serif CJK KR", serif';
     const useSans = '"Studio Sans", "Noto Sans CJK KR", sans-serif';
     Object.assign(canvas.dataset,{renderer:'cheongin-channel-cover-v1',platform:channel,exportWidth:W,exportHeight:H,material:kind,comparison:String(pair && ['shorts','youtubeCover'].includes(channel)),slide:'0'});
@@ -106,12 +106,13 @@
       return measured.lines.length*measured.lineHeight;
     }
     function brand(x,y,w) {
-      if (logo) g.drawImage(logo,x,y,w,w*504/1394);
+      if (logo) {g.save();g.globalAlpha=.96;g.shadowColor='rgba(0,0,0,.38)';g.shadowBlur=5;g.shadowOffsetY=1;g.drawImage(logo,x,y,w,w*504/1394);g.restore();}
     }
     function tag(label,x,y) {
-      const w=label.length*24+28;
-      rect(x,y,w,45,'rgba(30,34,29,.82)');
-      type(label,x+13,y+6,w-23,24,{color:white});
+      const w=124,h=44;
+      g.save();g.fillStyle='rgba(29,39,32,.76)';g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=1;
+      g.beginPath();g.roundRect(x,y,w,h,10);g.fill();g.stroke();
+      g.font='500 24px '+useSans;g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(label,x+w/2,y+h/2);g.restore();
     }
     function fineLine(x,y,w,color) {rect(x,y,w,2,color);}
     const main = photos.hero;
@@ -120,8 +121,8 @@
       photo(main,0,0,W,1150);
       wash(0,0,W,610,'rgba(22,26,22,.74)','rgba(22,26,22,0)');
       brand(60,42,182);
-      type(info.housing||materialLabel,670,57,350,27,{color:white,align:'right'});
-      fineLine(60,122,960,'rgba(255,255,247,.52)');
+      
+      fineLine(60,148,960,'rgba(255,255,247,.52)');
       type(headline,58,170,920,78,{rows:2,serif:true,color:white});
       rect(0,1150,W,H-1150,paper);
       type(where||materialLabel,60,1184,960,27,{color:muted});
@@ -154,7 +155,7 @@
       photo(pair?photos.after:main,side+4,0,W-side-4,H,{focusY:(pair?photos.after:main).focusY ?? .46});
       rect(side,0,4,H,paper);
       brand(40,36,144);
-      type(info.housing||materialLabel,40,186,side-72,25,{color:'#eddfbd'});
+      type(materialLabel,40,186,side-72,25,{color:'#eddfbd'});
       const used=type(headline,39,244,side-76,72,{rows:3,serif:true,color:white,leading:1.20});
       type(info.product,40,244+used+30,side-72,25,{rows:2,color:white});
       if (pair) {tag('시공 전',39,632);tag('시공 후',side+34,632);}
@@ -182,6 +183,17 @@
       rect(0,730,W,70,'#354239');
       type(kind==='wall'?'상담 시 시공할 벽면 사진을 보내주세요':kind==='floor'?'상담 시 기존 바닥 사진을 보내주세요':'상담 시 벽과 바닥 사진을 보내주세요',38,750,724,23,{color:white});
     }
+    const badgeLines=[info.housing,info.areaPyeong?info.areaPyeong+'평형':''].filter(Boolean);
+    if(badgeLines.length){
+      const unit=W/1080, margin=channel==='reels'||channel==='shorts'?70*unit:52*unit;
+      const y=channel==='reels'||channel==='shorts'?180:channel==='kakao'?32:42;
+      g.save();g.font='500 '+25*unit+'px '+useSans;
+      const bw=Math.max(118*unit,...badgeLines.map(t=>g.measureText(t).width+40*unit)),bh=(badgeLines.length===2?86:52)*unit,bx=W-margin-bw;
+      g.fillStyle='rgba(35,40,35,.42)';g.strokeStyle='rgba(255,255,255,.6)';g.lineWidth=unit;g.beginPath();g.roundRect(bx,y,bw,bh,12*unit);g.fill();g.stroke();
+      g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';
+      badgeLines.forEach((t,i)=>{g.font=(i?'400 ':'500 ')+(i?21:25)*unit+'px '+useSans;g.fillText(t,bx+bw/2,y+(badgeLines.length===2?27+i*33:27)*unit);});
+      g.restore();
+    }
     canvas.previewMeta={title:headline,product:info.product,site:info.location};
     return canvas;
   }
@@ -193,7 +205,7 @@
     const main = get(choice.photoId) || best;
     if (!main) throw Error('표지 사진을 먼저 선택하세요.');
     const info = getProjectInfo(main.id);
-    Object.assign(info,{location:choice.siteText?.trim() || info.location,title:choice.titles?.[channel] || info.title, housing:choice.housing || '', material:choice.material});
+    Object.assign(info,{location:choice.siteText?.trim() || info.location,title:choice.titles?.[channel] || info.title, housing:choice.housing || '', areaPyeong:choice.areaPyeong || '', material:choice.material});
     const src = {hero:main};
     if (['shorts','youtubeCover'].includes(channel) && get(choice.beforeId) && get(choice.afterId) && choice.beforeId!==choice.afterId) {
       src.before=get(choice.beforeId); src.after=get(choice.afterId);
