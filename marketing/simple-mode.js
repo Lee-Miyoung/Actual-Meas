@@ -71,7 +71,7 @@ function init(){
 
   const top=el('div',undefined,'simple-marketing-heading');
   const titleWrap=el('div');
-  titleWrap.append(el('h1','청인마루 현장 콘텐츠'),el('p','사진을 넣고 제품만 고르면 같은 형식으로 바로 만듭니다.'));
+  titleWrap.append(el('h1','청인마루 현장 콘텐츠'),el('p','보정 완료 사진과 문구를 넣으면 같은 형식으로 바로 출력됩니다.'));
   const advanced=el('button','전체 기능 보기','simple-advanced-toggle');
   advanced.type='button';
   advanced.onclick=()=>{
@@ -133,7 +133,7 @@ function init(){
   productDetails.append(productBody);
 
   const outputCard=el('section',undefined,'simple-card simple-output-card');
-  outputCard.append(el('strong','5. 출력'));
+  outputCard.append(el('strong','6. 출력'));
   const format=el('select'); format.id='simple-format';
   format.replaceChildren(
     option('carousel','인스타 피드 4:5'),
