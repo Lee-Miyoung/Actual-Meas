@@ -56,9 +56,9 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  }
  async function topBrand(){
   if(!cfg.show.logo)return 0;
-  const mark=await designMarks.light;if(!mark)return 0;
-  const logoW=wide?158:176,logoH=logoW*mark.height/mark.width,topY=wide?30:48,pageSize=wide?17:19;
-  g.save();g.globalAlpha=.94;g.shadowColor='rgba(0,0,0,.34)';g.shadowBlur=6;g.drawImage(mark,m,topY,logoW,logoH);g.restore();
+  const style=window.CheonginCoverStyle,mark=await style.logo(ctx.logoTone);
+  const topY=wide?30:48,pageSize=wide?17:19;
+  const {height:logoH}=style.drawLogo(g,c,mark,1080,m,topY);
   const page=String(index+1).padStart(2,'0')+' / '+String(total).padStart(2,'0');
   const pageY=topY+Math.max(0,(logoH-pageSize)/2)-1;
   text(page,wide?900:900,pageY,1080-(wide?900:900)-m,pageSize,1,400,'right',.82,'Studio Sans');

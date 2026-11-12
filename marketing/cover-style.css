@@ -1,0 +1,5 @@
+@font-face{font-family:"Hahmlet Title";src:url("fonts/Hahmlet-Title.woff") format("woff");font-weight:550;font-display:swap;}
+.cover-logo-colors{position:absolute;z-index:12;display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:6px;border:1px solid #d9d6cb;border-radius:10px;background:#faf8f2;box-shadow:0 4px 16px #0002}
+.cover-logo-colors button{display:flex;align-items:center;gap:4px;min-height:40px;padding:3px 6px;border:1px solid transparent;border-radius:5px;background:transparent;color:#292b27;font:13px "Studio Sans",sans-serif;cursor:pointer}
+.cover-logo-colors button::before{content:"";width:16px;height:16px;border:1px solid #0003;border-radius:50%;background:var(--swatch)}
+.cover-logo-colors button[aria-pressed=true]{border-color:#687568}

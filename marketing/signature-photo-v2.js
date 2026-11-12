@@ -30,7 +30,13 @@ async function renderPhotoSignatureV2(config,content,slot,index,format,load,opti
   }finally{releaseCanvas(im);}
  }
  function sample(y,hh){const s=node('canvas');s.width=s.height=32;try{s.getContext('2d',{willReadFrequently:true}).drawImage(c,0,Math.max(0,y*scale),c.width,Math.max(1,Math.min(h-y,hh)*scale),0,0,32,32);const data=s.getContext('2d').getImageData(0,0,32,32).data;let sum=0,sum2=0;for(let i=0;i<data.length;i+=4){const v=data[i]*.2126+data[i+1]*.7152+data[i+2]*.0722;sum+=v;sum2+=v*v;}const mean=sum/1024;return {mean,sd:Math.sqrt(Math.max(0,sum2/1024-mean*mean))};}finally{releaseCanvas(s);}}
- async function logo(onPhoto=true){if(!cfg.show.logo)return;const light=onPhoto,mark=await designMarks[light?'light':'dark'];if(!mark)return;const hh=t.logoSize*mark.height/mark.width;if(light){g.save();g.beginPath();g.rect(0,0,m*2+t.logoSize+70,safeTop+hh+40);g.clip();gradient(0,safeTop+hh+40,.24,true);g.restore();}g.globalAlpha=t.logoOpacity;g.drawImage(mark,m,safeTop,t.logoSize,hh);g.globalAlpha=1;c.typeLayout.push({kind:'logo',x:m,y:safeTop,width:t.logoSize,height:hh});}
+ async function logo(onPhoto=true){if(!cfg.show.logo)return;
+   if(content.logoTone){
+     const style=window.CheonginCoverStyle;
+     const box=style.drawLogo(g,c,await style.logo(content.logoTone),1080,m,safeTop);
+     c.typeLayout.push({kind:'logo',...box});return;
+   }
+   const light=onPhoto,mark=await designMarks[light?'light':'dark'];if(!mark)return;const hh=t.logoSize*mark.height/mark.width;if(light){g.save();g.beginPath();g.rect(0,0,m*2+t.logoSize+70,safeTop+hh+40);g.clip();gradient(0,safeTop+hh+40,.24,true);g.restore();}g.globalAlpha=t.logoOpacity;g.drawImage(mark,m,safeTop,t.logoSize,hh);g.globalAlpha=1;c.typeLayout.push({kind:'logo',x:m,y:safeTop,width:t.logoSize,height:hh});}
  const product=content.photoProducts[slot.photoIds.at(-1)],binding=content.bindings[slot.photoIds[0]]||{},region=cfg.show.site?[content.region,content.space].filter(Boolean).join(' · ')||content.site:'';
  let title=slot.title||'',detail=slot.role==='detail'&&binding.note&&binding.note!==title?binding.note:'';
  if(['space','view'].includes(slot.role)&&/^(완성 공간|현장 모습|다른 시점의 현장|현장 사진)$/.test(title)&&!binding.note)title='';

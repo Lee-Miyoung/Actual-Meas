@@ -2,6 +2,7 @@
 (() => {
   'use strict';
 
+  const style=window.CheonginCoverStyle;
   const formats = {
     carousel: '인스타 피드', reels: '인스타 릴스', shorts: '유튜브 쇼츠',
     youtubeCover: '유튜브 썸네일', naverCover: '네이버 블로그', kakao: '카카오채널'
@@ -19,7 +20,8 @@
     return wall ? 'wall' : 'floor';
   }
 
-  function suggestedTitle(channel, info, kind, pair) {
+  function suggestedTitle(channel, info, kind, pair, concept=info.pairConcept) {
+    if(pair && concept==='preview')return {floor:'한 공간에서 만난 두 가지 결',wall:'가까이서 본 벽의 표정',both:'벽과 바닥이 만나는 자리'}[kind];
     const name = categories[kind];
     const question = {floor:'우리 집에 깔면 어떤 느낌일까요?', wall:'우리 집 벽에도 어울릴까요?', both:'벽과 바닥을 함께 고른다면?'}[kind];
     switch (channel) {
@@ -64,10 +66,11 @@
     const details = {floor:'바닥의 결',wall:'벽면 질감',both:'소재 디테일'}[kind];
     const allText = [headline, where, info.product, materialLabel, details, '시공 전후 현장 사진으로 상담하기'].join(' ');
     await Promise.all(['Studio Serif','Studio Sans'].map(f => document.fonts.load('400 40px "'+f+'"', allText)));
-    const logo = showLogo ? await loadImage('brand/logo-white.svg') : null;
+    await style.loadTitle(headline);
+    const logo = showLogo ? await style.logo(info.logoTone) : null;
     const useSerif = '"Studio Serif", "Noto Serif CJK KR", serif';
     const useSans = '"Studio Sans", "Noto Sans CJK KR", sans-serif';
-    Object.assign(canvas.dataset,{renderer:'cheongin-channel-cover-v1',platform:channel,exportWidth:W,exportHeight:H,material:kind,comparison:String(pair && ['shorts','youtubeCover'].includes(channel)),slide:'0'});
+    Object.assign(canvas.dataset,{renderer:'cheongin-channel-cover-v1',platform:channel,exportWidth:W,exportHeight:H,material:kind,pairConcept:info.pairConcept||'compare',comparison:String(pair&&info.pairConcept!=='preview'),slide:'0'});
 
     function rect(x,y,w,h,color) {
       g.fillStyle = color;
@@ -94,8 +97,8 @@
       if (!value) return 0;
       const family = serif ? useSerif : useSans;
       const measured = CheonginType.layout(value,{width:w,fontSize:size,minFontSize:Math.max(16,Math.round(size*.66)),maxLines:rows,leading,
-        measure:(line,n) => {g.font='400 '+n+'px '+family; return g.measureText(line).width;}});
-      g.shadowColor=color===white?'rgba(0,0,0,.28)':'transparent';g.shadowBlur=color===white?2:0;g.textBaseline='top'; g.fillStyle=color; g.font='400 '+measured.size+'px '+family;
+        measure:(line,n) => {g.font=value===headline?style.font(n):'400 '+n+'px '+family; return g.measureText(line).width;}});
+      g.shadowColor=color===white?'rgba(0,0,0,.28)':'transparent';g.shadowBlur=color===white?2:0;g.textBaseline='top'; g.fillStyle=color; g.font=value===headline?style.font(measured.size):'400 '+measured.size+'px '+family;
       measured.lines.forEach((line,i) => {
         const xx = align==='right' ? x+w-measured.widths[i] : x;
         const yy=y+i*measured.lineHeight;
@@ -107,13 +110,15 @@
       return measured.lines.length*measured.lineHeight;
     }
     function brand(x,y,w) {
-      if (logo) {g.save();g.globalAlpha=.96;g.shadowColor='rgba(0,0,0,.38)';g.shadowBlur=5;g.shadowOffsetY=1;g.drawImage(logo,x,y,w,w*504/1394);g.restore();}
+      if (logo) style.drawLogo(g,canvas,logo,W,x,y);
     }
-    function tag(label,x,y) {
-      const w=124,h=44;
-      g.save();g.fillStyle='rgba(29,39,32,.76)';g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=1;
-      g.beginPath();g.roundRect(x,y,w,h,10);g.fill();g.stroke();
-      g.font='500 24px '+useSans;g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(label,x+w/2,y+h/2);g.restore();
+    function tag(role,x,y) {style.drawLabel(g,canvas,info,role,x,y);}
+    function pairStrip(y,height) {
+      const gap=12, margin=60, width=(W-2*margin-gap)/2;
+      for(const [index,role] of ['before','after'].entries()){
+        const x=margin+index*(width+gap);
+        rect(x-2,y-2,width+4,height+4,paper);photo(photos[role],x,y,width,height);tag(role,x+12,y+12);
+      }
     }
     function fineLine(x,y,w,color) {rect(x,y,w,2,color);}
     const main = photos.hero;
@@ -125,6 +130,7 @@
       
       fineLine(60,148,960,'rgba(255,255,247,.52)');
       type(headline,58,170,920,78,{rows:2,serif:true,color:white});
+      if(pair)pairStrip(870,240);
       rect(0,1150,W,H-1150,paper);
       type(where||materialLabel,60,1184,960,27,{color:muted});
       type(info.product||materialLabel,58,1231,964,36,{rows:1,serif:true,leading:1.12});
@@ -136,6 +142,7 @@
       // Keep the lower navigation and the right-hand action rail clear.
       wash(0,820,W,575,'rgba(20,25,20,0)','rgba(20,25,20,.12)');
       wash(0,1395,W,525,'rgba(20,25,20,.12)','rgba(20,25,20,.04)');
+      if(pair)pairStrip(560,275);
       type(where||materialLabel,70,1010,770,31,{color:white});
       fineLine(70,1074,80,white);
       const used=type(headline,67,1110,795,94,{rows:2,serif:true,color:white});
@@ -147,7 +154,7 @@
       photo(lower,0,1075,W,H-1075,pair||photos.detail?{}:{zoom:1.65,focusY:kind==='wall' ? .38 : .78});
       wash(0,0,W,420,'rgba(20,25,20,.12)','rgba(20,25,20,0)');
       brand(68,180,168);
-      if (pair) {tag('시공 전',68,699);tag('시공 후',68,1113);}
+      if (pair) {tag('before',68,699);tag('after',68,1113);}
       type(where||materialLabel,68,822,790,27,{color:muted});
       type(headline,65,878,810,67,{rows:2,serif:true});
     } else if (channel==='youtubeCover') {
@@ -160,7 +167,7 @@
       type(materialLabel,40,186,side-72,25,{color:'#eddfbd'});
       const used=type(headline,39,244,side-76,72,{rows:3,serif:true,color:white,leading:1.20});
       const productHeight=type(info.product,40,244+used+30,side-72,25,{rows:2,color:white});type(info.spec,40,244+used+productHeight+44,side-72,22,{color:white});
-      if (pair) {tag('시공 전',39,632);tag('시공 후',side+34,632);}
+      if (pair) {tag('before',39,632);tag('after',side+34,632);}
     } else if (channel==='naverCover') {
       const top=715;
       photo(main,0,0,W,top,{focusY:main.focusY ?? .42});
@@ -207,9 +214,9 @@
     const main = get(choice.photoId) || best;
     if (!main) throw Error('표지 사진을 먼저 선택하세요.');
     const info = getProjectInfo(main.id);
-    Object.assign(info,{location:choice.siteText?.trim() || info.location,title:choice.titles?.[channel] || info.title, housing:choice.housing || '', areaPyeong:choice.areaPyeong || '', material:choice.material});
+    Object.assign(info,{location:choice.siteText?.trim() || info.location,title:choice.titles?.[channel] || info.title, housing:choice.housing || '', areaPyeong:choice.areaPyeong || '', material:choice.material,logoTone:choice.logoTone,pairConcept:choice.pairConcept,firstScene:choice.firstScene,secondScene:choice.secondScene});
     const src = {hero:main};
-    if (['shorts','youtubeCover'].includes(channel) && get(choice.beforeId) && get(choice.afterId) && choice.beforeId!==choice.afterId) {
+    if (['carousel','reels','shorts','youtubeCover'].includes(channel) && get(choice.beforeId) && get(choice.afterId) && choice.beforeId!==choice.afterId) {
       src.before=get(choice.beforeId); src.after=get(choice.afterId);
     }
     if ((channel==='naverCover'||(channel==='shorts'&&!src.before)) && get(choice.detailId)) src.detail=get(choice.detailId);

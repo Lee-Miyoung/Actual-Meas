@@ -18,7 +18,13 @@ async function renderSignature(config,content,slot,index,format,load,options={})
   r.lines.forEach((s,i)=>{const baseline=y+i*r.lineHeight,mt=g.measureText(s);g.fillText(s,x,baseline);c.typeLayout.push({kind:serif?'headline':'detail',source:String(value),x:x-(mt.actualBoundingBoxLeft||0),y:baseline-(mt.actualBoundingBoxAscent||r.size*.85),width:(mt.actualBoundingBoxRight||mt.width)+(mt.actualBoundingBoxLeft||0),height:(mt.actualBoundingBoxAscent||r.size*.85)+(mt.actualBoundingBoxDescent||r.size*.2),size:r.size});});
   if(r.truncated)c.dataset.textTruncated='true';return r.lines.length*r.lineHeight;
  }
- async function logo(){if(!cfg.show.logo)return;const lightSurface=[1,3,5].map(i=>parseInt(paper.slice(i,i+2),16)).reduce((a,v)=>a+v,0)>384,im=await designMarks[lightSurface?'dark':'light'];if(im){const hh=120*im.height/im.width;g.drawImage(im,m,top-24,120,hh);c.typeLayout.push({kind:'logo',x:m,y:top-24,width:120,height:hh});}}
+ async function logo(){if(!cfg.show.logo)return;
+   if(content.logoTone){
+     const style=window.CheonginCoverStyle;
+     const box=style.drawLogo(g,c,await style.logo(content.logoTone),1080,m,top-24);
+     c.typeLayout.push({kind:'logo',...box});return;
+   }
+   const lightSurface=[1,3,5].map(i=>parseInt(paper.slice(i,i+2),16)).reduce((a,v)=>a+v,0)>384,im=await designMarks[lightSurface?'dark':'light'];if(im){const hh=120*im.height/im.width;g.drawImage(im,m,top-24,120,hh);c.typeLayout.push({kind:'logo',x:m,y:top-24,width:120,height:hh});}}
  function meta(label,value,x,y,width,rows=3){if(!value)return 0;text(label,x,y,width,24,1,false,24,labelInk);const used=text(value,x,y+44,width,cfg.type.bodySize,rows,false,cfg.type.minBody);return 44+used+28;}
  async function photo(id,x,y,w,hh,part=null,label=''){
   const im=await load(id,Math.min(1800,options.maxEdge||1800));

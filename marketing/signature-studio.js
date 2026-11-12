@@ -12,7 +12,7 @@ function photoProduct(id){const key=state.signaturePhotos?.[id]?.productKey;if(k
 function context(){
  const photos=state.photos.map(p=>({id:p.id,name:p.name,width:p.sourceWidth||1200,height:p.sourceHeight||900,score:Number(p.analysis?.score)||0,duplicate:!!p.analysis?.duplicateOf})),bindings=Core.copy(state.signaturePhotos||{}),photoProducts={},unique=new Map(),areas={};
  for(const p of photos){const product=photoProduct(p.id);if(product){photoProducts[p.id]=product;const key=[product.id,product.brand,product.model,product.color,product.size].join('|');product.renderKey=key;unique.set(key,product);if(bindings[p.id]?.area)areas[key]=[areas[key],bindings[p.id].area].filter(Boolean).join(' · ');}}
- return {...Core.publicSite(state),structure:String(state.productStructure||''),manualOverlay:Core.copy(state.manualOverlay||{}),slideCount:Number(state.slideCount||0),photos,bindings,photoProducts,products:[...unique.values()],areas};
+ return {...Core.publicSite(state),logoTone:state.thumbnailPosting?.logoTone||'white',structure:String(state.productStructure||''),manualOverlay:Core.copy(state.manualOverlay||{}),slideCount:Number(state.slideCount||0),photos,bindings,photoProducts,products:[...unique.values()],areas};
 }
 function effectiveSequence(){const custom=brandSettings().titles.split(/\r?\n/);return (state.signatureSequence||[]).map((s,i)=>({...s,title:custom[i]||s.title}));}
 function buildSequence(preserve=true){
