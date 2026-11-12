@@ -20,7 +20,7 @@ async function renderedPhoto(p,max=2200){
 }
 async function drawThumb(after,before,exterior,site,work){
  if(!after)throw Error('대표 시공 후 사진을 선택하세요.');
- await Promise.all([document.fonts.load('400 72px "Studio Serif"',site+work),document.fonts.load('400 24px "Studio Sans"','시공 전 시공 후 외관 ㅊㅇㅁㄹ')]);
+ await Promise.all([document.fonts.load('400 72px "Studio Serif"',site+work),document.fonts.load('400 24px "Studio Sans"','시공 전 시공 후 외관 청인마루')]);
  const c=document.createElement('canvas');c.width=1080;c.height=1920;
  const g=c.getContext('2d');g.fillStyle='#eeeae1';g.fillRect(0,0,c.width,c.height);
  const gap=8,hasSide=!!(before||exterior),leftW=hasSide?330:0,rightX=hasSide?leftW+gap:0,rightW=1080-rightX;
@@ -45,18 +45,16 @@ async function drawThumb(after,before,exterior,site,work){
   gradient.addColorStop(1,'rgba(15,15,13,.66)');
   g.fillStyle=gradient;g.fillRect(rightX,1030,rightW,610);
 
+  function label(text,x,y){g.save();g.font='400 21px "Studio Sans"';g.fillStyle='rgba(255,255,255,.9)';g.shadowColor='rgba(0,0,0,.5)';g.shadowBlur=5;g.fillText(text,x,y);g.restore();}
+  label('시공 후',rightX+rightW-112,52);
+  if(exterior)label('외관',24,118);
+  if(before)label('시공 전',24,exterior?952:118);
+
   try{
    const mark=await loadImage('brand/watermark-white.svg');
-   const mw=Math.min(400,rightW*.58),mh=mw*mark.height/mark.width;
-   g.save();g.globalAlpha=.085;g.drawImage(mark,rightX+(rightW-mw)/2,780-mh/2,mw,mh);g.restore();mark.src='';
+   const mw=176,mh=mw*mark.height/mark.width;
+   g.save();g.globalAlpha=.94;g.shadowColor='rgba(0,0,0,.34)';g.shadowBlur=6;g.drawImage(mark,40,40,mw,mh);g.restore();mark.src='';
   }catch(_){}
-
-  function label(text,x,y){g.save();g.font='400 21px "Studio Sans"';g.fillStyle='rgba(255,255,255,.9)';g.shadowColor='rgba(0,0,0,.5)';g.shadowBlur=5;g.fillText(text,x,y);g.restore();}
-  label('시공 후',rightX+28,52);
-  if(exterior)label('외관',24,52);
-  if(before)label('시공 전',24,exterior?952:52);
-
-  g.save();g.font='400 24px "Studio Serif"';g.fillStyle='rgba(255,255,255,.82)';g.textAlign='right';g.shadowColor='rgba(0,0,0,.38)';g.shadowBlur=5;g.fillText('ㅊㅇㅁㄹ',1020,355);g.restore();
 
   const tx=rightX+Math.max(50,Math.round(rightW*.08)),tw=rightW-Math.max(100,Math.round(rightW*.16));
   g.fillStyle='rgba(255,255,255,.72)';g.fillRect(tx,1190,62,2);
@@ -77,8 +75,8 @@ function mount(){
  const grid=document.querySelector('.simple-input-grid');
  if(!grid||!state?.photos)return;
  mounted=true;
- const card=el('details',undefined,'simple-thumbnail-card');card.open=false;
- const sum=el('summary'),sumTitle=el('span','썸네일 · 단독주택/전후형'),sumNote=el('small','외관 + 시공 전 + 시공 후');
+ const card=el('details',undefined,'simple-thumbnail-card');card.open=true;
+ const sum=el('summary'),sumTitle=el('span','4. 썸네일 만들기'),sumNote=el('small','외관 + 시공 전 + 시공 후');
  sum.append(sumTitle,sumNote);card.append(sum);
  const body=el('div',undefined,'simple-thumbnail-body');
  const selects=el('div',undefined,'simple-thumbnail-selects');
@@ -90,7 +88,8 @@ function mount(){
  const titles=el('div',undefined,'simple-two');titles.append(siteL,workL);
  const actions=el('div',undefined,'simple-actions'),preview=el('button','썸네일 미리보기'),save=el('button','썸네일 PNG 저장','primary');preview.type=save.type='button';actions.append(preview,save);
  const view=el('div',undefined,'simple-thumbnail-preview');view.append(el('p','사진을 선택하면 이곳에 썸네일이 표시됩니다.','simple-help'));
- body.append(selects,titles,actions,el('p','릴스 세로 표지 기준. 중요한 제목은 가운데 안전 영역에 두고, 외관·전·후 사진은 얇은 선으로만 나눕니다.','simple-help'),view);card.append(body);grid.append(card);
+ body.append(selects,titles,actions,el('p','릴스 세로 표지 기준. 중요한 제목은 가운데 안전 영역에 두고, 외관·전·후 사진은 얇은 선으로만 나눕니다.','simple-help'),view);card.append(body);
+ const output=grid.querySelector('.simple-output-card');if(output)grid.insertBefore(card,output);else grid.append(card);
 
  function options(sel,empty){
   const was=sel.value;sel.replaceChildren(new Option(empty,''),...(state.photos||[]).map(p=>new Option(p.name,p.id)));
