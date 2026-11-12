@@ -70,3 +70,111 @@ body.simple-marketing-mode #studio .desk-preview canvas{max-height:68vh!importan
  .simple-product-accordion summary{align-items:flex-start;flex-direction:column}
  .simple-product-accordion summary small{text-align:left}
 }
+
+/* iPad-first workspace: controls scroll, preview stays visible. */
+@media (min-width:900px){
+  body.simple-marketing-mode #studio .production-desk{
+    display:grid!important;
+    grid-template-columns:minmax(350px,420px) minmax(0,1fr);
+    gap:22px;
+    align-items:start;
+  }
+  body.simple-marketing-mode #studio .production-desk>.simple-marketing-panel{
+    grid-column:1;
+    grid-row:1;
+    min-width:0;
+  }
+  body.simple-marketing-mode #studio .production-desk>.desk-layout{
+    grid-column:2;
+    grid-row:1;
+    position:sticky!important;
+    top:max(10px,env(safe-area-inset-top));
+    align-self:start;
+    margin-top:0!important;
+    z-index:12;
+    background:#f5f4f0;
+    padding-bottom:8px;
+  }
+  body.simple-marketing-mode #studio .desk-layout>.desk-preview{
+    max-width:none!important;
+    width:100%!important;
+    margin:0!important;
+  }
+  body.simple-marketing-mode #studio .desk-preview canvas{
+    max-height:calc(100vh - 112px)!important;
+    width:auto!important;
+    max-width:100%!important;
+  }
+  body.simple-marketing-mode #studio .desk-preview #production-filmstrip{
+    max-height:92px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    flex-wrap:nowrap;
+  }
+}
+
+@media (min-width:700px) and (max-width:899px){
+  body.simple-marketing-mode main{padding:12px 14px!important}
+  body.simple-marketing-mode #studio .production-desk{
+    display:flex!important;
+    flex-direction:column;
+    align-items:stretch;
+  }
+  body.simple-marketing-mode #studio .production-desk>.desk-layout{
+    order:-1;
+    position:sticky!important;
+    top:max(0px,env(safe-area-inset-top));
+    z-index:20;
+    margin:0 -14px 14px!important;
+    padding:8px 14px 10px;
+    background:rgba(245,244,240,.97);
+    border-bottom:1px solid #deded8;
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+  }
+  body.simple-marketing-mode #studio .desk-layout>.desk-preview{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+  body.simple-marketing-mode #studio .desk-preview .preview-heading{
+    min-height:30px;
+    margin-bottom:6px;
+  }
+  body.simple-marketing-mode #studio .desk-preview canvas{
+    display:block;
+    margin:0 auto;
+    max-height:42vh!important;
+    width:auto!important;
+    max-width:100%!important;
+    box-shadow:0 8px 22px #0000001c;
+  }
+  body.simple-marketing-mode #studio .desk-preview #production-filmstrip{
+    display:none!important;
+  }
+  body.simple-marketing-mode #studio .desk-preview .preview-navigation{
+    margin-top:5px!important;
+    min-height:38px!important;
+  }
+  body.simple-marketing-mode #studio .production-desk>.simple-marketing-panel{
+    order:0;
+    min-width:0;
+  }
+  .simple-marketing-heading{margin-bottom:14px}
+  .simple-input-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .simple-product-accordion,.simple-output-card,.simple-thumbnail-card{grid-column:1/-1!important}
+}
+
+/* iPad landscape gets a little more room for the preview. */
+@media (min-width:900px) and (max-width:1180px){
+  body.simple-marketing-mode #studio .production-desk{
+    grid-template-columns:minmax(330px,38%) minmax(0,62%);
+    gap:16px;
+  }
+  body.simple-marketing-mode main{padding:18px 16px!important}
+  body.simple-marketing-mode #studio .desk-preview canvas{
+    max-height:calc(100vh - 86px)!important;
+  }
+  .simple-marketing-heading h1{font-size:30px}
+  .simple-marketing-heading p{font-size:13px}
+}
