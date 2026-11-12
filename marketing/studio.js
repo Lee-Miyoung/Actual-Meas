@@ -73,11 +73,11 @@ async function decodeWorkingPhoto(p) {
   const source = await loadImage(p.src);
   if(source.width*source.height>48000000||Math.max(source.width,source.height)>12000){source.src="";throw Error('사진 크기를 4800만 화소 이하로 줄여 주세요.');}
   p.sourceWidth = source.width; p.sourceHeight = source.height;
-  const scale = Math.min(1, 1800 / Math.max(source.width, source.height));
+  const scale = Math.min(1, 2560 / Math.max(source.width, source.height));
   const working = document.createElement("canvas");
   working.width = Math.max(1, Math.round(source.width * scale));
   working.height = Math.max(1, Math.round(source.height * scale));
-  working.getContext("2d").drawImage(source, 0, 0, working.width, working.height);
+  const workingContext=working.getContext("2d");workingContext.imageSmoothingEnabled=true;workingContext.imageSmoothingQuality="high";workingContext.drawImage(source, 0, 0, working.width, working.height);
   source.src = "";
   if (!p.thumbnail) {
     const thumb = document.createElement("canvas"), ratio = Math.min(1, 240 / Math.max(working.width, working.height));

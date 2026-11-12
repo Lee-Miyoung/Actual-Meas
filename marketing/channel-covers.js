@@ -52,7 +52,7 @@
     const scale = Math.min(1, maxEdge / Math.max(W,H));
     canvas.width = Math.round(W * scale);
     canvas.height = Math.round(H * scale);
-    const g = canvas.getContext('2d');
+    const g = canvas.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
     g.scale(canvas.width / W, canvas.height / H);
     canvas.typeLayout = [];
     canvas.photoLayout = [];
@@ -95,13 +95,14 @@
       const family = serif ? useSerif : useSans;
       const measured = CheonginType.layout(value,{width:w,fontSize:size,minFontSize:Math.max(16,Math.round(size*.66)),maxLines:rows,leading,
         measure:(line,n) => {g.font='400 '+n+'px '+family; return g.measureText(line).width;}});
-      g.textBaseline='top'; g.fillStyle=color; g.font='400 '+measured.size+'px '+family;
+      g.shadowColor=color===white?'rgba(0,0,0,.28)':'transparent';g.shadowBlur=color===white?2:0;g.textBaseline='top'; g.fillStyle=color; g.font='400 '+measured.size+'px '+family;
       measured.lines.forEach((line,i) => {
         const xx = align==='right' ? x+w-measured.widths[i] : x;
         const yy=y+i*measured.lineHeight;
         g.fillText(line,xx,yy);
         canvas.typeLayout.push({source:value,x:xx,y:yy,width:measured.widths[i],height:measured.lineHeight,size:measured.size});
       });
+      g.shadowBlur=0;
       if (measured.truncated) canvas.dataset.textTruncated='true';
       return measured.lines.length*measured.lineHeight;
     }
@@ -119,7 +120,7 @@
 
     if (channel==='carousel') {
       photo(main,0,0,W,1150);
-      wash(0,0,W,610,'rgba(22,26,22,.74)','rgba(22,26,22,0)');
+      wash(0,0,W,610,'rgba(22,26,22,.12)','rgba(22,26,22,0)');
       brand(60,42,182);
       
       fineLine(60,148,960,'rgba(255,255,247,.52)');
@@ -129,11 +130,11 @@
       type(info.product||materialLabel,58,1231,964,50,{rows:2,serif:true,leading:1.12});
     } else if (channel==='reels') {
       photo(main,0,0,W,H);
-      wash(0,0,W,495,'rgba(20,25,20,.67)','rgba(20,25,20,0)');
+      wash(0,0,W,495,'rgba(20,25,20,.12)','rgba(20,25,20,0)');
       brand(70,180,170);
       // Keep the lower navigation and the right-hand action rail clear.
-      wash(0,820,W,575,'rgba(20,25,20,0)','rgba(20,25,20,.76)');
-      wash(0,1395,W,525,'rgba(20,25,20,.76)','rgba(20,25,20,.04)');
+      wash(0,820,W,575,'rgba(20,25,20,0)','rgba(20,25,20,.12)');
+      wash(0,1395,W,525,'rgba(20,25,20,.12)','rgba(20,25,20,.04)');
       type(where||materialLabel,70,1010,770,31,{color:white});
       fineLine(70,1074,80,white);
       const used=type(headline,67,1110,795,94,{rows:2,serif:true,color:white});
@@ -143,7 +144,7 @@
       photo(pair?photos.before:main,0,0,W,790,{focusY:(pair?photos.before:main).focusY ?? .4});
       const lower=pair ? photos.after : photos.detail || main;
       photo(lower,0,1075,W,H-1075,pair||photos.detail?{}:{zoom:1.65,focusY:kind==='wall' ? .38 : .78});
-      wash(0,0,W,420,'rgba(20,25,20,.65)','rgba(20,25,20,0)');
+      wash(0,0,W,420,'rgba(20,25,20,.12)','rgba(20,25,20,0)');
       brand(68,180,168);
       if (pair) {tag('시공 전',68,699);tag('시공 후',68,1113);}
       type(where||materialLabel,68,822,790,27,{color:muted});
@@ -151,7 +152,7 @@
     } else if (channel==='youtubeCover') {
       const side=548;
       photo(pair?photos.before:main,0,0,side,H);
-      rect(0,0,side,H,'rgba(26,33,27,.65)');
+      rect(0,0,side,H,'rgba(26,33,27,.12)');
       photo(pair?photos.after:main,side+4,0,W-side-4,H,{focusY:(pair?photos.after:main).focusY ?? .46});
       rect(side,0,4,H,paper);
       brand(40,36,144);
@@ -162,7 +163,7 @@
     } else if (channel==='naverCover') {
       const top=715;
       photo(main,0,0,W,top,{focusY:main.focusY ?? .42});
-      wash(0,0,W,265,'rgba(25,29,24,.68)','rgba(25,29,24,0)');
+      wash(0,0,W,265,'rgba(25,29,24,.12)','rgba(25,29,24,0)');
       brand(60,47,165);
       rect(0,top,W,H-top,paper);
       const left=61, right=836;
@@ -174,7 +175,7 @@
       type(details,right,top+355,305,27,{color:muted});
     } else if (channel==='kakao') {
       photo(main,0,0,W,458,{focusY:main.focusY ?? .44});
-      wash(0,0,W,215,'rgba(20,26,21,.66)','rgba(20,26,21,0)');
+      wash(0,0,W,215,'rgba(20,26,21,.12)','rgba(20,26,21,0)');
       brand(37,32,133);
       rect(0,458,W,272,paper);
       type(where||materialLabel,38,486,724,24,{color:muted});
@@ -215,10 +216,10 @@
     try {
       for (const [role,p] of Object.entries(src)) {
         if (!decoded.has(p.id)) {
-          const source=await photoImage(p), previous=original;
+          const source=await (options.maxEdge?photoImage(p):loadImage(p.src)), previous=original;
           original=false;
-          try {decoded.set(p.id,transformed(source,p.adjust,options.maxEdge||2200));}
-          finally {original=previous;}
+          try {decoded.set(p.id,transformed(source,p.adjust,options.maxEdge?2560:4096));}
+          finally {original=previous;if(!options.maxEdge)source.src='';}
         }
         const binding=state.signaturePhotos?.[p.id] || {};
         const target=role==='hero'?'background':role;
