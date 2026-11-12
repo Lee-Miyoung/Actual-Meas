@@ -22,6 +22,7 @@ function ensureFlow(s) {
   )
     s.projectNumber += "-" + s.projectId.replaceAll("-", "");
   s.space ??= "";
+  s.productStructure ??= "";
   s.consumerQuestion ??= "";
   return s;
 }
@@ -44,6 +45,7 @@ function projectMeta() {
     title: state.title || state.authoring.site || state.projectNumber,
     region: state.region || "",
     space: state.space || "",
+    structure: state.productStructure || "",
     memo: state.authoring.memo || "",
     product: Writer.label(selectedProduct() || { category: state.product }),
     photoCount: state.photos.length,
@@ -348,6 +350,7 @@ $("site-form").onsubmit = async (e) => {
       title: $("site-name").value.trim(),
       region: $("site-region").value.trim(),
       space: $("site-space").value.trim(),
+      structure: $("site-structure").value.trim(),
       memo: $("site-memo").value.trim(),
       question: $("site-question").value.trim(),
       works: [...$("site-works").querySelectorAll("input:checked")].map(
@@ -378,6 +381,7 @@ $("site-form").onsubmit = async (e) => {
       title: meta.title,
       region: meta.region,
       space: meta.space,
+      productStructure: meta.structure,
       consumerQuestion: meta.question,
       product: "강마루",
       memo: meta.memo,
@@ -470,6 +474,7 @@ function renderProjectList() {
         [
           p.region,
           p.space,
+          p.structure,
           p.product,
           `사진 ${p.photoCount || 0}장`,
           `${jobs.length}개 채널`,
