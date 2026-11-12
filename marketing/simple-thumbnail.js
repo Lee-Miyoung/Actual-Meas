@@ -49,7 +49,7 @@ function mount(){
  const body=el('div',undefined,'simple-thumbnail-body'),fields=el('div',undefined,'simple-thumbnail-selects');
  function field(label,input){const l=el('label',label);l.append(input);fields.append(l);return input;}
  const photo=field('표지 사진',el('select')),layout=field('썸네일 포맷',el('select')),ratio=field('출력 비율',el('select'));
- for(const [k,v]of [['reference','현장 시공형 · 분류와 전후 사진'],['photo70','사진 중심형 · 공사 사진용'],['full','전체 화보형 · 공간 사진용']])layout.add(new Option(v,k));
+ for(const [k,v]of [['social','인스타 감성형 · 하단 공감 문구'],['reference','현장 시공형 · 분류와 전후 사진'],['photo70','사진 중심형 · 공사 사진용'],['full','전체 화보형 · 공간 사진용']])layout.add(new Option(v,k));
  for(const [k,v]of [['portrait','인스타 · 4:5'],['vertical','릴스·쇼츠 · 9:16'],['landscape','유튜브 · 16:9']])ratio.add(new Option(v,k));
  const housing=field('현장 분류',el('select'));for(const v of ['','단독주택','아파트','상업공간','기타'])housing.add(new Option(v||'분류 선택',v));
  const beforePhoto=field('시공 전 사진 · 선택',el('select')),afterPhoto=field('시공 후 사진 · 선택',el('select'));
@@ -87,7 +87,7 @@ function mount(){
   finally{autoBusy=false;view.setAttribute('aria-busy','false');if(autoDirty){clearTimeout(autoTimer);autoTimer=setTimeout(pumpAuto,80);}}
  }
  function checkAuto(){const p=state.photos.find(p=>p.id===photo.value),key=inputKey(),sources=[beforePhoto.value,afterPhoto.value].map(id=>state.photos.find(p=>p.id===id)?.src);if(key!==lastKey||p!==lastPhoto||p?.src!==lastSource||sources.some((src,i)=>src!==lastPairSources[i])){lastKey=key;lastPhoto=p;lastSource=p?.src;lastPairSources=sources;scheduleAuto();}}
- function refresh(){const key=state.projectId||'current',ids=state.photos.map(p=>p.id).join('|');if(projectKey!==key){projectKey=key;photoKey='';const saved=state.thumbnailPosting||{};activeTarget='background';zoom.value=String(Math.round((saved.transforms?.background?.zoom||1)*100));title.value=saved.title||state.manualOverlay?.title||'이 나뭇결, 집에 깔리면';layout.value=saved.referenceVersion===1&&['reference','photo70','full'].includes(saved.layout)?saved.layout:'reference';housing.value=saved.housing||'';floor.value=String(Math.round((saved.floorStart??.55)*100));ratio.value=saved.ratio||'portrait';for(const [k,a]of Object.entries(areas))a.value=saved.pack?.[k]||'';if(canvas){canvas.width=canvas.height=1;canvas=null;}view.replaceChildren(el('p','자동으로 썸네일을 준비합니다.','simple-help'));}if(photoKey!==ids){photoKey=ids;const saved=state.thumbnailPosting?.photoId;for(const [select,label,key]of [[beforePhoto,'시공 전 사진 없음','beforeId'],[afterPhoto,'시공 후 사진 없음','afterId']]){const was=state.thumbnailPosting?.[key]||'';select.replaceChildren(new Option(label,''),...state.photos.map(p=>new Option(p.name,p.id)));select.value=state.photos.some(p=>p.id===was)?was:'';}photo.replaceChildren(...state.photos.map(p=>new Option(p.name,p.id)));const best=state.photos.find(p=>state.signaturePhotos?.[p.id]?.role==='after')||state.photos.find(p=>!['before','progress','pair'].includes(state.signaturePhotos?.[p.id]?.role))||state.photos[0];photo.value=state.photos.some(p=>p.id===saved)?saved:best?.id||'';showThumbnail();}floor.parentElement.hidden=layout.value!=='photo70';checkAuto();}
+ function refresh(){const key=state.projectId||'current',ids=state.photos.map(p=>p.id).join('|');if(projectKey!==key){projectKey=key;photoKey='';const saved=state.thumbnailPosting||{};activeTarget='background';zoom.value=String(Math.round((saved.transforms?.background?.zoom||1)*100));title.value=saved.title||state.manualOverlay?.title||'이 나뭇결, 집에 깔리면';layout.value=saved.referenceVersion===1&&['social','reference','photo70','full'].includes(saved.layout)?saved.layout:'social';housing.value=saved.housing||'';floor.value=String(Math.round((saved.floorStart??.55)*100));ratio.value=saved.ratio||'portrait';for(const [k,a]of Object.entries(areas))a.value=saved.pack?.[k]||'';if(canvas){canvas.width=canvas.height=1;canvas=null;}view.replaceChildren(el('p','자동으로 썸네일을 준비합니다.','simple-help'));}if(photoKey!==ids){photoKey=ids;const saved=state.thumbnailPosting?.photoId;for(const [select,label,key]of [[beforePhoto,'시공 전 사진 없음','beforeId'],[afterPhoto,'시공 후 사진 없음','afterId']]){const was=state.thumbnailPosting?.[key]||'';select.replaceChildren(new Option(label,''),...state.photos.map(p=>new Option(p.name,p.id)));select.value=state.photos.some(p=>p.id===was)?was:'';}photo.replaceChildren(...state.photos.map(p=>new Option(p.name,p.id)));const best=state.photos.find(p=>state.signaturePhotos?.[p.id]?.role==='after')||state.photos.find(p=>!['before','progress','pair'].includes(state.signaturePhotos?.[p.id]?.role))||state.photos[0];photo.value=state.photos.some(p=>p.id===saved)?saved:best?.id||'';showThumbnail();}floor.parentElement.hidden=layout.value!=='photo70';checkAuto();}
  async function drawReference({previewOnly=false}={}){
   const selected=state.photos.find(p=>p.id===photo.value);if(!selected)throw Error('배경 사진을 먼저 선택하세요.');
   const v=values(),category=housing.value,before=state.photos.find(p=>p.id===beforePhoto.value),after=state.photos.find(p=>p.id===afterPhoto.value),pair=!!(before&&after&&before.id!==after.id);
@@ -113,7 +113,30 @@ function mount(){
   if(pair){const y=h-bottom-(wide?106:254),w=468,hh=wide?106:254;for(const [p,x,label]of [[before,56,'시공 전'],[after,556,'시공 후']]){g.fillStyle='#F9F1E5';g.fillRect(x-4,y-4,w+8,hh+8);await picture(p,x,y,w,hh,label==='시공 전'?'before':'after');g.fillStyle='rgba(30,48,38,.85)';g.fillRect(x+14,y-16,120,40);text(label,x+20,y-9,108,23,1,'#FFF8EC',false,true);}text('›',522,y+hh/2-24,32,45,1,'#F4F0E8',false,true);}
   c.dataset.renderer='cheongin-reference-site-v2';c.dataset.template='reference';c.dataset.housing=category;c.dataset.comparison=String(pair);return c;
  }
+ async function drawSocial({previewOnly=false}={}){
+  const p=state.photos.find(p=>p.id===photo.value);if(!p)throw Error('배경 사진을 먼저 선택하세요.');
+  const v=values(),before=state.photos.find(p=>p.id===beforePhoto.value),after=state.photos.find(p=>p.id===afterPhoto.value),pair=!!(before&&after&&before.id!==after.id),category=housing.value;
+  const [W,H]=ratio.value==='landscape'?[1280,720]:ratio.value==='vertical'?[1080,1920]:[1080,1350],c=el('canvas'),q=previewOnly?Math.min(1,720/Math.max(W,H)):1;c.width=Math.round(W*q);c.height=Math.round(H*q);
+  const g=c.getContext('2d'),scale=c.width/1080,h=H/(W/1080),wide=ratio.value==='landscape',vertical=ratio.value==='vertical',m=wide?48:64,top=vertical?190:42,bottom=vertical?280:56;
+  g.scale(scale,scale);c.typeLayout=[];c.photoLayout=[];
+  const headline=v.title||'이 마루, 우리 집에도 어울릴까요?',metadata=[v.spec,v.location].filter(Boolean).join(' · ');
+  await Promise.all([document.fonts.load('600 68px "Studio Sans"',headline),document.fonts.load('400 30px "Studio Sans"',v.product+metadata+category)]);
+  async function picture(photo,x,y,w,hh,target='background'){const im=await photoImage(photo),was=original;let image;original=false;try{image=transformed(im,photo.adjust,previewOnly?1100:2200);}finally{original=was;}if(image?.then)image=await image;try{const crop=thumbnailCrop(image.width,image.height,w,hh,transformFor(target));g.drawImage(image,crop.sx,crop.sy,crop.sw,crop.sh,x,y,w,hh);c.photoLayout.push({id:photo.id,target,x,y,width:w,height:hh,sourceWidth:image.width,sourceHeight:image.height,...crop});}finally{releaseCanvas(image);}}
+  function text(value,x,y,w,size,maxLines=1,bold=false){if(!value)return;const r=CheonginType.layout(String(value),{width:w,fontSize:size,minFontSize:size*.8,maxLines,leading:1.22,measure:(s,n)=>{g.font=`${bold?600:400} ${n}px "Studio Sans"`;return g.measureText(s).width;}});g.font=`${bold?600:400} ${r.size}px "Studio Sans"`;g.textBaseline='top';g.fillStyle='#FFFFFF';g.shadowColor='rgba(0,0,0,.35)';g.shadowBlur=5;for(const [i,line]of r.lines.entries()){const mt=g.measureText(line),xx=x+(mt.actualBoundingBoxLeft||0),yy=y+i*r.lineHeight;g.fillText(line,xx,yy);c.typeLayout.push({source:String(value),x,y:yy,width:mt.width,height:r.lineHeight,size:r.size});}g.shadowBlur=0;if(r.truncated)c.dataset.textTruncated='true';}
+  await picture(p,0,0,1080,h);
+  const pairH=wide?106:230,pairY=h-bottom-pairH,infoH=wide?112:146,infoY=(pair?pairY-24:h-bottom)-infoH,titleH=wide?116:172,titleY=infoY-24-titleH;
+  const grad=g.createLinearGradient(0,Math.max(0,titleY-110),0,h);grad.addColorStop(0,'rgba(12,23,17,0)');grad.addColorStop(.5,'rgba(12,23,17,.25)');grad.addColorStop(1,'rgba(12,23,17,.6)');g.fillStyle=grad;g.fillRect(0,Math.max(0,titleY-110),1080,h);
+  const logo=await loadImage('brand/logo-ivory.svg');try{g.save();g.globalAlpha=.78;const w=wide?132:148;g.drawImage(logo,m,top,w,w*logo.height/logo.width);g.restore();}finally{logo.src='';}
+  if(category){g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=1.5;g.strokeRect(830,top,1080-m-830,44);text(category,850,top+8,1080-m-870,23);}
+  text(headline,m,titleY,1080-m*2,wide?48:68,2,true);
+  g.strokeStyle='rgba(255,255,255,.7)';g.lineWidth=1.5;g.fillStyle='rgba(20,34,25,.14)';g.beginPath();if(g.roundRect)g.roundRect(m,infoY,1080-m*2,infoH,12);else g.rect(m,infoY,1080-m*2,infoH);g.fill();g.stroke();
+  text([v.structure||v.kind,v.product].filter(Boolean).join(' · '),m+22,infoY+16,1080-m*2-44,wide?25:31,1);
+  text(metadata,m+22,infoY+(wide?54:64),1080-m*2-44,wide?20:24,2);
+  if(pair){for(const [photo,x,label,target]of [[before,m,'시공 전','before'],[after,1080-m-468,'시공 후','after']]){const w=468;g.fillStyle='rgba(255,255,255,.8)';g.fillRect(x-3,pairY-3,w+6,pairH+6);await picture(photo,x,pairY,w,pairH,target);g.fillStyle='rgba(20,34,25,.75)';g.fillRect(x+12,pairY+12,110,36);text(label,x+23,pairY+18,95,21);}}
+  c.dataset.renderer='cheongin-social-empathy-v1';c.dataset.template='social';c.dataset.comparison=String(pair);return c;
+ }
  async function draw({previewOnly=false}={}){
+  if(layout.value==='social')return drawSocial({previewOnly});
   if(layout.value==='reference')return drawReference({previewOnly});
   const p=state.photos.find(p=>p.id===photo.value);if(!p)throw Error('표지 사진을 먼저 선택하세요.');
   const v=values(),mode=layout.value==='full'?'full':'photo70',floorStart=Number(floor.value)/100;
@@ -178,6 +201,7 @@ function mount(){
 }
 const timer=setInterval(()=>{try{mount();if(mounted)clearInterval(timer);}catch(e){console.error('thumbnail mode',e);}},250);window.addEventListener('marketing:ready',mount);
 })();
+
 
 
 
