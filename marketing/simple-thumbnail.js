@@ -76,7 +76,7 @@ function mount(){
  if(!grid||!state?.photos)return;
  mounted=true;
  const card=el('details',undefined,'simple-thumbnail-card');card.open=true;
- const sum=el('summary'),sumTitle=el('span','4. 썸네일 만들기'),sumNote=el('small','외관 + 시공 전 + 시공 후');
+ const sum=el('summary'),sumTitle=el('span','5. 썸네일 만들기'),sumNote=el('small','외관 + 시공 전 + 시공 후');
  sum.append(sumTitle,sumNote);card.append(sum);
  const body=el('div',undefined,'simple-thumbnail-body');
  const selects=el('div',undefined,'simple-thumbnail-selects');
