@@ -4,6 +4,10 @@
 const previous=renderSignature;
 renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  if(cfg.photoEdition!==1)return previous(cfg,ctx,slot,index,format,load,options);
+ const covers=window.CheonginChannelCovers, choice=state.thumbnailPosting||{};
+ if(index===0 && covers?.formats[format] && (choice.layout==='channels' || !choice.layout) && ctx.photos.length && !window.ArchiveStudio?.comparing){
+   return covers.fromProject(format,choice,{...options,showLogo:cfg.show.logo});
+ }
  cfg=SignatureCore.validate(cfg);
  const rule=cfg.platforms[format];if(!rule)throw Error('출력 규격을 확인하세요.');
  const lead=ctx.photos.find(p=>p.id===slot.photoIds?.[0])||ctx.photos[0];
