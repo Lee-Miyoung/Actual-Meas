@@ -1,0 +1,7 @@
+.simple-copy-card{grid-column:1/-1!important;border-color:#c9cec4!important;background:#fff!important}
+.simple-copy-card>strong{font-size:16px!important;color:#263228}
+.simple-copy-card textarea{width:100%;min-height:180px;box-sizing:border-box;resize:vertical;border:1px solid #cfd4ca;border-radius:8px;background:#fbfbf8;padding:14px;font:400 14px/1.8 "Studio Sans",sans-serif;color:#2d332f}
+.simple-copy-status{margin-top:12px;padding:12px 14px;background:#f2f4ef;border-left:3px solid #52634f}
+.simple-copy-status p{margin:3px 0!important;font-size:12px!important;line-height:1.7!important;color:#596156!important}
+.simple-copy-status b{display:inline-block;min-width:72px;font-weight:600;color:#2f3d31}
+@media(max-width:760px){.simple-copy-card textarea{min-height:150px}}
