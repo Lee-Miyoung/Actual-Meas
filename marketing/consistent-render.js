@@ -22,11 +22,11 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  const detail=[info?.size,ctx.structure].filter(Boolean).join(' · ');
  const location=[ctx.region,ctx.space].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · ');
  const all=[title,product,detail,location,'시공 전 시공 후 청인마루 공간의 위로가 되다'].join(' ');
- await Promise.all([document.fonts.load('400 44px "Studio Serif"',all),document.fonts.load('500 26px Pretendard',all)]);
- function text(value,x,y,w,size,rows=1,weight=400,align='left',alpha=1,family='Pretendard'){
+ await Promise.all([document.fonts.load('400 44px "Studio Serif"',all),document.fonts.load('400 26px "Studio Sans"',all)]);
+ function text(value,x,y,w,size,rows=1,weight=400,align='left',alpha=1,family='Studio Sans'){
   if(!value)return 0;
-  const layout=CheonginType.layout(String(value),{width:w,fontSize:size,minFontSize:Math.min(size,wide?18:21),maxLines:rows,leading:1.32,measure:(s,n)=>{g.font=`${weight} ${n}px Pretendard`;return g.measureText(s).width;}});
-  g.save();g.font=`${weight} ${layout.size}px Pretendard`;g.fillStyle=`rgba(255,255,255,${alpha})`;g.textBaseline='top';g.shadowColor='rgba(0,0,0,.42)';g.shadowBlur=7;
+  const layout=CheonginType.layout(String(value),{width:w,fontSize:size,minFontSize:Math.min(size,wide?18:21),maxLines:rows,leading:1.32,measure:(s,n)=>{g.font=`${weight} ${n}px "${family}"`;return g.measureText(s).width;}});
+  g.save();g.font=`${weight} ${layout.size}px "${family}"`;g.fillStyle=`rgba(255,255,255,${alpha})`;g.textBaseline='top';g.shadowColor='rgba(0,0,0,.42)';g.shadowBlur=7;
   for(const [i,line]of layout.lines.entries()){
    const yy=y+i*layout.lineHeight,mt=g.measureText(line),xx=align==='right'?x+w-mt.width:x;
    g.fillText(line,xx,yy);
