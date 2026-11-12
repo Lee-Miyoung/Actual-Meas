@@ -137,7 +137,9 @@ function init(){
   const format=el('select'); format.id='simple-format';
   format.replaceChildren(
     option('carousel','인스타 피드 4:5'),
-    option('reels','릴스·쇼츠 9:16'),
+    option('reels','인스타 릴스 9:16'),
+    option('shorts','유튜브 쇼츠 9:16'),
+    option('naverCover','네이버 블로그 표지 1:1'),
     option('youtubeCover','유튜브 16:9'),
     option('kakao','카카오 1:1')
   );
@@ -147,7 +149,7 @@ function init(){
   const saveBtn=el('button','사진 + 캡션 저장','primary');
   previewBtn.type=saveBtn.type='button';
   actions.append(previewBtn,saveBtn);
-  outputCard.append(formatLabel,actions,el('p','디자인은 선택하지 않습니다. 사진 전체형 고정 포맷으로만 출력됩니다.','simple-help'));
+  outputCard.append(formatLabel,actions,el('p','선택한 채널의 표지와 본문 콘텐츠를 저장합니다.','simple-help'));
 
   grid.append(photoCard,siteCard,productDetails,outputCard);
   panel.append(top,grid);
@@ -243,7 +245,7 @@ function init(){
   window.renderProductionWorkspace=function(...args){
     region.value=state.region||'';
     space.value=state.space||'';
-    format.value=['carousel','reels','youtubeCover','kakao'].includes(state.format)?state.format:'carousel';
+    format.value=['carousel','reels','shorts','youtubeCover','naverCover','kakao'].includes(state.format)?state.format:'carousel';
     fillBrands();
     refreshSummary();
     return baseRender.apply(this,args);
@@ -251,7 +253,7 @@ function init(){
 
   region.value=state.region||'';
   space.value=state.space||'';
-  format.value=['carousel','reels','youtubeCover','kakao'].includes(state.format)?state.format:'carousel';
+  format.value=['carousel','reels','shorts','youtubeCover','naverCover','kakao'].includes(state.format)?state.format:'carousel';
   fillBrands();
   refreshSummary();
   window.renderProductionWorkspace?.();
