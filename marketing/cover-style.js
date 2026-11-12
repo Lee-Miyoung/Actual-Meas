@@ -86,19 +86,93 @@
     if(box.shape==='circle')return Math.hypot((x-box.x-w/2)/(w/2),(y-box.y-h/2)/(h/2))<=1;
     return x>=box.x && x<=box.x+w && y>=box.y && y<=box.y+h;
   }
-  function exterior(g,c,p,units,right,top,wide){
-    if(!p?.image)return right;
-    const diameter=Math.round(units*(wide ? .092 : .137)),r=diameter/2,x=right-diameter;
+  const endings={
+    signature:{label:'여운 · 브랜드 서명',choices:[
+      ['공간의 위로가 되다.','공간의 위로가 되다.'],
+      ['햇살은 창을 지나, 마루 위에 머뭅니다.','빛이 스치면, 벽의 무늬가 드러납니다.'],
+      ['가구가 들어오기 전, 집은 벌써 따뜻합니다.','가구가 들어오기 전, 벽이 먼저 표정을 갖습니다.'],
+      ['집에 돌아와 처음 닿는 곳, 마루.','하루에도 몇 번씩 눈길이 머무는 벽.'],
+      ['맨발로 걷고 싶은 집.','한 걸음 물러서면 보이는 벽의 표정.'],
+      ['눈길은 결에, 발길은 집으로.','오후의 빛이 벽에 한 겹 더해집니다.']
+    ]},
+    ask:{label:'상담 · 우리 집 질문',choices:[
+      ['우리 집 걸레받이도 그대로 쓸 수 있을까요?','우리 집 벽에도 이 무늬가 어울릴까요?'],
+      ['문 앞에서 마루는 어떻게 만날까요?','모서리에서는 무늬가 어떻게 이어질까요?'],
+      ['우리 집 빛에서는 어떤 색으로 보일까요?','우리 집 빛에서는 어떤 색으로 보일까요?']
+    ]},
+    participate:{label:'참여 · 다음 장면 고르기',choices:[
+      ['다음엔 나뭇결과 문 앞 마감, 어디부터 볼까요?','다음엔 벽 무늬와 코너 마감, 어디부터 볼까요?'],
+      ['넓게 본 공간과 가까이 본 결, 어느 쪽이 좋으세요?','넓게 본 공간과 가까이 본 무늬, 어느 쪽이 좋으세요?']
+    ]}
+  };
+  const contact={phone:'032-210-6268',site:'https://cheonginmaru.com',chat:'https://pf.kakao.com/_xkcwEn/chat'};
+  const pinnedComment=[
+    '시공이나 전시장 방문이 궁금하시면 청인마루에 편하게 문의해 주세요.',
+    '',
+    '시공·전시장 상담  '+contact.phone,
+    '홈페이지  '+contact.site,
+    '카카오채널 문의  '+contact.chat
+  ].join('\n');
+  function contactIcon(g,key,x,y,size,color){
+    g.save();g.translate(x,y);g.scale(size/24,size/24);g.strokeStyle=color;g.lineWidth=1.6;g.lineCap='round';g.lineJoin='round';g.beginPath();
+    if(key==='phone'){
+      g.moveTo(5,3);g.lineTo(8,3);g.lineTo(10,8);g.lineTo(8,10);g.quadraticCurveTo(10,14,14,16);g.lineTo(16,14);g.lineTo(21,16);g.lineTo(21,19);g.quadraticCurveTo(21,22,17,21);g.bezierCurveTo(10,19,4,13,3,6);g.quadraticCurveTo(3,3,5,3);
+    }else if(key==='site'){
+      g.arc(12,12,9,0,Math.PI*2);g.moveTo(3,12);g.lineTo(21,12);g.moveTo(12,3);g.bezierCurveTo(6,8,6,16,12,21);g.bezierCurveTo(18,16,18,8,12,3);
+    }else{
+      g.moveTo(6,4);g.lineTo(18,4);g.quadraticCurveTo(21,4,21,7);g.lineTo(21,15);g.quadraticCurveTo(21,18,18,18);g.lineTo(10,18);g.lineTo(5,21);g.lineTo(5,18);g.quadraticCurveTo(3,18,3,15);g.lineTo(3,7);g.quadraticCurveTo(3,4,6,4);
+    }
+    g.stroke();g.restore();
+  }
+  function endingText(mode,choice,wall){
+    const list=endings[mode]?.choices||[];
+    return (list[choice]||list[0])?.[wall?1:0]||'';
+  }
+  function cornerLayout(g,units,right,top,wide,housing,area,hasPhoto){
+    const u=units/1080,gap=10*u,h=46*u;
+    const badges=[];
+    let end=right;
+    g.save();
+    for(const [key,value] of [['area',area ? area+'평형' : ''],['housing',housing]]){
+      if(!value)continue;
+      const size=(key==='area'?22:24)*u;
+      g.font='500 '+size+'px "Studio Sans", sans-serif';
+      const width=Math.ceil(g.measureText(value).width+36*u);
+      badges.unshift({key,value,x:end-width,y:top,width,height:h,size});
+      end-=width+gap;
+    }
+    g.restore();
+    const y=top+(badges.length?h+16*u:0);
+    const diameter=Math.round(units*(wide ? .15 : .207));
+    const circle=hasPhoto?{x:right-diameter,y,width:diameter,height:diameter}:null;
+    return {u,badges,circle,bottom:circle?y+diameter:badges.length?top+h:top};
+  }
+  function drawCorner(g,c,layout,p){
+    c.badgeLayout=layout.badges;
+    g.save();
+    for(const b of layout.badges){
+      g.fillStyle=b.key==='housing'?'#243C34':'#F7F3E8';
+      g.beginPath();g.roundRect(b.x,b.y,b.width,b.height,b.height/2);g.fill();
+      g.font='500 '+b.size+'px "Studio Sans", sans-serif';
+      g.textAlign='center';g.textBaseline='middle';
+      g.fillStyle=b.key==='housing'?'#FFFCF3':'#25392F';
+      g.fillText(b.value,b.x+b.width/2,b.y+b.height/2);
+    }
+    g.restore();
+    if(layout.circle&&p?.image)exterior(g,c,p,layout);
+  }
+  function exterior(g,c,p,layout){
+    const {x,y:top,width:diameter}=layout.circle,r=diameter/2;
     const im=p.image,t=p.transform||{},zoom=Math.min(3,Math.max(1,t.zoom||1));
     const side=Math.min(im.width,im.height)/zoom,ax=t.x??.5,ay=t.y??.5;
     const sx=(im.width-side)*ax,sy=(im.height-side)*ay;
     g.save();g.beginPath();g.arc(x+r,top+r,r,0,Math.PI*2);g.clip();
     g.drawImage(im,sx,sy,side,side,x,top,diameter,diameter);g.restore();
-    g.save();g.strokeStyle='rgba(255,252,246,.92)';g.lineWidth=units*.0025;
+    g.save();g.strokeStyle='rgba(255,252,246,.92)';g.lineWidth=layout.u*2.5;
     g.beginPath();g.arc(x+r,top+r,r,0,Math.PI*2);g.stroke();g.restore();
     c.photoLayout.push({id:p.id,target:'exterior',shape:'circle',x,y:top,width:diameter,height:diameter,
       anchorX:ax,anchorY:ay,zoom,sw:side,sh:side,sx,sy,sourceWidth:im.width,sourceHeight:im.height});
-    return x-units*.016;
+
   }
-  window.CheonginCoverStyle={colors,font,loadTitle,pairLabel,drawLabel,logo,drawLogo,drawText,sceneFrames,hits,exterior};
+  window.CheonginCoverStyle={colors,font,loadTitle,pairLabel,drawLabel,logo,drawLogo,drawText,sceneFrames,hits,cornerLayout,drawCorner,endings,endingText,contact,pinnedComment,contactIcon};
 })();

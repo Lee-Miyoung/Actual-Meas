@@ -9,7 +9,7 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
    if(!choice.layout||choice.layout==='channels'||covers.editorial?.(choice.layout)){
      return covers.fromProject(format,choice,{...options,showLogo:cfg.show.logo});
    }
-   if(choice.exteriorId && format===state.format && document.body.classList.contains('simple-marketing-mode') && window.CheonginThumbnailEditor?.renderCover){
+   if(format===state.format && document.body.classList.contains('simple-marketing-mode') && window.CheonginThumbnailEditor?.renderCover){
      return window.CheonginThumbnailEditor.renderCover(Boolean(options.maxEdge));
    }
  }
@@ -74,6 +74,55 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
   return topY+logoH;
  }
  try{
+  const style=window.CheonginCoverStyle,endMode=Object.hasOwn(style.endings,manual.endingStyle)?manual.endingStyle:'signature';
+  if(index>0&&index===total-1&&style.endings[endMode]){
+   const isWall=manual.endingMaterial==='wall'||(manual.endingMaterial!=='floor'&&/벽장재|시그니월|디자인월/.test([info?.category,product,manual.structure,ctx.structure].join(' ')));
+   const key='endTitle_'+endMode,detailKey='endLine_'+endMode;
+   const heading=manual[key]||style.endingText(endMode,manual['endChoice_'+endMode],isWall);
+   const note=manual[detailKey]||({signature:'',ask:isWall?'시공할 벽면을 찍어 청인마루에 보내주세요.':'벽과 바닥이 만나는 부분을 찍어 보내주세요.',participate:'궁금한 쪽을 댓글로 골라주세요.'})[endMode];
+   const band=endMode==='signature'?'#F1ECE2':endMode==='ask'?'#243C36':'#EDE8C6';
+   const fg=endMode==='ask'?'#FFF8E8':'#25392F';
+   const small=endMode==='ask'?'#D9E5D9':'#526354';
+   const tall=H/1080>1.55;
+   const px=wide?542:0,py=wide?0:H*(tall ? .63 : .61),pw=1080-px,ph=H-py;
+   await photo(lead.id,0,0,wide?px:1080,wide?H:py);
+   g.fillStyle=band;g.fillRect(px,py,pw,ph);
+   if(cfg.show.logo){
+    const mark=await style.logo(ctx.logoTone);style.drawLogo(g,c,mark,1080,m,tall?128:36);
+   }
+   const x=px+(wide?40:m),w=pw-2*(wide?40:m);
+   const contact=style.contact;
+   const entries=[
+    {field:key,value:heading,size:wide?43:56,rows:3,serif:true},
+    {field:detailKey,value:note,size:wide?23:29,rows:2,gap:11},
+    {icon:'phone',value:'청인마루 상담  '+contact.phone,size:wide?25:34,rows:1,gap:23},
+    {icon:'site',value:'홈페이지  '+new URL(contact.site).host,size:wide?24:31,rows:1,gap:7},
+    {icon:'chat',value:'카카오채널 문의  청인마루',size:wide?24:31,rows:1,gap:7}
+   ].filter(r=>r.value);
+   await style.loadTitle(heading);
+   const font=(r,n)=>r.serif?style.font(n):'500 '+n+'px "Studio Sans", sans-serif';
+   function measure(f){return entries.map(r=>{
+    const n=r.size*f;
+    const lines=CheonginType.layout(r.value,{width:w-(r.icon?n*1.4:0),fontSize:n,minFontSize:Math.min(n,18),maxLines:r.rows,leading:1.2,
+     measure:(line,size)=>{g.font=font(r,size);return g.measureText(line).width;}});
+    return {r,lines,h:lines.lines.length*lines.lineHeight,gap:(r.gap||0)*f};
+   });}
+   const safe=ph-(tall?105:14),height=rows=>rows.reduce((n,b)=>n+b.h+b.gap,0);
+   let rows=measure(1);
+   if(height(rows)>safe-30)rows=measure(Math.min(1,(safe-30)/height(rows)));
+   let y=py+(safe-height(rows))/2;
+   for(const {r,lines,h,gap} of rows){
+    y+=gap;g.font=font(r,lines.size);g.fillStyle=r.serif?fg:small;g.textBaseline='top';
+    lines.lines.forEach((line,i)=>{
+     const yy=y+i*lines.lineHeight,left=r.icon?x+lines.size*1.4:x;
+     if(r.icon)style.contactIcon(g,r.icon,x,yy+lines.size*.06,lines.size*.95,small);
+     g.fillText(line,left,yy);
+     c.typeLayout.push({field:r.field,source:r.value,x:left,y:yy,width:lines.widths[i],height:lines.lineHeight,size:lines.size});
+    });y+=h;
+   }
+   c.dataset.ending=endMode;c.previewMeta={[key]:heading,[detailKey]:note};
+   return c;
+  }
   if(slot.role==='comparison'){
    const pair=slot.photoIds.length===1&&ctx.bindings[slot.photoIds[0]]?.role==='pair';
    if(!pair&&slot.photoIds.length!==2)throw Error('실제 시공 전·후 사진을 연결해 주세요.');

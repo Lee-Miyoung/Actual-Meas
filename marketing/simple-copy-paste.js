@@ -85,8 +85,8 @@ function photoBrief(compare){
 function prompt(editor){
  const f=editor.facts(),p=state.thumbnailPosting||{},photos=state.photos||[];
  const sequence=state.signatureSequence||[],count=sequence.length||state.slideCount||photos.length||1;
- const pairLayout=p.layout==='reference'||p.layout==='social'||(!p.layout||p.layout==='channels')&&['carousel','reels','shorts','youtubeCover'].includes(p.channel||state.format||'carousel');
- const compare=pairLayout && p.pairConcept==='compare';
+ const pairLayout=['reference','social','walkthrough','vote'].includes(p.layout)||(!p.layout||p.layout==='channels')&&['carousel','reels','shorts','youtubeCover'].includes(p.channel||state.format||'carousel');
+ const compare=pairLayout && p.layout!=='vote' && p.pairConcept==='compare';
  const rows=[
   ['현장',f.location],['공간',p.housing],['평형',p.areaPyeong&&p.areaPyeong+'평형'],
   ['제품',f.product],['규격',window.CheonginDisplaySpec(f.spec)],['시공 분야',({floor:'마루',wall:'벽장재',both:'마루와 벽장재'})[p.material]],
@@ -100,12 +100,17 @@ function prompt(editor){
   return note?(index===0?'표지':(index+1)+'번째 장면')+' · '+note:'';
  }).filter(Boolean);
  if(!sequence.length&&file(p.photoId))order.push('표지 · '+file(p.photoId));
- if(pairLayout&&p.beforeId!==p.afterId){
-  if(file(p.beforeId))order.push((compare?'시공 전':'첫 번째 장면')+' · '+file(p.beforeId));
-  if(file(p.afterId))order.push((compare?'시공 후':'두 번째 장면')+' · '+file(p.afterId));
+ const firstId=p.beforeId||(['vote','walkthrough'].includes(p.layout)&&!compare?p.photoId:'');
+ if(pairLayout&&firstId!==p.afterId){
+  if(file(firstId))order.push((p.layout==='vote'?'A 장면':compare?'시공 전':'첫 번째 장면')+' · '+file(firstId));
+  if(file(p.afterId))order.push((p.layout==='vote'?'B 장면':compare?'시공 후':'두 번째 장면')+' · '+file(p.afterId));
  }
  if(file(p.exteriorId))order.push('표지 오른쪽 위 주택 외관 사진 · '+file(p.exteriorId));
- if(p.layout==='grain'&&file(p.detailId))order.push('표지의 소재 확대 사진 · '+file(p.detailId));
+ if(['grain','finish'].includes(p.layout)&&file(p.detailId))order.push('표지의 소재 확대 사진 · '+file(p.detailId));
+ const style=window.CheonginCoverStyle,ending=state.manualOverlay||{},mode=ending.endingStyle||'signature';
+ const wall=(window.CheonginChannelCovers?.material(f,p.material)||(/벽장재/.test(f.structure)?'wall':'floor'))==='wall';
+ const phrase=ending['endTitle_'+mode]||style?.endingText(mode,ending['endChoice_'+mode],wall);
+ const seriesNote=({walkthrough:'공간 산책입니다. 첫 사진에서 발견할 장면을 두 번째 사진에서 짚어 주세요.',finish:'마감 돋보기입니다. 근접 사진에서 보이는 이음, 무늬 또는 걸레받이 중 한 곳을 골라 어디를 볼지 안내하세요.',vote:file(firstId)&&file(p.afterId)&&firstId!==p.afterId?'같은 현장의 A와 B입니다. 인스타 캡션 마지막에 다음 편에서 더 보고 싶은 장면을 물어보세요. 서로 다른 제품이라고 가정하지 마세요.':'사진 한 장에 보이는 부분 중 다음에 무엇을 자세히 보고 싶은지 캡션 끝에 물어보세요.'})[p.layout];
  const angle=writingAngles[p.writingAngle]?.[1];
  const headings=[postLabels.thumbnailTitle,'사진문구',...Object.values(postLabels).slice(1)];
  const guide=window.CheonginFloorNotes;
@@ -120,7 +125,7 @@ function prompt(editor){
  ].filter(Boolean).join('\n\n');
  return [
   '청인마루 시공 사례 한 편을 작성해 주세요. 청인마루는 실제 현장에서 마루와 벽장재를 시공하는 업체입니다. 독자는 우리 집이나 매장에 어떤 마감재가 어울릴지 고민하는 고객입니다. 아래 정보와 이 메시지에 함께 첨부한 사진, 아래에 제공된 제품 자료를 바탕으로, 청인마루가 직접 현장을 소개하는 한국어 게시물을 써 주세요.',
-  fieldInfo,...(photoOrder?[photoOrder]:[]),
+  fieldInfo,...(photoOrder?[photoOrder]:[]),...(seriesNote?[seriesNote]:[]),
   ...(scope==='both'?[photoBrief(compare),'사진 보정본과 게시 문구를 함께 주세요. 아래 일곱 항목과 코드 블록 규칙은 앱에 붙여넣을 게시 문구에만 적용됩니다. 보정 파일과 촬영 메모는 블록 바깥에 별도로 주세요.']:[]),
   ...(notes?[notes]:[]),
   ['사진을 읽는 방법',
@@ -128,7 +133,7 @@ function prompt(editor){
    compare?'시공 전·후가 확인된 사진끼리만 비교하고, 두 사진에서 눈으로 확인할 수 있는 차이를 써 주세요.':'현장 미리보기입니다. 여러 사진은 같은 현장의 다른 시선입니다. 사진 순서로 시공 전후나 완공 여부를 판단하지 마세요.',
    '사진 순서가 있으면 파일명과 대조하고, 순서를 따로 주지 않으면 첨부 순서대로 쓰세요. 카탈로그·샘플·연출 사진이 섞이면 그 사진은 소재의 패턴을 설명하는 데만 쓰세요. 연출 사진의 가구나 용도를 이 현장의 정보로 옮기지 마세요. 같은 공간이 반복되면 전경, 가까이 보이는 무늬, 빛이 닿는 부분처럼 실제로 달라 보이는 점을 골라 주세요. 사진이 한 장도 보이지 않으면 사진 첨부만 한 번 요청하세요. 현장명이나 평형 등 비어 있는 정보는 생략하세요.'
   ].join('\n'),
-  ...(angle?[[angle,'썸네일은 그 고민을 고객이 말할 법한 짧은 질문으로 쓰세요. 두 번째 사진이 있으면 그 사진에서 답을 직접 볼 수 있는 질문을 고르고, 두 번째 사진문구는 어디를 보면 되는지 알려 주세요. 사진이 한 장이면 그 한 장 안에서 답을 찾게 하세요. 선택한 주제를 보여주는 사진이 없으면 눈으로 확인 가능한 다른 질문으로 바꿔 주세요. 잘 보이지 않는 이음새가 없다고 단정하거나 “믿고 맡기세요”라고 쓰지 마세요. 고정댓글은 같은 고민을 가진 사람이 자기 집이나 매장의 상황을 편하게 말할 수 있는 질문 하나로 써 주세요.'].join('\n')]:[]),
+  ...(angle?[[angle,'썸네일은 그 고민을 고객이 말할 법한 짧은 질문으로 쓰세요. 두 번째 사진이 있으면 그 사진에서 답을 직접 볼 수 있는 질문을 고르고, 두 번째 사진문구는 어디를 보면 되는지 알려 주세요. 사진이 한 장이면 그 한 장 안에서 답을 찾게 하세요. 선택한 주제를 보여주는 사진이 없으면 눈으로 확인 가능한 다른 질문으로 바꿔 주세요. 잘 보이지 않는 이음새가 없다고 단정하거나 “믿고 맡기세요”라고 쓰지 마세요. 참여 질문은 인스타 캡션 마지막에 넣으세요.'].join('\n')]:[]),
   ['문체와 사실 기준',
    '전시장에서 고객에게 사진을 한 장씩 보여주며 설명하듯 짧고 편안한 존댓말을 쓰세요. 사진에서 고객이 직접 찾아볼 수 있는 특징을 짚어 주세요. ‘고급스러운 공간의 완성’ 같은 상투적인 표현, 과장, 이모지는 빼 주세요.',
    '제품명·색상명·규격은 제공한 표기를 따르세요. 제품 특징을 더 확인할 수 있으면 해당 모델의 제조사 홈페이지나 공식 카탈로그에서 찾아 주세요. 검색이 어려운 채팅방에서는 이 요청문에 담긴 자료와 사진으로 확인할 수 있는 특징을 사용하세요. 다른 패턴이나 다른 현장의 시공 사례를 이 현장에 섞지 마세요. 무늬가 닮았다는 이유로 실제 대리석이나 원목이라고 단정하지 마세요. 사진으로 알 수 없는 공법, 성능, 고객 반응, 가격, 박스 수, 연락처는 덧붙이지 마세요.'
@@ -139,7 +144,9 @@ function prompt(editor){
    '게시물·영상 제목은 한 줄로 쓰세요. 확인된 공간 종류나 지역, 제품명 중 필요한 정보와 사진의 특징을 조합해 검색하는 고객도 내용을 짐작할 수 있게 해 주세요.',
    '인스타 캡션은 짧은 2~3문단입니다. 첫 문단은 사진에서 눈에 띄는 장면으로 시작하고, 다음 문단에서 실제 시공 제품을 한 번 소개하고 그 장면에 어울리는 이유를 확인된 제품 특징 하나와 연결해 주세요.',
    '유튜브 설명글은 이 현장의 어떤 부분을 볼 수 있는지 2~3문장으로 소개하세요. 인스타 캡션을 그대로 반복하지 마세요.',
-   '고정댓글은 사진을 본 사람이 자기 취향이나 고민을 쉽게 답할 수 있는 구체적인 질문 하나면 됩니다. 해시태그는 #청인마루를 포함해 현장과 직접 관련된 4~7개를 한 줄에 써 주세요.'
+   ...(phrase&&count>1?['마지막 사진문구는 선택한 마무리 문구 “'+phrase+'”를 그대로 사용하세요. 연락처는 앱에서 따로 그립니다.']:[]),
+   ...(style?.pinnedComment?['고정댓글에 넣을 공통 원문입니다. 모든 게시물에 줄바꿈까지 그대로 넣으세요.\n'+style.pinnedComment]:[]),
+   '해시태그는 #청인마루를 포함해 현장과 직접 관련된 4~7개를 한 줄에 써 주세요.'
   ].join('\n'),
   '앱에 붙여넣을 답변 형식\n아래 일곱 제목의 글자·괄호·순서를 그대로 유지하고, 각 제목 바로 다음 줄에 완성 문구를 채워 주세요. 게시 문구 전체를 복사할 수 있도록 일반 텍스트 코드 블록 하나에 담으세요. 게시 문구에는 파일명, 출처 링크, 인용 기호나 작성 지시를 옮기지 마세요. 블록 밖 인사말, 작업 설명, 대안 제목은 생략하세요.',
   headings.map(label=>'['+label+']').join('\n')

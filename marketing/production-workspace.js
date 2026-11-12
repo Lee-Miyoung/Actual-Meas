@@ -231,7 +231,7 @@ generate = renderProductionWorkspace;
 async function exportProductionPlatform() {
   const button = currentExport; button.disabled = true;
   const signatureBatch=window.signatureExportRenderer?.(),format=state.format;
-  const pack=document.body.classList.contains('simple-marketing-mode')?{...state.thumbnailPosting?.pack}:{};
+  const pack=document.body.classList.contains('simple-marketing-mode')?{...state.thumbnailPosting?.pack,pinnedComment:window.CheonginCoverStyle.pinnedComment}:{};
   const packField=({carousel:'instagramCaption',reels:'instagramCaption',shorts:'youtubeDescription',youtubeCover:'youtubeDescription'})[format];
   const caption=pack[packField]?.trim()||platformCaption();
   const postText=Object.entries(window.CheonginPostCopy?.postLabels||{})
