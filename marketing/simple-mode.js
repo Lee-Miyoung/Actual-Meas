@@ -206,7 +206,7 @@ function init(){
     state.format=format.value;
     const real=document.getElementById('format');
     if(real){real.value=format.value;real.onchange?.({target:real});}
-    persist();window.renderProductionWorkspace?.();
+    persist();window.dispatchEvent(new CustomEvent('marketing:output-change',{detail:{format:format.value}}));window.renderProductionWorkspace?.();
   };
 
   previewBtn.onclick=()=>{
