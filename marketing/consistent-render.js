@@ -5,8 +5,13 @@ const previous=renderSignature;
 renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  if(cfg.photoEdition!==1)return previous(cfg,ctx,slot,index,format,load,options);
  const covers=window.CheonginChannelCovers, choice=state.thumbnailPosting||{};
- if(index===0 && covers?.formats[format] && (choice.layout==='channels' || !choice.layout) && ctx.photos.length && !window.ArchiveStudio?.comparing){
-   return covers.fromProject(format,choice,{...options,showLogo:cfg.show.logo});
+ if(index===0 && covers?.formats[format] && ctx.photos.length && !window.ArchiveStudio?.comparing){
+   if(!choice.layout||choice.layout==='channels'||covers.editorial?.(choice.layout)){
+     return covers.fromProject(format,choice,{...options,showLogo:cfg.show.logo});
+   }
+   if(choice.exteriorId && format===state.format && document.body.classList.contains('simple-marketing-mode') && window.CheonginThumbnailEditor?.renderCover){
+     return window.CheonginThumbnailEditor.renderCover(Boolean(options.maxEdge));
+   }
  }
  cfg=SignatureCore.validate(cfg);
  const rule=cfg.platforms[format];if(!rule)throw Error('출력 규격을 확인하세요.');

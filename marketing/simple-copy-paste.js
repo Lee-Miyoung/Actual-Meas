@@ -62,16 +62,35 @@ function sceneCaption(value,product){
  if(!nameOnly)return title;
  return tessalo(product)?'넓은 판 한 장에 흐르는 마블 결':'한 장의 넓은 판에 이어지는 석재 무늬';
 }
+const writingAngles={
+ standard:['현장 소개',''],
+ question:['고객 질문 · 사진으로 답하기','고객이 자재나 시공 업체를 정하기 전에 실제로 물을 만한 질문 하나를 고르세요. 예를 들면 넓게 깔았을 때의 색감, 이음부가 보이는 정도, 걸레받이와 만나는 모습입니다.'],
+ light:['색과 채광 · 두 자리 비교','같은 자재가 창가와 방 안쪽, 또는 햇빛과 그늘에서 어떻게 보이는지 궁금해하는 고객을 위해 쓰세요. 같은 공간의 두 위치가 보일 때만 밝기나 무늬를 비교하세요.'],
+ finish:['시공 마감 · 가까이 보기','벽 끝, 이음부, 문선이나 걸레받이처럼 고객이 맡기기 전에 확인하고 싶은 곳을 다루세요. 실제 근접 사진에서 구분할 수 있는 마감 한 곳을 짚으세요.']
+};
+function photoBrief(compare){
+ return [
+  '현장 사진 보정 및 납품',
+  '첨부한 원본 사진을 직접 편집해 보정된 이미지 파일로 돌려주세요. 사진별로 결과를 따로 저장해 바로 내려받게 해 주세요. 게시용 원본에는 글씨·번호·로고·테두리를 넣지 마세요. 원본을 바탕으로 작업하고 실제 시공 재료나 마감 상태를 새로 만들어 내지 마세요.',
+  '마루는 실제 색·명암·나뭇결·광택·판 폭과 이음이 고객의 판단 기준입니다. 바닥의 색을 바꾸거나 무늬를 매끈하게 지우지 말고 노출과 화이트밸런스는 꼭 필요한 만큼만 바로잡아 주세요. 벽장재 현장도 같은 기준으로 실제 벽 무늬와 이음, 표면 질감을 살려 주세요.',
+  '시공 후 사진에서는 전선, 공구, 자투리 포장재 등 잠시 놓인 잡동사니만 정리하세요. 걸레받이, 문선, 몰딩, 콘센트, 코너, 실제 흠이나 시공 흔적은 보존하세요. 물건이 바닥 결이나 마감선을 가리고 있어서 지우려면 없는 부분을 그려야 한다면, 가리지 않은 다른 원본이나 크롭을 쓰세요. 시공 전 사진에는 정리·미화 작업을 하지 말고 비교에 필요한 수평·구도만 바로잡아 주세요.',
+  '창틀·문틀·기둥을 기준으로 기울기, 수평, 수직과 과한 원근 왜곡을 자연스럽게 바로잡아 주세요. 바닥이 넓어 보이도록 늘리거나 방의 구조·창 위치·마루판 비례를 바꾸지 마세요.',
+  compare?'표시한 시공 전·후 사진끼리 창이나 모서리 등 공통 기준점 두 곳을 찾아, 바닥·벽 경계의 높이와 화각이 최대한 맞게 각각 크롭하세요. 원본 두 장에서 함께 보이는 범위만 써서 두 결과가 같은 비율로 포개어 비교될 수 있게 주세요. 찍은 자리가 크게 다르면 억지로 맞추지 말고 어느 사진끼리 비교하기 어려운지 짧게 알려 주세요.':'현재 구성은 현장 미리보기입니다. 같은 장소의 다른 장면은 그대로 보여주세요. 시공 전과 후가 따로 명시된 사진을 함께 받으면 공통 창·모서리를 기준으로 높이·방향·화각을 맞춰 각각 같은 비율로 주세요. 순서나 밝기만으로 전후를 추측하지 마세요.',
+  '공간 전경을 보존하고, 원본에서 바닥의 실제 결이 가장 선명한 부위를 골라 바닥 근접 컷도 따로 주세요. 걸레받이와 마루가 만나는 곳, 문틀 옆이나 가장자리가 뚜렷한 사진은 그 마감 부위를 확대해 별도의 디테일 컷으로 주세요. 실제 근접 촬영본을 우선하고 전경에서 당겼다면 파일명에 확대라고 표시하세요. 픽셀이 뭉개지거나 접점이 가려진 경우에는 디테일을 생성하지 말고 보충 촬영할 위치 한 곳을 알려 주세요.',
+  '보정본과 확대 컷은 원본이 허용하는 해상도로 내고, 파일명으로 현장 전경·시공 전·시공 후·바닥 확대·가장자리 확대를 구분해 주세요. 이미지 편집이나 파일 제공을 지원하지 않는 채팅방에서는 그 점을 한 줄로 밝히고 대안으로 원본별 크롭 위치와 보정 지시를 주세요.'
+ ].join('\n');
+}
 function prompt(editor){
  const f=editor.facts(),p=state.thumbnailPosting||{},photos=state.photos||[];
  const sequence=state.signatureSequence||[],count=sequence.length||state.slideCount||photos.length||1;
- const compare=p.pairConcept==='compare';
+ const pairLayout=p.layout==='reference'||p.layout==='social'||(!p.layout||p.layout==='channels')&&['carousel','reels','shorts','youtubeCover'].includes(p.channel||state.format||'carousel');
+ const compare=pairLayout && p.pairConcept==='compare';
  const rows=[
   ['현장',f.location],['공간',p.housing],['평형',p.areaPyeong&&p.areaPyeong+'평형'],
   ['제품',f.product],['규격',window.CheonginDisplaySpec(f.spec)],['시공 분야',({floor:'마루',wall:'벽장재',both:'마루와 벽장재'})[p.material]],
   ['자재 종류',f.structure||f.kind],['구성',compare?'시공 전·후':'현장 미리보기'],['출력', '표지를 포함해 '+count+'장']
  ];
- const file=id=>photos.find(photo=>photo.id===id)?.name;
+ const file=id=>id&&(photos.find(photo=>photo.id===id)?.name||(p.exteriorPhoto?.id===id?p.exteriorPhoto.name:''));
  const order=sequence.map((slot,index)=>{
   const ids=index===0 && file(p.photoId)?[p.photoId]:(slot.photoIds||[]);
   const names=ids.map(file).filter(Boolean);
@@ -79,21 +98,32 @@ function prompt(editor){
   return note?(index===0?'표지':(index+1)+'번째 장면')+' · '+note:'';
  }).filter(Boolean);
  if(!sequence.length&&file(p.photoId))order.push('표지 · '+file(p.photoId));
- if(file(p.beforeId)&&file(p.afterId)&&p.beforeId!==p.afterId){
+ if(pairLayout&&file(p.beforeId)&&file(p.afterId)&&p.beforeId!==p.afterId){
   order.push((compare?'시공 전':'첫 번째 장면')+' · '+file(p.beforeId),(compare?'시공 후':'두 번째 장면')+' · '+file(p.afterId));
  }
+ if(file(p.exteriorId))order.push('표지 오른쪽 위 주택 외관 사진 · '+file(p.exteriorId));
+ if(p.layout==='grain'&&file(p.detailId))order.push('표지의 소재 확대 사진 · '+file(p.detailId));
+ const angle=writingAngles[p.writingAngle]?.[1];
  const headings=[postLabels.thumbnailTitle,'사진문구',...Object.values(postLabels).slice(1)];
  const notes=productNotes(f.product);
+ const scope=p.requestScope||'both';
+ const fieldInfo=['이번 현장',...rows.filter(([,v])=>v).map(([k,v])=>k+' · '+v)].join('\n');
+ const photoOrder=order.length?['앱에서 사용할 사진 순서',...order,'파일명과 순서는 사진을 맞춰 보는 용도입니다. 게시 문구에는 싣지 마세요.'].join('\n'):'';
+ if(scope==='photos')return [
+  '청인마루는 실제 마루·벽장재 시공 현장을 기록합니다. 첨부한 사진을 아래 기준으로 보정해 주세요.',
+  fieldInfo,photoOrder,photoBrief(compare)
+ ].filter(Boolean).join('\n\n');
  return [
   '청인마루 시공 사례 한 편을 작성해 주세요. 청인마루는 실제 현장에서 마루와 벽장재를 시공하는 업체입니다. 독자는 우리 집이나 매장에 어떤 마감재가 어울릴지 고민하는 고객입니다. 아래 정보와 이 메시지에 함께 첨부한 사진, 아래에 제공된 제품 자료를 바탕으로, 청인마루가 직접 현장을 소개하는 한국어 게시물을 써 주세요.',
-  ['이번 현장',...rows.filter(([,v])=>v).map(([k,v])=>k+' · '+v)].join('\n'),
-  ...(order.length?[['앱에서 사용할 사진 순서',...order,'파일명과 순서는 사진을 맞춰 보는 용도입니다. 게시 문구에는 싣지 마세요.'].join('\n')]:[]),
+  fieldInfo,...(photoOrder?[photoOrder]:[]),
+  ...(scope==='both'?[photoBrief(compare),'사진 보정본과 게시 문구를 함께 주세요. 아래 일곱 항목과 코드 블록 규칙은 앱에 붙여넣을 게시 문구에만 적용됩니다. 보정 파일과 촬영 메모는 블록 바깥에 별도로 주세요.']:[]),
   ...(notes?[notes]:[]),
   ['사진을 읽는 방법',
    '시공 대상부터 확인하세요. 벽장재 현장이면 벽면의 무늬·이음·빛을 중심으로, 마루 현장이면 바닥의 결·판의 방향·인접한 마감과의 조화를 중심으로 보세요. 두 자재가 모두 명시된 현장은 각 사진에 실제로 보이는 자재를 다뤄 주세요.',
    compare?'시공 전·후가 확인된 사진끼리만 비교하고, 두 사진에서 눈으로 확인할 수 있는 차이를 써 주세요.':'현장 미리보기입니다. 여러 사진은 같은 현장의 다른 시선입니다. 사진 순서로 시공 전후나 완공 여부를 판단하지 마세요.',
    '사진 순서가 있으면 파일명과 대조하고, 순서를 따로 주지 않으면 첨부 순서대로 쓰세요. 카탈로그·샘플·연출 사진이 섞이면 그 사진은 소재의 패턴을 설명하는 데만 쓰세요. 연출 사진의 가구나 용도를 이 현장의 정보로 옮기지 마세요. 같은 공간이 반복되면 전경, 가까이 보이는 무늬, 빛이 닿는 부분처럼 실제로 달라 보이는 점을 골라 주세요. 사진이 한 장도 보이지 않으면 사진 첨부만 한 번 요청하세요. 현장명이나 평형 등 비어 있는 정보는 생략하세요.'
   ].join('\n'),
+  ...(angle?[[angle,'썸네일은 그 고민을 고객이 말할 법한 짧은 질문으로 쓰세요. 두 번째 사진이 있으면 그 사진에서 답을 직접 볼 수 있는 질문을 고르고, 두 번째 사진문구는 어디를 보면 되는지 알려 주세요. 사진이 한 장이면 그 한 장 안에서 답을 찾게 하세요. 선택한 주제를 보여주는 사진이 없으면 눈으로 확인 가능한 다른 질문으로 바꿔 주세요. 잘 보이지 않는 이음새가 없다고 단정하거나 “믿고 맡기세요”라고 쓰지 마세요. 고정댓글은 같은 고민을 가진 사람이 자기 집이나 매장의 상황을 편하게 말할 수 있는 질문 하나로 써 주세요.'].join('\n')]:[]),
   ['문체와 사실 기준',
    '전시장에서 고객에게 사진을 한 장씩 보여주며 설명하듯 짧고 편안한 존댓말을 쓰세요. 사진에서 고객이 직접 찾아볼 수 있는 특징을 짚어 주세요. ‘고급스러운 공간의 완성’ 같은 상투적인 표현, 과장, 이모지는 빼 주세요.',
    '제품명·색상명·규격은 제공한 표기를 따르세요. 제품 특징을 더 확인할 수 있으면 해당 모델의 제조사 홈페이지나 공식 카탈로그에서 찾아 주세요. 검색이 어려운 채팅방에서는 이 요청문에 담긴 자료와 사진으로 확인할 수 있는 특징을 사용하세요. 다른 패턴이나 다른 현장의 시공 사례를 이 현장에 섞지 마세요. 무늬가 닮았다는 이유로 실제 대리석이나 원목이라고 단정하지 마세요. 사진으로 알 수 없는 공법, 성능, 고객 반응, 가격, 박스 수, 연락처는 덧붙이지 마세요.'
@@ -106,7 +136,7 @@ function prompt(editor){
    '유튜브 설명글은 이 현장의 어떤 부분을 볼 수 있는지 2~3문장으로 소개하세요. 인스타 캡션을 그대로 반복하지 마세요.',
    '고정댓글은 사진을 본 사람이 자기 취향이나 고민을 쉽게 답할 수 있는 구체적인 질문 하나면 됩니다. 해시태그는 #청인마루를 포함해 현장과 직접 관련된 4~7개를 한 줄에 써 주세요.'
   ].join('\n'),
-  '앱에 붙여넣을 답변 형식\n아래 일곱 제목의 글자·괄호·순서를 그대로 유지하고, 각 제목 바로 다음 줄에 완성 문구를 채워 주세요. 전체를 복사할 수 있도록 일반 텍스트 코드 블록 하나에 담으세요. 게시 문구에는 파일명, 출처 링크, 인용 기호나 작성 지시를 옮기지 마세요. 블록 밖 인사말, 작업 설명, 대안 제목은 생략하세요.',
+  '앱에 붙여넣을 답변 형식\n아래 일곱 제목의 글자·괄호·순서를 그대로 유지하고, 각 제목 바로 다음 줄에 완성 문구를 채워 주세요. 게시 문구 전체를 복사할 수 있도록 일반 텍스트 코드 블록 하나에 담으세요. 게시 문구에는 파일명, 출처 링크, 인용 기호나 작성 지시를 옮기지 마세요. 블록 밖 인사말, 작업 설명, 대안 제목은 생략하세요.',
   headings.map(label=>'['+label+']').join('\n')
  ].join('\n\n');
 }
@@ -125,7 +155,22 @@ function mount(){
  for(const b of [copy,paste,apply,cancel,legacy])b.type='button';
  input.id='simple-copy-paste';input.rows=4;input.setAttribute('aria-label','ChatGPT 문구');input.placeholder='[썸네일 제목]\n[인스타 캡션]\n[고정댓글]';
  status.setAttribute('role','status');row.append(apply,legacy,cancel);manual.append(input,row);manual.hidden=true;legacy.hidden=true;actions.append(copy,paste);
- card.append(actions,manual,status,pack);
+ const angleLabel=el('label','문구 방향'),angleSelect=el('select');
+ angleSelect.setAttribute('aria-label','문구 방향');
+ for(const [key,[label]] of Object.entries(writingAngles)){
+  const option=el('option',label);option.value=key;angleSelect.append(option);
+ }
+ angleLabel.append(angleSelect);
+ angleSelect.onchange=()=>{state.thumbnailPosting??={};state.thumbnailPosting.writingAngle=angleSelect.value;persist();};
+ const scopeLabel=el('label','요청 범위'),scopeSelect=el('select');
+ scopeSelect.setAttribute('aria-label','요청 범위');
+ for(const [key,label] of [['both','사진 보정 + 게시 문구'],['copy','게시 문구만'],['photos','사진 보정만']]){
+  const option=el('option',label);option.value=key;scopeSelect.append(option);
+ }
+ scopeLabel.append(scopeSelect);
+ function showScope(){angleLabel.hidden=scopeSelect.value==='photos';}
+ scopeSelect.onchange=()=>{state.thumbnailPosting??={};state.thumbnailPosting.requestScope=scopeSelect.value;showScope();persist();};
+ card.append(scopeLabel,angleLabel,actions,manual,status,pack);
  const output=grid.querySelector('.simple-output-card');grid.insertBefore(card,output);
  let project=null;
  function close(){input.blur();manual.hidden=true;input.value='';legacy.hidden=true;}
@@ -161,7 +206,7 @@ function mount(){
  };
  input.onpaste=e=>{if(input.readOnly)return;const text=e.clipboardData?.getData('text/plain');if(text&&Object.keys(parse(text).result).length){e.preventDefault();importText(text);}};
  apply.onclick=()=>importText(input.value);legacy.onclick=()=>importText(input.value,true);cancel.onclick=close;
- function syncProject(){if(project===state.projectId)return;project=state.projectId;close();status.textContent='';}
+ function syncProject(){if(project===state.projectId)return;project=state.projectId;scopeSelect.value=state.thumbnailPosting?.requestScope||'both';showScope();angleSelect.value=state.thumbnailPosting?.writingAngle||'standard';close();status.textContent='';}
  syncProject();setInterval(syncProject,500);
 }
 const timer=setInterval(()=>{mount();if(mounted)clearInterval(timer);},200);

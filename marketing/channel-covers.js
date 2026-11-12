@@ -7,6 +7,7 @@
     carousel: '인스타 피드', reels: '인스타 릴스', shorts: '유튜브 쇼츠',
     youtubeCover: '유튜브 썸네일', naverCover: '네이버 블로그', kakao: '카카오채널'
   };
+  const editorial=key=>key==='gallery'||key==='grain';
   const paper = '#f5f1e8', ink = '#272e29', muted = '#4e584e', white = '#fffdf5';
   const categories = {floor:'마루', wall:'벽장재', both:'마루·벽장재'};
   const ruleSet = SignatureCore.create().platforms;
@@ -42,7 +43,7 @@
     const product = selected && [selected.brand, selected.model, selected.color].filter((s,i,a) => s && a.indexOf(s) === i).join(' ');
     return {
       product:manual.product || product || '', kind:selected?.category || (selected?.type==='wall' ? '벽장재' : ''),
-      spec:manual.spec || selected?.size || '', structure:manual.structure || state.productStructure || '',
+      spec:window.CheonginDisplaySpec?.(manual.spec || selected?.size || '') ?? (manual.spec || selected?.size || ''), structure:manual.structure || state.productStructure || '',
       location:manual.location || state.marketingSite || join(state.region, state.space) || state.title || '',
       title:manual.title || ''
     };
@@ -59,8 +60,9 @@
     canvas.typeLayout = [];
     canvas.photoLayout = [];
     const kind = material(info,info.material);
-    const pair = Boolean(photos.before && photos.after && photos.before.id !== photos.after.id);
-    const headline = info.title?.trim() || suggestedTitle(channel, info, kind, pair);
+    const pair = !editorial(info.layout) && Boolean(photos.before && photos.after && photos.before.id !== photos.after.id);
+    const defaultHeadline=info.layout==='grain'?(kind==='wall'?'멀리서도 벽의 결이 보일까요?':'바닥의 결, 멀리서도 보일까요?'):suggestedTitle(channel,info,kind,pair);
+    const headline=info.title?.trim()||defaultHeadline;
     const materialLabel = categories[kind] + ' 시공';
     const where = join(info.housing && !info.location?.includes(info.housing) ? info.housing : '', info.location);
     const details = {floor:'바닥의 결',wall:'벽면 질감',both:'소재 디테일'}[kind];
@@ -76,7 +78,7 @@
       g.fillStyle = color;
       g.fillRect(x,y,w,h);
     }
-    function photo(p,x,y,w,h,{focusY,zoom=1} = {}) {
+    function photo(p,x,y,w,h,{focusY,zoom=1,target=p.target||'background'} = {}) {
       const im = p.image;
       const transform=p.transform||{};
       const fit = Math.max(w/im.width,h/im.height)*zoom*Math.max(1,Math.min(3,transform.zoom||1));
@@ -86,7 +88,7 @@
       const sx=(im.width-sw)*Math.max(0,Math.min(1,anchorX));
       const sy=(im.height-sh)*Math.max(0,Math.min(1,anchorY));
       g.drawImage(im,sx,sy,sw,sh,x,y,w,h);
-      canvas.photoLayout.push({id:p.id,target:p.target||'background',anchorX,anchorY,x,y,width:w,height:h,sx,sy,sw,sh,sourceWidth:im.width,sourceHeight:im.height,fit:'cover'});
+      canvas.photoLayout.push({id:p.id,target,anchorX,anchorY,x,y,width:w,height:h,sx,sy,sw,sh,sourceWidth:im.width,sourceHeight:im.height,fit:'cover'});
     }
     function type(value,x,y,w,size,{rows=1,serif=false,color=ink,align='left',leading=1.24} = {}) {
       if (!value) return 0;
@@ -109,21 +111,64 @@
     }
     function tag(role,x,y) {style.drawLabel(g,canvas,info,role,x,y);}
     function pairStrip(y,height) {
-      const gap=12, margin=60, width=(W-2*margin-gap)/2;
-      for(const [index,role] of ['before','after'].entries()){
-        const x=margin+index*(width+gap);
-        rect(x-2,y-2,width+4,height+4,paper);photo(photos[role],x,y,width,height);tag(role,x+12,y+12);
+      for(const {role,x,width} of style.sceneFrames(W,60)){
+        rect(x-1,y-1,width+2,height+2,paper);photo(photos[role],x,y,width,height);tag(role,x+12,y+12);
       }
     }
     function fineLine(x,y,w,color) {rect(x,y,w,2,color);}
     const main = photos.hero;
 
-    if (channel==='carousel') {
+    function editorialCover(){
+      const wide=W>H,tall=H/W>1.55,grain=info.layout==='grain',u=W/1080;
+      const bg=grain?'#f3efe5':'#213b35',bodyInk=grain?'#24332b':'#fffaf0',smallInk=grain?'#596157':'#d8ded1';
+      const margin=(wide?39:54)*u;
+      rect(0,0,W,H,bg);
+      // The image carries the first glance. Keep the actual site, title and specifications on one quiet panel.
+      let px,py,pw,ph;
+      if(wide){px=W*.60;py=0;pw=W-px;ph=H;}
+      else{px=0;py=H-(tall?510:Math.min(365,H/u*.34))*u;pw=W;ph=H-py;}
+      const imgW=wide?px:W,imgH=wide?H:py;
+      if(grain){
+        const gap=imgW*.035,detailW=imgW*.35;
+        const portraitDetail=photos.detail||{...main,transform:info.transforms?.detail||{}};
+        photo(main,0,0,imgW-gap-detailW,imgH);
+        photo(portraitDetail,imgW-detailW,0,detailW,imgH,{target:'detail',zoom:photos.detail?1:1.65,focusY:kind==='floor' ? .76 : .42});
+      }else photo(main,0,0,imgW,imgH);
+      brand(margin,tall?128*u:32*u);
+      const x=px+margin,width=pw-2*margin;
+      const headSize=(wide?47:tall?68:58)*u,titleRows=wide?3:2;
+      // Reserve the actual typography height. On a landscape cover the circular photo and badge live above the text.
+      const headerSpace=wide&&photos.exterior?H*.23:wide&&(info.housing||info.areaPyeong)?H*.19:0;
+      const place=(value,size,rows,serif,color,y)=>type(value,x,y,width,size,{rows,serif,color,leading:1.2});
+      const items=[
+        {value:info.location===info.housing?'':info.location,size:(wide?19:23)*u,rows:1,color:smallInk,gap:12*u},
+        {value:headline,size:headSize,rows:titleRows,serif:true,color:bodyInk,gap:18*u},
+        {value:info.product,size:(wide?23:29)*u,rows:2,color:bodyInk,gap:4*u},
+        {value:info.spec,size:(wide?19:25)*u,rows:1,color:smallInk,gap:0}
+      ].filter(item=>item.value);
+      const lineHeight=item=>{
+        const family=item.serif?useSerif:useSans;
+        const l=CheonginType.layout(item.value,{width,fontSize:item.size,minFontSize:Math.max(16,Math.round(item.size*.66)),maxLines:item.rows,leading:1.2,
+          measure:(v,n)=>{g.font=item.value===headline?style.font(n):'400 '+n+'px '+family;return g.measureText(v).width;}});
+        return l.lines.length*l.lineHeight;
+      };
+      function groupHeight(){return items.reduce((sum,item)=>sum+lineHeight(item)+item.gap,0);}
+      const inset=tall?105*u:18*u;
+      const available=ph-headerSpace-inset-14*u;
+      let height=groupHeight();
+      if(height>available){const factor=available/height;items.forEach(item=>{item.size=Math.max(16,item.size*factor);item.gap*=factor;});height=groupHeight();}
+      let y=py+headerSpace+Math.max(10*u,(ph-headerSpace-inset-height)/2);
+      for(const item of items)y+=place(item.value,item.size,item.rows,item.serif,item.color,y)+item.gap;
+      canvas.dataset.template=info.layout;
+    }
+
+    if(editorial(info.layout))editorialCover();
+    else if (channel==='carousel') {
       photo(main,0,0,W,1150);
       brand(60,42,182);
       
-      fineLine(60,148,960,'rgba(255,255,247,.52)');
-      type(headline,58,170,920,78,{rows:2,serif:true,color:white});
+      fineLine(60,photos.exterior?214:148,960,'rgba(255,255,247,.52)');
+      type(headline,58,photos.exterior?230:170,920,78,{rows:2,serif:true,color:white});
       if(pair)pairStrip(870,240);
       rect(0,1150,W,H-1150,paper);
       type(where||materialLabel,60,1184,960,27,{color:muted});
@@ -148,15 +193,15 @@
       type(where||materialLabel,68,822,790,27,{color:muted});
       type(headline,65,878,810,67,{rows:2,serif:true});
     } else if (channel==='youtubeCover') {
-      const side=548;
+      const gap=pair?Math.round(W*.041):4,side=548;
       photo(pair?photos.before:main,0,0,side,H);
-      photo(pair?photos.after:main,side+4,0,W-side-4,H,{focusY:(pair?photos.after:main).focusY ?? .46});
-      rect(side,0,4,H,paper);
+      photo(pair?photos.after:main,side+gap,0,W-side-gap,H,{focusY:(pair?photos.after:main).focusY ?? .46});
+      rect(side,0,gap,H,paper);
       brand(40,36,144);
       type(materialLabel,40,186,side-72,25,{color:'#eddfbd'});
       const used=type(headline,39,244,side-76,72,{rows:3,serif:true,color:white,leading:1.20});
       const productHeight=type(info.product,40,244+used+30,side-72,25,{rows:2,color:white});type(info.spec,40,244+used+productHeight+44,side-72,22,{color:white});
-      if (pair) {tag('before',39,632);tag('after',side+34,632);}
+      if (pair) {tag('before',39,632);tag('after',side+gap+30,632);}
     } else if (channel==='naverCover') {
       const top=715;
       photo(main,0,0,W,top,{focusY:main.focusY ?? .42});
@@ -179,12 +224,15 @@
       rect(0,730,W,70,'#354239');
       type(kind==='wall'?'상담 시 시공할 벽면 사진을 보내주세요':kind==='floor'?'상담 시 기존 바닥 사진을 보내주세요':'상담 시 벽과 바닥 사진을 보내주세요',38,750,724,23,{color:white});
     }
+    const cornerUnit=W/1080,cornerTop=(channel==='reels'||channel==='shorts'?(editorial(info.layout)?128*cornerUnit:180):channel==='kakao'?32:42);
+    const marginRight=(channel==='reels'||channel==='shorts'?70:52)*cornerUnit;
+    const badgeRight=style.exterior(g,canvas,photos.exterior,W,W-marginRight,cornerTop,W>H);
     const badgeLines=[info.housing,info.areaPyeong?info.areaPyeong+'평형':''].filter(Boolean);
     if(badgeLines.length){
-      const unit=W/1080, margin=channel==='reels'||channel==='shorts'?70*unit:52*unit;
-      const y=channel==='reels'||channel==='shorts'?180:channel==='kakao'?32:42;
+      const unit=W/1080;
+      const y=cornerTop;
       g.save();g.font='500 '+25*unit+'px '+useSans;
-      const bw=Math.max(118*unit,...badgeLines.map(t=>g.measureText(t).width+40*unit)),bh=(badgeLines.length===2?86:52)*unit,bx=W-margin-bw;
+      const bw=Math.max(118*unit,...badgeLines.map(t=>g.measureText(t).width+40*unit)),bh=(badgeLines.length===2?86:52)*unit,bx=badgeRight-bw;
       g.fillStyle='rgba(35,40,35,.42)';g.strokeStyle='rgba(255,255,255,.6)';g.lineWidth=unit;g.beginPath();g.roundRect(bx,y,bw,bh,12*unit);g.fill();g.stroke();
       g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';
       badgeLines.forEach((t,i)=>{g.font=(i?'400 ':'500 ')+(i?21:25)*unit+'px '+useSans;g.fillText(t,bx+bw/2,y+(badgeLines.length===2?27+i*33:27)*unit);});
@@ -201,12 +249,14 @@
     const main = get(choice.photoId) || best;
     if (!main) throw Error('표지 사진을 먼저 선택하세요.');
     const info = getProjectInfo(main.id);
-    Object.assign(info,{location:choice.siteText?.trim() || info.location,title:choice.titles?.[channel] || info.title, housing:choice.housing || '', areaPyeong:choice.areaPyeong || '', material:choice.material,logoTone:choice.logoTone,pairConcept:choice.pairConcept,firstScene:choice.firstScene,secondScene:choice.secondScene});
+    Object.assign(info,{layout:choice.layout,transforms:choice.transforms,location:choice.siteText?.trim() || info.location,title:(editorial(choice.layout)?choice.title:choice.titles?.[channel]) || info.title, housing:choice.housing || '', areaPyeong:choice.areaPyeong || '', material:choice.material,logoTone:choice.logoTone,pairConcept:choice.pairConcept,firstScene:choice.firstScene,secondScene:choice.secondScene});
     const src = {hero:main};
-    if (['carousel','reels','shorts','youtubeCover'].includes(channel) && get(choice.beforeId) && get(choice.afterId) && choice.beforeId!==choice.afterId) {
+    if (!editorial(choice.layout) && ['carousel','reels','shorts','youtubeCover'].includes(channel) && get(choice.beforeId) && get(choice.afterId) && choice.beforeId!==choice.afterId) {
       src.before=get(choice.beforeId); src.after=get(choice.afterId);
     }
-    if ((channel==='naverCover'||(channel==='shorts'&&!src.before)) && get(choice.detailId)) src.detail=get(choice.detailId);
+    if ((choice.layout==='grain'||channel==='naverCover'||(channel==='shorts'&&!src.before)) && get(choice.detailId)) src.detail=get(choice.detailId);
+    const outside=choice.exteriorId&&(get(choice.exteriorId)||(choice.exteriorPhoto?.id===choice.exteriorId?choice.exteriorPhoto:null));
+    if(outside)src.exterior=outside;
     const decoded=new Map(), photos={};
     try {
       for (const [role,p] of Object.entries(src)) {
@@ -224,5 +274,5 @@
     } finally {for (const canvas of decoded.values()) releaseCanvas(canvas);}
   }
 
-  window.CheonginChannelCovers={formats,render,fromProject,getProjectInfo,material,suggestedTitle};
+  window.CheonginChannelCovers={formats,render,fromProject,getProjectInfo,material,suggestedTitle,editorial};
 })();
