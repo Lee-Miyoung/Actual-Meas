@@ -178,3 +178,172 @@ body.simple-marketing-mode #studio .desk-preview canvas{max-height:68vh!importan
   .simple-marketing-heading h1{font-size:30px}
   .simple-marketing-heading p{font-size:13px}
 }
+
+
+/* iPad workbench v2: preview is always visible, controls have their own scroll area. */
+@media (min-width:900px) and (max-width:1366px){
+  body.simple-marketing-mode{
+    overflow:hidden!important;
+    height:100dvh!important;
+  }
+  body.simple-marketing-mode main{
+    height:100dvh!important;
+    overflow:hidden!important;
+    padding:12px 14px!important;
+  }
+  body.simple-marketing-mode #studio,
+  body.simple-marketing-mode #studio .production-desk{
+    height:calc(100dvh - 24px)!important;
+    min-height:0!important;
+  }
+  body.simple-marketing-mode #studio .production-desk{
+    display:grid!important;
+    grid-template-columns:minmax(330px,390px) minmax(0,1fr)!important;
+    gap:16px!important;
+    align-items:stretch!important;
+    max-width:none!important;
+  }
+  body.simple-marketing-mode #studio .production-desk>.simple-marketing-panel{
+    grid-column:1!important;
+    grid-row:1!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:0 6px 24px 0!important;
+  }
+  body.simple-marketing-mode #studio .production-desk>.desk-layout{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:block!important;
+    position:relative!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    margin:0!important;
+    padding:0!important;
+    background:#f5f4f0!important;
+  }
+  body.simple-marketing-mode #studio .desk-layout>.desk-preview{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    height:100%!important;
+    max-width:none!important;
+    min-height:0!important;
+    margin:0!important;
+  }
+  body.simple-marketing-mode #studio .desk-preview .preview-heading{
+    flex:0 0 auto!important;
+    padding:0 0 8px!important;
+    margin:0 0 6px!important;
+  }
+  body.simple-marketing-mode #studio #production-preview{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    padding:8px!important;
+    overflow:hidden!important;
+  }
+  body.simple-marketing-mode #studio #production-preview #designs{
+    width:100%!important;
+    height:100%!important;
+    max-width:none!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    margin:0!important;
+  }
+  body.simple-marketing-mode #studio #production-preview canvas{
+    width:auto!important;
+    height:auto!important;
+    max-width:100%!important;
+    max-height:100%!important;
+    object-fit:contain!important;
+    margin:auto!important;
+  }
+  body.simple-marketing-mode #studio .preview-navigation{
+    flex:0 0 42px!important;
+    margin:4px 0 0!important;
+  }
+  body.simple-marketing-mode #studio #production-filmstrip{
+    display:none!important;
+  }
+  body.simple-marketing-mode .simple-marketing-heading{
+    margin-bottom:12px!important;
+  }
+  body.simple-marketing-mode .simple-marketing-heading h1{
+    font-size:27px!important;
+  }
+  body.simple-marketing-mode .simple-marketing-heading p{
+    font-size:12px!important;
+    margin-top:5px!important;
+  }
+  body.simple-marketing-mode .simple-input-grid{
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+  }
+  body.simple-marketing-mode .simple-product-accordion,
+  body.simple-marketing-mode .simple-output-card,
+  body.simple-marketing-mode .simple-thumbnail-card{
+    grid-column:1!important;
+  }
+  body.simple-marketing-mode .simple-card,
+  body.simple-marketing-mode .simple-product-accordion{
+    border-radius:8px!important;
+  }
+  body.simple-marketing-mode .simple-card{
+    padding:14px!important;
+  }
+  body.simple-marketing-mode .simple-file-label{
+    min-height:62px!important;
+  }
+}
+
+/* Portrait iPad: top preview stays visible; controls scroll underneath it. */
+@media (min-width:700px) and (max-width:899px){
+  body.simple-marketing-mode #studio .production-desk{
+    display:grid!important;
+    grid-template-rows:minmax(300px,45dvh) minmax(0,1fr)!important;
+    height:calc(100dvh - 24px)!important;
+    min-height:0!important;
+    gap:10px!important;
+  }
+  body.simple-marketing-mode #studio .production-desk>.desk-layout{
+    grid-row:1!important;
+    order:unset!important;
+    position:relative!important;
+    height:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    border:0!important;
+  }
+  body.simple-marketing-mode #studio .production-desk>.simple-marketing-panel{
+    grid-row:2!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  body.simple-marketing-mode #studio .desk-layout>.desk-preview{
+    display:flex!important;
+    flex-direction:column!important;
+    height:100%!important;
+  }
+  body.simple-marketing-mode #studio #production-preview{
+    flex:1!important;
+    min-height:0!important;
+    padding:6px!important;
+    overflow:hidden!important;
+  }
+  body.simple-marketing-mode #studio #production-preview #designs{
+    width:100%!important;height:100%!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;
+  }
+  body.simple-marketing-mode #studio #production-preview canvas{
+    width:auto!important;height:auto!important;max-width:100%!important;max-height:100%!important;
+  }
+}
