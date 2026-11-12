@@ -30,6 +30,7 @@ function validate(raw){
   Object.assign(c.tokens,{safeMargin:c.layout.margin,titleFont:c.type.title,titleSize:c.type.titleSize,titleLineHeight:c.type.leading,metadataFont:c.type.body,metadataSize:c.type.bodySize});
  }
  if(raw.archiveVersion!==undefined){if(raw.archiveVersion!==1||raw.version!==2)throw Error('지원하지 않는 아카이브 디자인입니다.');c.archiveVersion=1;}
+ if(raw.photoEdition!==undefined){if(raw.photoEdition!==1||raw.archiveVersion!==1)throw Error('지원하지 않는 사진 포맷입니다.');c.photoEdition=1;}
  return c;
 }
 function product(p){if(!p)return null;const out={};for(const k of ['id','type','brand','category','model','color','size','pack','coverage','material'])out[k]=String(p[k]||'').trim().slice(0,2000);if(!out.model||out.id.startsWith('category:')||out.id==='unconfirmed')return null;return out;}
