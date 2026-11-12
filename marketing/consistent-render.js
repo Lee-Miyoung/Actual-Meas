@@ -22,8 +22,8 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  const detail=[info?.size,ctx.structure].filter(Boolean).join(' · ');
  const location=[ctx.region,ctx.space].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · ');
  const all=[title,product,detail,location,'시공 전 시공 후 청인마루 공간의 위로가 되다'].join(' ');
- await Promise.all([document.fonts.load('500 44px Pretendard',all),document.fonts.load('400 26px Pretendard',all)]);
- function text(value,x,y,w,size,rows=1,weight=400,align='left',alpha=1){
+ await Promise.all([document.fonts.load('400 44px "Studio Serif"',all),document.fonts.load('500 26px Pretendard',all)]);
+ function text(value,x,y,w,size,rows=1,weight=400,align='left',alpha=1,family='Pretendard'){
   if(!value)return 0;
   const layout=CheonginType.layout(String(value),{width:w,fontSize:size,minFontSize:Math.min(size,wide?18:21),maxLines:rows,leading:1.32,measure:(s,n)=>{g.font=`${weight} ${n}px Pretendard`;return g.measureText(s).width;}});
   g.save();g.font=`${weight} ${layout.size}px Pretendard`;g.fillStyle=`rgba(255,255,255,${alpha})`;g.textBaseline='top';g.shadowColor='rgba(0,0,0,.42)';g.shadowBlur=7;
@@ -68,31 +68,33 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
 
   if(!rule.natural||format==='naverCover'){
    bottomGradient();
-   if(location)text(location,m,wide?36:58,720,wide?19:21,1,500,'left',.9);
-   text(String(index+1).padStart(2,'0')+' / '+String(total).padStart(2,'0'),wide?900:914,wide?36:58,112,wide?18:20,1,500,'right',.78);
+   text('ㅊㅇㅁㄹ',m,wide?34:54,150,wide?18:20,1,500,'left',.78,'Studio Serif');
+   if(location)text(location,wide?620:600,wide?34:54,1080-(wide?620:600)-m,wide?18:20,1,500,'right',.82);
+   text(String(index+1).padStart(2,'0')+' / '+String(total).padStart(2,'0'),wide?900:914,wide?72:92,112,wide?15:17,1,500,'right',.6);
+
+   if(cfg.show.logo){
+    const mark=await designMarks.light;
+    if(mark){
+     const w=wide?310:390,h=w*mark.height/mark.width;
+     g.save();g.globalAlpha=.085;g.drawImage(mark,(1080-w)/2,(H-h)/2,w,h);g.restore();
+    }
+   }
 
    const detailY=H-(wide?44:vertical?76:70);
    const productY=detailY-(wide?35:42);
    const titleY=productY-(wide?58:88);
-   if(title)text(title,m,titleY,wide?780:760,wide?34:42,2,500,'left',.98);
-   if(cfg.show.product&&product)text(product,m,productY,wide?760:760,wide?22:27,1,600,'left',.96);
-   if(cfg.show.spec&&detail)text(detail,m,detailY,wide?760:760,wide?18:22,1,400,'left',.88);
-
-   if(cfg.show.logo&&last){
-    const mark=await designMarks.light;
-    if(mark){
-     const w=wide?118:145,h=w*mark.height/mark.width,x=1080-m-w,y=H-(wide?115:150);
-     g.save();g.globalAlpha=.9;g.drawImage(mark,x,y,w,h);g.restore();
-     text('공간의 위로가 되다',x-20,y+h+8,w+20,wide?15:17,1,400,'right',.82);
-    }
-   }
+   if(title)text(title,m,titleY,wide?780:760,wide?34:43,2,400,'left',.96,'Studio Serif');
+   if(cfg.show.product&&product)text(product,m,productY,wide?760:760,wide?21:26,1,600,'left',.95);
+   if(cfg.show.spec&&detail)text(detail,m,detailY,wide?760:760,wide?17:21,1,400,'left',.84);
   }else{
    bottomGradient();
-   if(location)text(location,m,58,760,21,1,500,'left',.9);
+   text('ㅊㅇㅁㄹ',m,54,150,20,1,500,'left',.78,'Studio Serif');
+   if(location)text(location,600,54,1080-600-m,20,1,500,'right',.82);
+   if(cfg.show.logo){const mark=await designMarks.light;if(mark){const w=390,h=w*mark.height/mark.width;g.save();g.globalAlpha=.085;g.drawImage(mark,(1080-w)/2,(H-h)/2,w,h);g.restore();}}
    const detailY=H-70,productY=detailY-42,titleY=productY-88;
-   if(title)text(title,m,titleY,760,42,2,500);
-   if(cfg.show.product&&product)text(product,m,productY,760,27,1,600);
-   if(cfg.show.spec&&detail)text(detail,m,detailY,760,22,1,400,'left',.88);
+   if(title)text(title,m,titleY,760,43,2,400,'left',.96,'Studio Serif');
+   if(cfg.show.product&&product)text(product,m,productY,760,26,1,600);
+   if(cfg.show.spec&&detail)text(detail,m,detailY,760,21,1,400,'left',.84);
   }
   c.previewMeta={title,productData:info||{},site:ctx.site,structure:ctx.structure||''};
   return c;
