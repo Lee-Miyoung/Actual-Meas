@@ -20,7 +20,7 @@ async function renderedPhoto(p,max=2200){
 }
 async function drawThumb(after,before,exterior,site,work){
  if(!after)throw Error('대표 시공 후 사진을 선택하세요.');
- await Promise.all([document.fonts.load('400 72px "Studio Serif"',site+work),document.fonts.load('500 24px Pretendard','시공 전 시공 후 외관 ㅊㅇㅁㄹ')]);
+ await Promise.all([document.fonts.load('400 72px "Studio Serif"',site+work),document.fonts.load('400 24px "Studio Sans"','시공 전 시공 후 외관 ㅊㅇㅁㄹ')]);
  const c=document.createElement('canvas');c.width=1080;c.height=1920;
  const g=c.getContext('2d');g.fillStyle='#eeeae1';g.fillRect(0,0,c.width,c.height);
  const gap=8,hasSide=!!(before||exterior),leftW=hasSide?330:0,rightX=hasSide?leftW+gap:0,rightW=1080-rightX;
@@ -51,7 +51,7 @@ async function drawThumb(after,before,exterior,site,work){
    g.save();g.globalAlpha=.085;g.drawImage(mark,rightX+(rightW-mw)/2,780-mh/2,mw,mh);g.restore();mark.src='';
   }catch(_){}
 
-  function label(text,x,y){g.save();g.font='500 21px Pretendard';g.fillStyle='rgba(255,255,255,.9)';g.shadowColor='rgba(0,0,0,.5)';g.shadowBlur=5;g.fillText(text,x,y);g.restore();}
+  function label(text,x,y){g.save();g.font='400 21px "Studio Sans"';g.fillStyle='rgba(255,255,255,.9)';g.shadowColor='rgba(0,0,0,.5)';g.shadowBlur=5;g.fillText(text,x,y);g.restore();}
   label('시공 후',rightX+28,52);
   if(exterior)label('외관',24,52);
   if(before)label('시공 전',24,exterior?952:52);
