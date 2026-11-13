@@ -87,20 +87,26 @@
     return x>=box.x && x<=box.x+w && y>=box.y && y<=box.y+h;
   }
   const endings={
-    signature:{label:'여운 · 브랜드 서명',choices:[
+    signature:{label:'회사 소개 · 청인마루의 일',section:'청인마루  /  마루·벽장재 시공',note:'전시장에서는 샘플을 나란히 놓고 색과 결을 봅니다. 현장에서는 문틀과 모서리가 만나는 자리까지 살핍니다.',choices:[
       ['공간의 위로가 되다.','공간의 위로가 되다.'],
       ['햇살은 창을 지나, 마루 위에 머뭅니다.','빛이 스치면, 벽의 무늬가 드러납니다.'],
       ['가구가 들어오기 전, 집은 벌써 따뜻합니다.','가구가 들어오기 전, 벽이 먼저 표정을 갖습니다.'],
       ['집에 돌아와 처음 닿는 곳, 마루.','하루에도 몇 번씩 눈길이 머무는 벽.'],
       ['맨발로 걷고 싶은 집.','한 걸음 물러서면 보이는 벽의 표정.'],
-      ['눈길은 결에, 발길은 집으로.','오후의 빛이 벽에 한 겹 더해집니다.']
+      ['눈길은 결에, 발길은 집으로.','오후의 빛이 벽에 한 겹 더해집니다.'],
+      ['작은 샘플 한 장이 우리 집 마루가 되기까지','작은 샘플 한 장이 한 면의 벽이 되기까지']
     ]},
-    ask:{label:'상담 · 우리 집 질문',choices:[
+    ask:{label:'고객 상담 · 우리 집 마감',section:'우리 집 시공 상담',note:'공간 사진과 고민되는 부분을 보내주세요. 어울리는 자재와 마감 방법을 함께 살펴봅니다.',choices:[
       ['우리 집 걸레받이도 그대로 쓸 수 있을까요?','우리 집 벽에도 이 무늬가 어울릴까요?'],
       ['문 앞에서 마루는 어떻게 만날까요?','모서리에서는 무늬가 어떻게 이어질까요?'],
       ['우리 집 빛에서는 어떤 색으로 보일까요?','우리 집 빛에서는 어떤 색으로 보일까요?']
     ]},
-    participate:{label:'참여 · 다음 장면 고르기',choices:[
+    partner:{label:'거래처 협업 · 도면과 일정',section:'거래처 시공 협의',note:'도면이나 현장 사진에 희망 일정을 함께 보내주세요. 자재 규격과 시공 순서를 검토합니다.',choices:[
+      ['도면 한 장으로 시작하는 시공 협의','도면 한 장으로 시작하는 시공 협의'],
+      ['문틀과 마루가 만나는 높이, 도면에서 먼저 봅니다.','코너에서 만나는 벽면, 도면에서 먼저 봅니다.'],
+      ['다음 공정까지 생각한 마루 시공','다음 공정까지 생각한 벽장재 시공']
+    ]},
+    participate:{label:'참여 · 다음 장면 고르기',section:'다음 현장 이야기',note:'가까이 보고 싶은 곳을 댓글로 알려주세요.',choices:[
       ['다음엔 나뭇결과 문 앞 마감, 어디부터 볼까요?','다음엔 벽 무늬와 코너 마감, 어디부터 볼까요?'],
       ['넓게 본 공간과 가까이 본 결, 어느 쪽이 좋으세요?','넓게 본 공간과 가까이 본 무늬, 어느 쪽이 좋으세요?']
     ]}
@@ -142,9 +148,13 @@
       end-=width+gap;
     }
     g.restore();
-    const y=top+(badges.length?h+16*u:0);
     const diameter=Math.round(units*(wide ? .15 : .207));
-    const circle=hasPhoto?{x:right-diameter,y,width:diameter,height:diameter}:null;
+    const badgeWidth=badges.length?right-badges[0].x:0;
+    const groupWidth=Math.max(badgeWidth,hasPhoto?diameter:0);
+    const center=right-groupWidth/2;
+    for(const b of badges)b.x-=(groupWidth-badgeWidth)/2;
+    const y=top+(badges.length?h+16*u:0);
+    const circle=hasPhoto?{x:center-diameter/2,y,width:diameter,height:diameter}:null;
     return {u,badges,circle,bottom:circle?y+diameter:badges.length?top+h:top};
   }
   function drawCorner(g,c,layout,p){

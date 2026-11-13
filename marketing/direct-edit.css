@@ -50,3 +50,15 @@ body.simple-marketing-mode #studio .preview-navigation #contact-card-jump{width:
 .short-caption-setting[hidden],#contact-card-jump[hidden],.simple-actions button[hidden]{display:none!important}
 
 #device-export .device-export-gallery video{display:block;margin:auto;max-width:100%;max-height:45dvh;background:#17201c}
+
+/* The iPad sidebar is narrower than the page. Give the actions their own row. */
+body.simple-marketing-mode #studio .simple-output-card{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:10px;align-items:start
+}
+body.simple-marketing-mode #studio .simple-output-card>*{grid-column:1;min-width:0}
+body.simple-marketing-mode #studio .simple-output-card .simple-actions{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,128px),1fr));gap:8px
+}
+body.simple-marketing-mode #studio .simple-output-card .simple-actions button{
+  width:100%;padding:9px 8px;min-width:0;white-space:normal;word-break:keep-all
+}

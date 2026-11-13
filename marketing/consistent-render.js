@@ -112,47 +112,68 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
    const isWall=manual.endingMaterial==='wall'||(manual.endingMaterial!=='floor'&&/벽장재|시그니월|디자인월/.test([info?.category,product,manual.structure,ctx.structure].join(' ')));
    const key='endTitle_'+endMode,detailKey='endLine_'+endMode;
    const heading=manual[key]||style.endingText(endMode,manual['endChoice_'+endMode],isWall);
-   const note=manual[detailKey]||({signature:'',ask:isWall?'시공할 벽면을 찍어 청인마루에 보내주세요.':'벽과 바닥이 만나는 부분을 찍어 보내주세요.',participate:'궁금한 쪽을 댓글로 골라주세요.'})[endMode];
-   const band=endMode==='signature'?'#F1ECE2':endMode==='ask'?'#243C36':'#EDE8C6';
-   const fg=endMode==='ask'?'#FFF8E8':'#25392F';
-   const small=endMode==='ask'?'#D9E5D9':'#526354';
-   const tall=H/1080>1.55;
-   const px=wide?542:0,py=wide?0:H*(tall ? .63 : .61),pw=1080-px,ph=H-py;
-   await photo(lead.id,0,0,wide?px:1080,wide?H:py);
-   g.fillStyle=band;g.fillRect(px,py,pw,ph);
-   if(cfg.show.logo){
-    const mark=await style.logo(ctx.logoTone);style.drawLogo(g,c,mark,1080,m,tall?128:36);
-   }
-   const x=px+(wide?40:m),w=pw-2*(wide?40:m);
-   const contact=style.contact;
-   const entries=[
-    {field:key,value:heading,size:wide?43:56,rows:3,serif:true},
-    {field:detailKey,value:note,size:wide?23:29,rows:2,gap:11},
-    {icon:'phone',value:'청인마루 상담  '+contact.phone,size:wide?25:34,rows:1,gap:23},
-    {icon:'site',value:'홈페이지  '+new URL(contact.site).host,size:wide?24:31,rows:1,gap:7},
-    {icon:'chat',value:'카카오채널 문의  청인마루',size:wide?24:31,rows:1,gap:7}
-   ].filter(r=>r.value);
+   const design=style.endings[endMode],note=manual[detailKey]??design.note;
+   const tall=H>1650,partner=endMode==='partner',inset=partner||endMode==='ask';
+   const theme={
+    signature:{paper:'#F5F1E9',ink:'#253D35',sub:'#41554C',rule:'#A9B5A5'},
+    ask:{paper:'#284338',ink:'#FCF9EF',sub:'#E4EAE0',rule:'#8CA398'},
+    partner:{paper:'#23322F',ink:'#FAF7EC',sub:'#DEE7DF',rule:'#8B9D93'},
+    participate:{paper:'#E8EBDB',ink:'#243A33',sub:'#425649',rule:'#98A68E'}
+   }[endMode];
+   const edge=wide?38:64,footer=wide?30:tall?H*.15:42;
+   const panelX=wide?510:0,x=panelX+edge,w=1080-x-edge;
+   const compact=wide||H<1180, twoCols=!wide;
+   const phone=style.contact.phone,site=new URL(style.contact.site).host;
    await style.loadTitle(heading);
-   const font=(r,n)=>r.serif?style.font(n):'500 '+n+'px "Studio Sans", sans-serif';
-   function measure(f){return entries.map(r=>{
-    const n=r.size*f;
-    const lines=CheonginType.layout(r.value,{width:w-(r.icon?n*1.4:0),fontSize:n,minFontSize:Math.min(n,18),maxLines:r.rows,leading:1.2,
-     measure:(line,size)=>{g.font=font(r,size);return g.measureText(line).width;}});
-    return {r,lines,h:lines.lines.length*lines.lineHeight,gap:(r.gap||0)*f};
-   });}
-   const safe=ph-(tall?105:14),height=rows=>rows.reduce((n,b)=>n+b.h+b.gap,0);
-   let rows=measure(1);
-   if(height(rows)>safe-30)rows=measure(Math.min(1,(safe-30)/height(rows)));
-   let y=py+(safe-height(rows))/2;
-   for(const {r,lines,h,gap} of rows){
-    y+=gap;g.font=font(r,lines.size);g.fillStyle=r.serif?fg:small;g.textBaseline='top';
-    lines.lines.forEach((line,i)=>{
-     const yy=y+i*lines.lineHeight,left=r.icon?x+lines.size*1.4:x;
-     if(r.icon)style.contactIcon(g,r.icon,x,yy+lines.size*.06,lines.size*.95,small);
-     g.fillText(line,left,yy);
-     c.typeLayout.push({field:r.field,source:r.value,x:left,y:yy,width:lines.widths[i],height:lines.lineHeight,size:lines.size});
-    });y+=h;
+   function layoutCopy(value,size,rows,width,family,weight=500){
+    const font=n=>weight+' '+n+'px "'+family+'", sans-serif';
+    const lines=CheonginType.layout(String(value||''),{width,fontSize:size,minFontSize:Math.min(20,size),maxLines:rows,leading:family==='Hahmlet Title'?1.22:1.4,measure:(line,n)=>{g.font=font(n);return g.measureText(line).width;}});
+    return {value,font,...lines,h:value?lines.lines.length*lines.lineHeight:0};
    }
+   function write(block,left,top,color,field){
+    if(!block.value)return;
+    g.fillStyle=color;g.textBaseline='top';g.textAlign='left';g.font=block.font(block.size);
+    block.lines.forEach((line,i)=>{
+     const y=top+block.lineHeight*i;g.fillText(line,left,y);
+     c.typeLayout.push({field,source:block.value,x:left,y,width:block.widths[i],height:block.lineHeight,size:block.size});
+    });
+    if(block.truncated)c.dataset.textTruncated='true';
+   }
+   const label=layoutCopy(design.section,compact?22:25,1,w,'Studio Sans',600);
+   const headline=layoutCopy(heading,wide?46:compact?55:64,3,w,'Hahmlet Title');
+   const body=layoutCopy(note,wide?24:compact?27:31,3,w,'Studio Sans');
+   const blockGap=compact?14:18;
+   const groupH=label.h+blockGap+headline.h+(body.h?blockGap+body.h:0);
+   const big=layoutCopy(phone,wide?41:52,1,twoCols?w*.46:w-52,'Studio Sans',600);
+   const smallSize=wide?26:30;
+   const linkWidth=twoCols?w*.47-44:w-46;
+   const web=layoutCopy(site,smallSize,1,linkWidth,'Studio Sans');
+   const chat=layoutCopy('카카오채널  청인마루',smallSize,1,linkWidth,'Studio Sans');
+   const contactH=twoCols?Math.max(big.h,web.h+chat.h+4):big.h+web.h+chat.h+12;
+   const contactTop=H-footer-contactH,lineY=contactTop-(compact?18:26);
+   const clearance=compact?17:26;
+   const bodyTop=wide?Math.max(16,(lineY-clearance-groupH)/2):Math.min(H*(tall?.57:.54)+clearance,lineY-clearance-groupH);
+   const photoBottom=wide?H:Math.max(1,bodyTop-clearance);
+   g.fillStyle=theme.paper;g.fillRect(0,0,1080,H);
+   const pad=inset?(wide?18:22):0;
+   const photoW=(wide?panelX:1080)-2*pad, photoH=photoBottom-2*pad;
+   if(photoH>0)await photo(lead.id,pad,pad,photoW,photoH);
+   if(cfg.show.logo){
+    const mark=await style.logo(ctx.logoTone);style.drawLogo(g,c,mark,1080,wide?48:m,tall?128:wide?38:48);
+   }
+   write(label,x,bodyTop,theme.sub);
+   const headingY=bodyTop+label.h+blockGap;
+   write(headline,x,headingY,theme.ink,key);
+   write(body,x,headingY+headline.h+blockGap,theme.sub,detailKey);
+   g.strokeStyle=theme.rule;g.lineWidth=1.5;g.beginPath();g.moveTo(x,lineY);g.lineTo(x+w,lineY);g.stroke();
+   function contactRow(icon,block,left,top,iconSize){
+    style.contactIcon(g,icon,left,top+(block.size-iconSize)/2+2,iconSize,theme.ink);
+    write(block,left+iconSize+12,top,theme.ink);
+   }
+   contactRow('phone',big,x,contactTop+(twoCols?(contactH-big.h)/2:0),wide?32:38);
+   const linksX=twoCols?x+w*.53:x,linksY=twoCols?contactTop:contactTop+big.h+8;
+   contactRow('site',web,linksX,linksY,smallSize);
+   contactRow('chat',chat,linksX,linksY+web.h+4,smallSize);
    c.dataset.ending=endMode;c.previewMeta={[key]:heading,[detailKey]:note};
    return c;
   }
