@@ -157,7 +157,11 @@ window.showContactCard=()=>{
   const i=state.signatureSequence?.findIndex(s=>s.role==='ending')??-1;
   if(i>=0)selectProductionSlide(i);
 };
-$('contact-card-jump').onclick=window.showContactCard;
+$('contact-card-jump').onclick=()=>{
+  if($('designs').querySelector('canvas')?.endingFields){
+    $('designs').dispatchEvent(new Event('marketing:edit-ending-note'));
+  }else window.showContactCard();
+};
 const captionPosition=$('short-caption-position');
 captionPosition.onchange=()=>{
   const id=state.signatureSequence?.[productionSlide]?.photoIds[0];
@@ -211,7 +215,9 @@ async function renderProductionFrame(revision) {
   const count = state.slideCount || 5; productionSlide = Math.min(productionSlide, count - 1);
   const currentSlot=state.signatureSequence?.[productionSlide],ending=currentSlot?.role==='ending';
   $('contact-card-jump').hidden=!state.signatureSequence?.some(s=>s.role==='ending');
-  $('contact-card-jump').disabled=ending;
+  const contactButton=$('contact-card-jump');
+  contactButton.textContent=ending?'작은 글씨 수정':'상담 카드';
+  contactButton.disabled=ending;
   captionPosition.parentElement.hidden=!(currentSlot&&productionSlide>0&&!ending&&['reels','shorts'].includes(state.format));
   captionPosition.value=state.signaturePhotos?.[currentSlot?.photoIds?.[0]]?.shortCaptionPosition||'middle';
   const slides = productionSlides(), slide = slides[productionSlide];
@@ -248,6 +254,7 @@ async function renderProductionFrame(revision) {
     canvas.dataset.slide=productionSlide;canvas.tabIndex=0;canvas.setAttribute('role','button');canvas.setAttribute('title','사진을 끌거나 모서리로 크기 조절 · 글씨를 눌러 수정');
     canvas.setAttribute('aria-label', `${OUTPUT_PRESETS[state.format].label} ${productionSlide + 1}번 출력 미리보기`);
     $('designs').classList.remove('production-empty'); for(const old of $('designs').querySelectorAll('canvas'))old.width=old.height=1; $('designs').replaceChildren(canvas);
+    contactButton.disabled=ending&&!canvas.endingFields;
     playScene(canvas);
     const comparison=canvas.dataset.renderer==='cheongin-signature-v1'?null:window.createPortfolioComparison?.(canvas);$('designs').classList.toggle('has-comparison',!!comparison);if(comparison){canvas.classList.add('output-proof');$('designs').append(comparison);}
     $('production-dimensions').textContent = `${canvas.dataset.exportWidth||canvas.width} × ${canvas.dataset.exportHeight||canvas.height} px`;

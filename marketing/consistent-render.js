@@ -110,8 +110,8 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
   const style=window.CheonginCoverStyle,endMode=Object.hasOwn(style.endings,manual.endingStyle)?manual.endingStyle:'signature';
   if((slot.role==='ending'||(ctx.separateEnding===undefined&&index>0&&index===total-1))&&style.endings[endMode]){
    const material=covers.material({product,kind:info?.category,structure:manual.structure||ctx.structure},manual.endingMaterial==='auto'||!manual.endingMaterial?choice.material:manual.endingMaterial);
-   const selected=manual['endChoice_'+endMode],key='endTitle_'+endMode,detailKey=style.endingNoteKey(endMode,selected);
-   const heading=manual[key]||style.endingText(endMode,manual['endChoice_'+endMode],material==='wall');
+   const selected=manual['endChoice_'+endMode],key=style.endingTitleKey(endMode,selected),detailKey=style.endingNoteKey(endMode,selected);
+   const heading=manual[key]??manual['endTitle_'+endMode]??style.endingText(endMode,manual['endChoice_'+endMode],material==='wall');
    const design=style.endings[endMode],note=manual[detailKey]??manual['endLine_'+endMode]??style.endingNote(endMode,selected,material);
    const tall=H>1650,invitation=endMode==='showroom',inset=invitation||endMode==='partner'||endMode==='ask';
    const theme={
@@ -125,7 +125,7 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
    const panelX=wide?470:0,x=panelX+edge,w=1080-x-edge;
    const compact=wide||H<1180, twoCols=!wide;
    const phone=style.contact.phone,site=new URL(style.contact.site).host;
-   await style.loadTitle(heading);
+   await style.loadTitle(design.section+heading);
    function layoutCopy(value,size,rows,width,family,weight=500){
     const font=n=>weight+' '+n+'px "'+family+'", sans-serif';
     const lines=CheonginType.layout(String(value||''),{width,fontSize:size,minFontSize:Math.min(20,size),maxLines:rows,leading:family==='Hahmlet Title'?1.22:1.4,measure:(line,n)=>{g.font=font(n);return g.measureText(line).width;}});
@@ -140,11 +140,13 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
     });
     if(block.truncated)c.dataset.textTruncated='true';
    }
-   const label=layoutCopy(design.section,compact?20:23,1,w-50,'Studio Sans',500);
+   const label=layoutCopy(design.section,compact?21:25,1,w-48,endMode==='signature'?'Hahmlet Title':'Studio Sans',500);
    const headline=layoutCopy(heading,wide?38:compact?49:56,3,w,'Hahmlet Title',400);
    const body=layoutCopy(note,wide?23:compact?27:30,3,w,'Studio Sans',400);
    const blockGap=compact?14:18;
-   const groupH=label.h+blockGap+headline.h+(body.h?blockGap+body.h:0);
+   const titleHeight=headline.h||headline.lineHeight;
+   const bodyHeight=body.h||body.lineHeight;
+   const groupH=label.h+blockGap+titleHeight+blockGap+bodyHeight;
    const big=layoutCopy(phone,wide?34:41,1,twoCols?w*.46:w-52,'Studio Sans',600);
    const smallSize=wide?24:28;
    const linkWidth=twoCols?w*.47-44:w-46;
@@ -170,12 +172,25 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
    write(label,x+46,bodyTop,theme.sub);
    const headingY=bodyTop+label.h+blockGap;
    write(headline,x,headingY,theme.ink,key);
-   write(body,x,headingY+headline.h+blockGap,theme.sub,detailKey);
+   const noteY=headingY+titleHeight+blockGap;
+   write(body,x,noteY,theme.sub,detailKey);
+   // These full-width regions belong to the editor, including when all text was erased.
+   c.endingFields=[
+    {field:key,source:heading,x,y:headingY,width:w,height:titleHeight,size:headline.size},
+    {field:detailKey,source:note,x,y:noteY,width:w,height:bodyHeight,size:body.size}
+   ];
    g.strokeStyle=theme.rule;g.lineWidth=1.5;g.beginPath();g.moveTo(x,lineY);g.lineTo(x+w,lineY);g.stroke();
    write(visit,x,visitY,theme.sub);
    function contactRow(icon,block,left,top,iconSize){
-    style.contactIcon(g,icon,left,top+(block.size-iconSize)/2+2,iconSize,theme.ink);
-    write(block,left+iconSize+12,top,theme.ink);
+    g.font=block.font(block.size);g.textAlign='left';g.textBaseline='alphabetic';g.fillStyle=theme.ink;
+    const line=block.lines[0],metrics=g.measureText(line);
+    const ascent=metrics.actualBoundingBoxAscent??block.size*.78;
+    const descent=metrics.actualBoundingBoxDescent??block.size*.16;
+    const centerY=top+block.h/2,textX=left+iconSize+12;
+    const iconCenter=icon==='chat'?12.5/24:0.5;
+    style.contactIcon(g,icon,left,centerY-iconSize*iconCenter,iconSize,theme.ink);
+    g.fillText(line,textX,centerY+(ascent-descent)/2);
+    c.typeLayout.push({source:block.value,x:textX,y:centerY-(ascent+descent)/2,width:metrics.width,height:ascent+descent,size:block.size});
    }
    contactRow('phone',big,x,contactTop+(twoCols?(contactH-big.h)/2:0),wide?32:38);
    const linksX=twoCols?x+w*.53:x,linksY=twoCols?contactTop:contactTop+big.h+8;

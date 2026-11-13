@@ -60,27 +60,36 @@ function mount(){
  for(const [k,v]of [['portrait','인스타 · 4:5'],['vertical','릴스·쇼츠 · 9:16'],['landscape','유튜브 · 16:9'],['square','블로그·카카오 · 1:1']])ratio.add(new Option(v,k));
  const ending=field('마지막 장 디자인',el('select'));
  for(const [key,label] of Object.entries(style.endings).map(([key,def])=>[key,def.label]))ending.add(new Option(label,key));
- const endingPhrase=field('마무리 문구',el('select'));
+ const phraseCount=Object.values(style.endings).reduce((total,design)=>total+design.choices.length,0);
+ const endingPhrase=field('마무리 문구 · 전체 '+phraseCount+'개',el('select'));
  let endingMenuKey='';
  function showEndingPhrases(){
-  const dataset=style.endings[ending.value];endingPhrase.parentElement.hidden=!dataset;
-  if(!dataset){endingMenuKey='';return;}
-  const f=values(),isWall=covers.material(f,material.value)==='wall',key=state.projectId+'|'+ending.value+'|'+isWall;
-  if(key!==endingMenuKey){
-   endingMenuKey=key;
-   const first=dataset.defaultChoice??0,groups=new Map(),items=[];
-   for(let offset=0;offset<dataset.choices.length;offset++){
-    const index=(first+offset)%dataset.choices.length,pair=dataset.choices[index];
-    const option=new Option(pair[isWall?1:0],String(index)),label=pair[3];
-    if(!label){items.push(option);continue;}
-    if(!groups.has(label)){
-     const group=el('optgroup');group.label=label;groups.set(label,group);items.push(group);
+  const mode=ending.value,design=style.endings[mode];
+  endingPhrase.parentElement.hidden=!design;
+  if(!design){endingMenuKey='';return;}
+  const isWall=covers.material(values(),material.value)==='wall';
+  const menuKey=mode+'|'+isWall;
+  if(menuKey!==endingMenuKey){
+   endingMenuKey=menuKey;
+   const groups=[];
+   const modes=[mode,...Object.keys(style.endings).filter(key=>key!==mode)];
+   for(const key of modes){
+    const section=style.endings[key],byTopic=new Map();
+    const first=section.defaultChoice??0;
+    for(let offset=0;offset<section.choices.length;offset++){
+     const index=(first+offset)%section.choices.length;
+     const pair=section.choices[index],topic=pair[3]||'대표 문구';
+     if(!byTopic.has(topic)){
+      const group=el('optgroup');
+      group.label=section.label.split(' · ')[0]+' · '+topic;
+      byTopic.set(topic,group);groups.push(group);
+     }
+     byTopic.get(topic).append(new Option(pair[isWall?1:0],key+':'+index));
     }
-    groups.get(label).append(option);
    }
-   endingPhrase.replaceChildren(...items);
+   endingPhrase.replaceChildren(...groups);
   }
-  endingPhrase.value=String(state.manualOverlay?.['endChoice_'+ending.value]??dataset.defaultChoice??0);
+  endingPhrase.value=mode+':'+(state.manualOverlay?.['endChoice_'+mode]??design.defaultChoice??0);
  }
  function showEnding(){
   persist();showThumbnail(false);
@@ -88,13 +97,18 @@ function mount(){
   else window.renderProductionWorkspace?.();
  }
  endingPhrase.onchange=()=>{
-  const m=state.manualOverlay??={},mode=ending.value,oldKey='endLine_'+mode;
-  if(Object.hasOwn(m,oldKey)){
-   const previous=style.endingNoteKey(mode,m['endChoice_'+mode]);
-   m[previous]??=m[oldKey];delete m[oldKey];
+  const [mode,id]=endingPhrase.value.split(':'),index=Number(id);
+  if(!style.endings[mode]?.choices[index])return;
+  const m=state.manualOverlay??={},previous=m['endChoice_'+mode];
+  for(const [legacy,field] of [
+   ['endLine_'+mode,style.endingNoteKey(mode,previous)],
+   ['endTitle_'+mode,style.endingTitleKey(mode,previous)]
+  ]){
+   if(Object.hasOwn(m,legacy)){m[field]??=m[legacy];delete m[legacy];}
   }
-  m['endChoice_'+mode]=Number(endingPhrase.value);
-  delete m['endTitle_'+ending.value];showEnding();
+  m['endChoice_'+mode]=index;
+  m.endingStyle=ending.value=mode;m.endingMaterial=material.value;
+  showEndingPhrases();showEnding();
  };
  const channel=field('게시 플랫폼',el('select'));
  for(const [key,label] of Object.entries(covers.formats))channel.add(new Option(label,key));
@@ -390,7 +404,7 @@ function mount(){
    if(v.thumbnailTitle){facts.title=v.thumbnailTitle;title.value=v.thumbnailTitle;if(layout.value==='channels')titles[channel.value]=title.value;else legacyTitle=title.value;}
    if(v.location)siteInput.value=v.location;
    if(v.structure)state.productStructure=v.structure;
-   if(v.slideTitles && ending.value!=='scene' && v.slideTitles.length===(state.signatureSequence?.length||state.slideCount) && v.slideTitles.length>1)facts['endTitle_'+ending.value]=v.slideTitles.at(-1);
+   if(v.slideTitles && ending.value!=='scene' && v.slideTitles.length===(state.signatureSequence?.length||state.slideCount) && v.slideTitles.length>1)facts[style.endingTitleKey(ending.value,state.manualOverlay?.['endChoice_'+ending.value])]=v.slideTitles.at(-1);
    if(v.slideTitles)facts.slideTitles=[...v.slideTitles,...(state.manualOverlay?.slideTitles||[]).slice(v.slideTitles.length)];
    state.manualOverlay={...state.manualOverlay,...facts,raw};
    for(const [key,a] of Object.entries(areas))if(v[key])a.value=v[key];
