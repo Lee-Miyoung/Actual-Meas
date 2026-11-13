@@ -68,9 +68,17 @@ function mount(){
   const f=values(),isWall=covers.material(f,material.value)==='wall',key=state.projectId+'|'+ending.value+'|'+isWall;
   if(key!==endingMenuKey){
    endingMenuKey=key;
-   const options=dataset.choices.map((pair,i)=>new Option(pair[isWall?1:0],String(i)));
-   const first=dataset.defaultChoice??0;
-   endingPhrase.replaceChildren(...options.slice(first),...options.slice(0,first));
+   const first=dataset.defaultChoice??0,groups=new Map(),items=[];
+   for(let offset=0;offset<dataset.choices.length;offset++){
+    const index=(first+offset)%dataset.choices.length,pair=dataset.choices[index];
+    const option=new Option(pair[isWall?1:0],String(index)),label=pair[3];
+    if(!label){items.push(option);continue;}
+    if(!groups.has(label)){
+     const group=el('optgroup');group.label=label;groups.set(label,group);items.push(group);
+    }
+    groups.get(label).append(option);
+   }
+   endingPhrase.replaceChildren(...items);
   }
   endingPhrase.value=String(state.manualOverlay?.['endChoice_'+ending.value]??dataset.defaultChoice??0);
  }
