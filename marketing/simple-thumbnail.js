@@ -67,9 +67,12 @@ function mount(){
   if(!dataset){endingMenuKey='';return;}
   const f=values(),isWall=covers.material(f,material.value)==='wall',key=state.projectId+'|'+ending.value+'|'+isWall;
   if(key!==endingMenuKey){
-   endingMenuKey=key;endingPhrase.replaceChildren(...dataset.choices.map((pair,i)=>new Option(pair[isWall?1:0],String(i))));
+   endingMenuKey=key;
+   const options=dataset.choices.map((pair,i)=>new Option(pair[isWall?1:0],String(i)));
+   const first=dataset.defaultChoice??0;
+   endingPhrase.replaceChildren(...options.slice(first),...options.slice(0,first));
   }
-  endingPhrase.value=String(state.manualOverlay?.['endChoice_'+ending.value]||0);
+  endingPhrase.value=String(state.manualOverlay?.['endChoice_'+ending.value]??dataset.defaultChoice??0);
  }
  function showEnding(){
   persist();showThumbnail(false);

@@ -109,10 +109,10 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
  try{
   const style=window.CheonginCoverStyle,endMode=Object.hasOwn(style.endings,manual.endingStyle)?manual.endingStyle:'signature';
   if((slot.role==='ending'||(ctx.separateEnding===undefined&&index>0&&index===total-1))&&style.endings[endMode]){
-   const isWall=manual.endingMaterial==='wall'||(manual.endingMaterial!=='floor'&&/벽장재|시그니월|디자인월/.test([info?.category,product,manual.structure,ctx.structure].join(' ')));
+   const material=covers.material({product,kind:info?.category,structure:manual.structure||ctx.structure},manual.endingMaterial==='auto'||!manual.endingMaterial?choice.material:manual.endingMaterial);
    const key='endTitle_'+endMode,detailKey='endLine_'+endMode;
-   const heading=manual[key]||style.endingText(endMode,manual['endChoice_'+endMode],isWall);
-   const design=style.endings[endMode],note=manual[detailKey]??design.note;
+   const heading=manual[key]||style.endingText(endMode,manual['endChoice_'+endMode],material==='wall');
+   const design=style.endings[endMode],note=manual[detailKey]??design.materialNotes?.[material]??design.note;
    const tall=H>1650,partner=endMode==='partner',inset=partner||endMode==='ask';
    const theme={
     signature:{paper:'#F5F1E9',ink:'#253D35',sub:'#41554C',rule:'#A9B5A5'},
