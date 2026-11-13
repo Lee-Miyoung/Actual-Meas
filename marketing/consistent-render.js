@@ -110,18 +110,19 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
   const style=window.CheonginCoverStyle,endMode=Object.hasOwn(style.endings,manual.endingStyle)?manual.endingStyle:'signature';
   if((slot.role==='ending'||(ctx.separateEnding===undefined&&index>0&&index===total-1))&&style.endings[endMode]){
    const material=covers.material({product,kind:info?.category,structure:manual.structure||ctx.structure},manual.endingMaterial==='auto'||!manual.endingMaterial?choice.material:manual.endingMaterial);
-   const key='endTitle_'+endMode,detailKey='endLine_'+endMode;
+   const selected=manual['endChoice_'+endMode],key='endTitle_'+endMode,detailKey=style.endingNoteKey(endMode,selected);
    const heading=manual[key]||style.endingText(endMode,manual['endChoice_'+endMode],material==='wall');
-   const design=style.endings[endMode],note=manual[detailKey]??design.materialNotes?.[material]??design.note;
-   const tall=H>1650,partner=endMode==='partner',inset=partner||endMode==='ask';
+   const design=style.endings[endMode],note=manual[detailKey]??manual['endLine_'+endMode]??style.endingNote(endMode,selected,material);
+   const tall=H>1650,invitation=endMode==='showroom',inset=invitation||endMode==='partner'||endMode==='ask';
    const theme={
+    showroom:{paper:'#F7F0E7',ink:'#563C32',sub:'#674F44',rule:'#B5A08C'},
     signature:{paper:'#F5F1E9',ink:'#253D35',sub:'#41554C',rule:'#A9B5A5'},
     ask:{paper:'#284338',ink:'#FCF9EF',sub:'#E4EAE0',rule:'#8CA398'},
     partner:{paper:'#23322F',ink:'#FAF7EC',sub:'#DEE7DF',rule:'#8B9D93'},
     participate:{paper:'#E8EBDB',ink:'#243A33',sub:'#425649',rule:'#98A68E'}
    }[endMode];
-   const edge=wide?38:64,footer=wide?30:tall?H*.15:42;
-   const panelX=wide?510:0,x=panelX+edge,w=1080-x-edge;
+   const edge=wide?36:64,footer=wide?28:tall?H*.15:42;
+   const panelX=wide?470:0,x=panelX+edge,w=1080-x-edge;
    const compact=wide||H<1180, twoCols=!wide;
    const phone=style.contact.phone,site=new URL(style.contact.site).host;
    await style.loadTitle(heading);
@@ -139,33 +140,39 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
     });
     if(block.truncated)c.dataset.textTruncated='true';
    }
-   const label=layoutCopy(design.section,compact?22:25,1,w,'Studio Sans',600);
-   const headline=layoutCopy(heading,wide?46:compact?55:64,3,w,'Hahmlet Title');
-   const body=layoutCopy(note,wide?24:compact?27:31,3,w,'Studio Sans');
+   const label=layoutCopy(design.section,compact?20:23,1,w-50,'Studio Sans',500);
+   const headline=layoutCopy(heading,wide?38:compact?49:56,3,w,'Hahmlet Title',400);
+   const body=layoutCopy(note,wide?23:compact?27:30,3,w,'Studio Sans',400);
    const blockGap=compact?14:18;
    const groupH=label.h+blockGap+headline.h+(body.h?blockGap+body.h:0);
-   const big=layoutCopy(phone,wide?41:52,1,twoCols?w*.46:w-52,'Studio Sans',600);
-   const smallSize=wide?26:30;
+   const big=layoutCopy(phone,wide?34:41,1,twoCols?w*.46:w-52,'Studio Sans',600);
+   const smallSize=wide?24:28;
    const linkWidth=twoCols?w*.47-44:w-46;
    const web=layoutCopy(site,smallSize,1,linkWidth,'Studio Sans');
    const chat=layoutCopy('카카오채널  청인마루',smallSize,1,linkWidth,'Studio Sans');
    const contactH=twoCols?Math.max(big.h,web.h+chat.h+4):big.h+web.h+chat.h+12;
-   const contactTop=H-footer-contactH,lineY=contactTop-(compact?18:26);
+   const contactTop=H-footer-contactH;
+   const visit=layoutCopy(style.visitNote,wide?23:29,2,w,'Studio Sans',400);
+   const visitY=contactTop-(compact?10:13)-visit.h;
+   const lineY=visitY-(compact?13:19);
    const clearance=compact?17:26;
-   const bodyTop=wide?Math.max(16,(lineY-clearance-groupH)/2):Math.min(H*(tall?.57:.54)+clearance,lineY-clearance-groupH);
+   const bodyTop=wide?Math.max(16,(lineY-clearance-groupH)/2):Math.min(H*.64+clearance,lineY-clearance-groupH);
    const photoBottom=wide?H:Math.max(1,bodyTop-clearance);
    g.fillStyle=theme.paper;g.fillRect(0,0,1080,H);
-   const pad=inset?(wide?18:22):0;
+   const pad=invitation?(wide?24:32):inset?(wide?18:22):0;
    const photoW=(wide?panelX:1080)-2*pad, photoH=photoBottom-2*pad;
    if(photoH>0)await photo(lead.id,pad,pad,photoW,photoH);
    if(cfg.show.logo){
     const mark=await style.logo(ctx.logoTone);style.drawLogo(g,c,mark,1080,wide?48:m,tall?128:wide?38:48);
    }
-   write(label,x,bodyTop,theme.sub);
+   // A short rule introduces the signature, keeping the photograph free of ornaments.
+   g.fillStyle=theme.rule;g.fillRect(x,bodyTop+label.size*.6,32,2);
+   write(label,x+46,bodyTop,theme.sub);
    const headingY=bodyTop+label.h+blockGap;
    write(headline,x,headingY,theme.ink,key);
    write(body,x,headingY+headline.h+blockGap,theme.sub,detailKey);
    g.strokeStyle=theme.rule;g.lineWidth=1.5;g.beginPath();g.moveTo(x,lineY);g.lineTo(x+w,lineY);g.stroke();
+   write(visit,x,visitY,theme.sub);
    function contactRow(icon,block,left,top,iconSize){
     style.contactIcon(g,icon,left,top+(block.size-iconSize)/2+2,iconSize,theme.ink);
     write(block,left+iconSize+12,top,theme.ink);

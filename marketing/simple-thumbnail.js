@@ -80,7 +80,12 @@ function mount(){
   else window.renderProductionWorkspace?.();
  }
  endingPhrase.onchange=()=>{
-  const m=state.manualOverlay??={};m['endChoice_'+ending.value]=Number(endingPhrase.value);
+  const m=state.manualOverlay??={},mode=ending.value,oldKey='endLine_'+mode;
+  if(Object.hasOwn(m,oldKey)){
+   const previous=style.endingNoteKey(mode,m['endChoice_'+mode]);
+   m[previous]??=m[oldKey];delete m[oldKey];
+  }
+  m['endChoice_'+mode]=Number(endingPhrase.value);
   delete m['endTitle_'+ending.value];showEnding();
  };
  const channel=field('게시 플랫폼',el('select'));
