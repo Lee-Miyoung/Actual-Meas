@@ -16,7 +16,7 @@ function postingPack(v){
  const hasPair=Boolean(setting.afterId && (setting.beforeId||setting.photoId)!==setting.afterId);
  const feedTitle=CheonginChannelCovers.feedTitle?.(setting.layout,kind,hasPair,setting.pairConcept==='compare');
  const body=[intro,observation,facts,'시공 상담은 지역과 시공할 공간의 사진을 보내주세요.','공간의 위로가 되다, 청인마루'].filter(Boolean).join('\n\n');
- return {thumbnailTitle:v.title||feedTitle||CheonginChannelCovers.suggestedTitle('carousel',v,kind,false),postTitle:[v.location,v.product||subject,subject+' 시공 기록'].filter(Boolean).join(' | '),instagramCaption:body,youtubeDescription:body,pinnedComment:window.CheonginCoverStyle.pinnedComment,hashtags:['#청인마루',...({floor:['#마루시공'],wall:['#벽장재시공'],both:['#마루시공','#벽장재시공']}[kind]),v.product?'#'+v.product.replace(/[^가-힣a-zA-Z0-9]/g,''):''].filter(Boolean).join(' ')};
+ return {thumbnailTitle:v.title||feedTitle||CheonginChannelCovers.suggestedTitle('carousel',v,kind,false),postTitle:[v.location,v.product||subject,subject+' 시공 기록'].filter(Boolean).join(' | '),instagramCaption:[v.title||feedTitle||CheonginChannelCovers.suggestedTitle('carousel',v,kind,false),observation].join('\n\n'),youtubeDescription:body,pinnedComment:window.CheonginCoverStyle.pinnedComment,hashtags:window.CheonginPostCopy.instagramTags(v)};
 
 }
 window.CheonginPostingPack={create:postingPack};
@@ -150,9 +150,21 @@ function mount(){
  pick.value='instagramCaption';
  function selectCopy(){for(const [k,l] of Object.entries(areaLabels))l.hidden=k!==pick.value;}
  pick.onchange=selectCopy;selectCopy();
+ areas.instagramCaption.onfocus=()=>{
+  if(areas.instagramCaption.value.trim())areas.instagramCaption.value=publishPack().instagramCaption;
+ };
  const copyField=el('button','복사');copyField.type='button';
- copyField.onclick=async()=>{const a=areas[pick.value];if(!a.value.trim())return toast('먼저 게시 문구를 준비해 주세요.');
-  try{await navigator.clipboard.writeText(a.value);toast('복사했습니다.');}catch{a.focus();a.select();toast('선택한 문구를 복사해 주세요.');}};
+ copyField.onclick=async()=>{
+  const key=pick.value,a=areas[key],value=publishPack()[key]||'';
+  if(!value.trim())return toast('먼저 게시 문구를 준비해 주세요.');
+  try{
+   await navigator.clipboard.writeText(value);
+   toast(key==='instagramCaption'?'청인마루 소개·문의·해시태그까지 복사했습니다.':'복사했습니다.');
+  }catch{
+   // On iPad with clipboard access disabled, select the same complete text shown to the user.
+   a.value=value;a.focus();a.select();toast('선택된 문구 전체를 복사해 주세요.');
+  }
+ };
  const prepare=el('button','빈 항목 초안 채우기');prepare.type='button';
  const toolbar=el('div',undefined,'post-copy-bar');toolbar.append(pick,copyField);
  packBox.append(toolbar,...Object.values(areaLabels),prepare);
@@ -165,7 +177,10 @@ function mount(){
  let projectKey='',photoKey='',canvas=null,revision=0,autoTimer=null,autoBusy=false,autoDirty=false,exporting=false,lastKey='',lastSource=null,lastPhoto=null,lastPairSources=[];
  function values(){if(layout.value==='channels'||covers.editorial?.(layout.value))return {...covers.getProjectInfo(photo.value),...(siteInput.value.trim()?{location:siteInput.value.trim()}:{}),title:title.value.trim()||state.manualOverlay?.title||'',material:material.value};const p=typeof selectedProduct==='function'?selectedProduct():null,m=state.manualOverlay||{};return {title:title.value.trim(),location:siteInput.value.trim()||m.location||state.marketingSite||[state.region,state.space].filter(Boolean).join(' · ')||state.title||'',product:m.product||(p?[p.brand,p.model,p.color].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · '):''),spec:cleanDisplaySpec(m.spec||p?.size||''),structure:m.structure||state.productStructure||'',kind:p?.category||''};}
  function readPack(){return Object.fromEntries(Object.entries(areas).map(([k,a])=>[k,k==='pinnedComment'?style.pinnedComment:a.value]));}
- function preparePack(){const pack=postingPack(values());for(const [k,a]of Object.entries(areas))if(!a.value.trim())a.value=pack[k]||'';state.thumbnailPosting??={};state.thumbnailPosting.pack=readPack();persist();}
+ function publishPack(pack=readPack()){
+  return window.CheonginPostCopy.instagramPack(pack,values());
+ }
+ function preparePack(){const pack=publishPack(postingPack(values()));for(const [k,a]of Object.entries(areas))if(!a.value.trim())a.value=pack[k]||'';state.thumbnailPosting??={};state.thumbnailPosting.pack=readPack();persist();}
  prepare.onclick=preparePack;
  areas.thumbnailTitle.oninput=()=>{title.value=areas.thumbnailTitle.value;if(layout.value==='channels')titles[channel.value]=title.value;else legacyTitle=title.value;remember();state.thumbnailPosting.pack=readPack();persist();showThumbnail();scheduleAuto();};
  function remember(){const families={landscape:['youtubeCover'],vertical:['reels','shorts'],square:['naverCover','kakao'],portrait:['carousel']};state.format=layout.value==='channels'?channel.value:((families[ratio.value]||[]).includes(state.format)?state.format:(families[ratio.value]?.[0]||'carousel'));const output=document.getElementById('format');if(output)output.value=state.format;state.thumbnailPosting={...state.thumbnailPosting,photoId:photo.value,layout:layout.value,ratio:ratio.value,title:legacyTitle,siteText:siteInput.value,titles:{...titles},channel:channel.value,material:material.value,detailId:detail.value,exteriorId:exteriorPhoto.value,housing:housing.value,areaPyeong:areaValue(),areaMode:area.value,areaCustom:areaCustom.value,pairConcept:pairConcept.value,logoTone:logoTone.value,beforeId:beforePhoto.value,afterId:afterPhoto.value,referenceVersion:1,floorStart:Number(floor.value)/100,sampleVersion:1};persist();}
@@ -387,7 +402,7 @@ function mount(){
   download(new Blob([zipped],{type:'application/zip'}),'청인마루_플랫폼표지_6종.zip');
  });
  preview.onclick=()=>run(render);save.onclick=()=>run(async()=>{const c=await render();try{download(await blobOf(c),(layout.value==='channels'?covers.formats[channel.value]:'청인마루_썸네일')+'.png');}finally{releaseCanvas(c);}});
- bundle.onclick=()=>run(async()=>{const defaults=postingPack(values());for(const [k,a]of Object.entries(areas))if(!a.value.trim())a.value=defaults[k]||'';state.thumbnailPosting??={};state.thumbnailPosting.pack=readPack();persist();const pack=readPack(),c=await render(),blob=await blobOf(c);releaseCanvas(c);const labels={thumbnailTitle:'썸네일 제목',postTitle:'게시물·영상 제목',instagramCaption:'인스타 캡션',youtubeDescription:'유튜브 설명글',pinnedComment:'고정댓글',hashtags:'해시태그'};const txt=Object.entries(pack).map(([k,v])=>labels[k]+'\n'+v).join('\n\n────────\n\n');const zipped=fflate.zipSync({'01_썸네일.png':new Uint8Array(await blob.arrayBuffer()),'02_게시문구.txt':fflate.strToU8(txt),'03_게시문구.json':fflate.strToU8(JSON.stringify(pack,null,2))});if(typeof offerPhotoFiles==='function')offerPhotoFiles([{name:'01_썸네일.png',blob}]);download(new Blob([zipped],{type:'application/zip'}),'청인마루_게시세트.zip');});
+ bundle.onclick=()=>run(async()=>{const defaults=postingPack(values());for(const [k,a]of Object.entries(areas))if(!a.value.trim())a.value=defaults[k]||'';state.thumbnailPosting??={};state.thumbnailPosting.pack=readPack();persist();const pack=publishPack(),c=await render(),blob=await blobOf(c);releaseCanvas(c);const labels={thumbnailTitle:'썸네일 제목',postTitle:'게시물·영상 제목',instagramCaption:'인스타 캡션',youtubeDescription:'유튜브 설명글',pinnedComment:'고정댓글',hashtags:'해시태그'};const txt=Object.entries(pack).map(([k,v])=>labels[k]+'\n'+v).join('\n\n────────\n\n');const zipped=fflate.zipSync({'01_썸네일.png':new Uint8Array(await blob.arrayBuffer()),'02_게시문구.txt':fflate.strToU8(txt),'03_게시문구.json':fflate.strToU8(JSON.stringify(pack,null,2))});if(typeof offerPhotoFiles==='function')offerPhotoFiles([{name:'01_썸네일.png',blob}]);download(new Blob([zipped],{type:'application/zip'}),'청인마루_게시세트.zip');});
  const photoTools=el('section',undefined,'thumbnail-photo-tools'),dropZone=el('div','사진을 여기에 놓거나 클릭하세요 · Ctrl+V로 붙여넣기','thumbnail-drop-zone'),target=el('select'),choose=el('input'),paste=el('button','사진 붙여넣기'),uploadStatus=el('p','','simple-help');
  dropZone.tabIndex=0;dropZone.setAttribute('role','button');dropZone.setAttribute('aria-label','사진 추가 · 드롭 또는 붙여넣기');choose.type='file';choose.accept='image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif';choose.multiple=true;choose.hidden=true;paste.type='button';
  for(const [k,v]of [['background','배경 사진에 넣기'],['before','시공 전 사진에 넣기'],['after','시공 후 사진에 넣기'],['detail','소재 확대 사진에 넣기'],['exterior','주택 외관 원형에 넣기']])target.add(new Option(v,k));target.setAttribute('aria-label','추가할 사진 위치');
@@ -434,7 +449,7 @@ function mount(){
   remember();showFields();showThumbnail();scheduleAuto(0);
  });
  window.CheonginThumbnailEditor={
-  selectTarget,
+  selectTarget,publishPack,
   async renderCover(previewOnly){const c=await draw({previewOnly});c.dataset.thumbnail='true';return c;},
   setLogo(key){if(!Object.hasOwn(style.colors,key))return;logoTone.value=key;remember();scheduleAuto(0);window.renderProductionWorkspace?.();},
   applyCopy(v,raw){
@@ -446,6 +461,11 @@ function mount(){
    if(v.slideTitles)facts.slideTitles=[...v.slideTitles,...(state.manualOverlay?.slideTitles||[]).slice(v.slideTitles.length)];
    state.manualOverlay={...state.manualOverlay,...facts,raw};
    for(const [key,a] of Object.entries(areas))if(v[key])a.value=v[key];
+   if(v.instagramCaption){
+    const formatted=publishPack({...readPack(),hashtags:v.hashtags||''});
+    areas.instagramCaption.value=formatted.instagramCaption;
+    areas.hashtags.value=formatted.hashtags;
+   }
    state.thumbnailPosting??={};state.thumbnailPosting.pack=readPack();state.signatureCaptionKey='';
    remember();scheduleAuto(0);if(typeof scheduleChannels==='function')scheduleChannels();
    window.renderProductionWorkspace?.();

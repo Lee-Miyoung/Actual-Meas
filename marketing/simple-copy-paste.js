@@ -82,6 +82,85 @@ function photoBrief(compare){
   '시공 후 보정본과 확대 컷은 원본이 허용하는 해상도로 각각 내려받을 수 있게 주세요. 사진에는 글씨·번호·로고·테두리를 넣지 마세요. 이미지 파일을 제공할 수 없는 채팅방에서는 시공 후 사진에 적용할 보정 지시만 간단히 주세요.'
  ].join('\n');
 }
+const instagramIntro='청인마루는 마루와 벽장재를 시공합니다. 시공 전에는 현장을 직접 재고 바탕 상태를 확인합니다.';
+const instagramContact='시공 문의 · 카카오채널 ‘청인마루’ 또는 032-210-6268';
+const instagramFacts=[['모델','product'],['규격','spec'],['현장','location']];
+function instagramFactLines(f){
+ return instagramFacts.map(([label,key])=>{
+  const value=(key==='spec'?window.CheonginDisplaySpec?.(f[key])??f[key]:f[key])||'';
+  return value?label+' · '+String(value).trim():'';
+ }).filter(Boolean);
+}
+function productKeywords(f){
+ const name=String(f.product||'').trim();
+ const clean=s=>String(s||'').normalize('NFC').replace(/\((?:일반|방염|직사각|정사각|합판|New)\)/giu,'').replace(/(시그니\s*월)\s*일반/gu,'$1').trim();
+ const parts=name.split(/\s*[·ㆍ|]\s*/u).map(clean).filter(Boolean);
+ const selected=state.signaturePhotos?.[state.thumbnailPosting?.photoId]?.productSnapshot
+              ||(typeof selectedProduct==='function'?selectedProduct():null)||state.signatureProjectProduct;
+ if(parts.length>=3)return parts;
+ if(selected){
+  let rest=clean(name);
+  const known=[];
+  for(const field of [selected.brand,selected.model,selected.color]){
+   const term=clean(field);
+   if(!term)continue;
+   const pattern=term.split(/\s+/u).map(word=>word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('\\s*');
+   const match=new RegExp(pattern,'iu').exec(rest);
+   if(match){known.push(match[0]);rest=rest.slice(0,match.index)+' '+rest.slice(match.index+match[0].length);}
+  }
+  if(known.length)return [...known,...rest.split(/\s*[·ㆍ|]\s*/u).map(s=>s.trim()).filter(Boolean)];
+ }
+ if(parts.length>1)return parts;
+ // Older cards may store a space-joined name. Recover a known maker and series separately.
+ const maker=/^(동화자연마루|구정마루|이건마루|한솔홈데코|노바마루|네스트|디앤메종)\s+/u.exec(clean(name));
+ const rest=maker?clean(name).slice(maker[0].length):clean(name);
+ const series=/^(시그니월|디자인월)\s*/u.exec(rest);
+ return [maker?.[1],series?.[1],series?rest.slice(series[0].length):rest].filter(Boolean);
+}
+function instagramTags(f,supplied=''){
+ const terms=productKeywords(f);
+ const tag=s=>String(s||'').normalize('NFC').replace(/[^\p{L}\p{N}_]/gu,'');
+ const kind=f.material&&f.material!=='auto'?f.material:window.CheonginChannelCovers?.material(f,'auto');
+ const subject={wall:'벽장재시공',floor:'마루시공',both:'마루벽장재시공'}[kind];
+ const provided=Array.from(String(supplied).matchAll(/#([\p{L}\p{M}\p{N}_]+)/gu),m=>m[1]);
+ const known=terms.map(tag).filter(Boolean);
+ const merged=tag(f.product),cleanMerged=known.join('');
+ const useful=provided.filter(s=>known.length<2||![merged,cleanMerged].includes(s));
+ const region=String(state.region||'').trim().split(/\s+/)[0];
+ const regionTag=region&&region.length<=10&&String(f.location||'').includes(region)&&subject?region+subject:'';
+ const chosen=new Map();
+ for(const word of ['청인마루',...known,...useful,regionTag,subject]){
+  const text=tag(word),key=text.toLowerCase();
+  if(text&&!chosen.has(key))chosen.set(key,'#'+text);
+  if(chosen.size===5)break;
+ }
+ return [...chosen.values()].join(' ');
+}
+function instagramPack(pack,f){
+ const raw=String(pack.instagramCaption||'').trim();
+ const inline=[];
+ const prose=[],oldFacts={};
+ // Split structural lines only. Keep the author's paragraphs and inline prose as written.
+ for(const line of raw.split(/\r?\n/u)){
+  const text=line.trim();
+  if(/^(?:#[\p{L}\p{M}\p{N}_]+[\s,，]*)+$/u.test(text)){inline.push(text);continue;}
+  const fact=/^(모델|규격|현장)\s*[·:：]\s*(.+)$/u.exec(text);
+  if(fact){oldFacts[instagramFacts.find(([label])=>label===fact[1])[1]]=fact[2];continue;}
+  if(text===instagramIntro||text===instagramContact)continue;
+  prose.push(line);
+ }
+ const info={...f};
+ for(const [key,value] of Object.entries(oldFacts))if(!info[key])info[key]=value;
+ const body=prose.join('\n').trim().replace(/\n(?:[ \t]*\n){2,}/g,'\n\n')
+  .replace(/(^|[^\p{L}\p{N}_])#([\p{L}\p{M}\p{N}_]+)/gu,(_,before,word)=>{
+   inline.push('#'+word);return before+word;
+  });
+ const tags=instagramTags(info,[pack.hashtags,...inline].filter(Boolean).join(' '));
+ if(!raw)return {...pack,hashtags:tags};
+ const caption=[body,instagramFactLines(info).join('\n'),instagramIntro+'\n'+instagramContact,tags].filter(Boolean).join('\n\n');
+ return {...pack,instagramCaption:caption,hashtags:tags};
+}
+
 function prompt(editor){
  const f=editor.facts(),p=state.thumbnailPosting||{},photos=state.photos||[];
  const sequence=state.signatureSequence||[],count=sequence.length||state.slideCount||photos.length||1;
@@ -110,8 +189,9 @@ function prompt(editor){
  if(['grain','finish'].includes(p.layout)&&file(p.detailId))order.push('표지의 소재 확대 사진 · '+file(p.detailId));
  const style=window.CheonginCoverStyle,ending=state.manualOverlay||{},mode=ending.endingStyle||'signature';
  const wall=(window.CheonginChannelCovers?.material(f,p.material)||(/벽장재/.test(f.structure)?'wall':'floor'))==='wall';
- const phrase=ending['endTitle_'+mode]||style?.endingText(mode,ending['endChoice_'+mode],wall);
- const seriesNote=({walkthrough:'공간 산책입니다. 첫 사진에서 발견할 장면을 두 번째 사진에서 짚어 주세요.',finish:'마감 돋보기입니다. 근접 사진에서 보이는 이음, 무늬 또는 걸레받이 중 한 곳을 골라 어디를 볼지 안내하세요.',vote:file(firstId)&&file(p.afterId)&&firstId!==p.afterId?'같은 현장의 A와 B입니다. 인스타 캡션 마지막에 다음 편에서 더 보고 싶은 장면을 물어보세요. 서로 다른 제품이라고 가정하지 마세요.':'사진 한 장에 보이는 부분 중 다음에 무엇을 자세히 보고 싶은지 캡션 끝에 물어보세요.'})[p.layout];
+ const choice=ending['endChoice_'+mode];
+ const phrase=ending[style?.endingTitleKey?.(mode,choice)]??ending['endTitle_'+mode]??style?.endingText(mode,choice,wall);
+ const seriesNote=({walkthrough:'공간 산책입니다. 첫 사진에서 발견할 장면을 두 번째 사진에서 짚어 주세요.',finish:'마감 돋보기입니다. 근접 사진에서 보이는 이음, 무늬 또는 걸레받이 중 한 곳을 골라 어디를 볼지 안내하세요.',vote:file(firstId)&&file(p.afterId)&&firstId!==p.afterId?'같은 현장의 A와 B입니다. 인스타 캡션 첫 줄에서 A와 B 중 다음 편에 보고 싶은 장면을 물어보세요. 서로 다른 제품이라고 가정하지 마세요.':'사진 한 장에 보이는 부분 중 다음에 무엇을 자세히 보고 싶은지 캡션 첫 줄에서 물어보세요.'})[p.layout];
  const angle=writingAngles[p.writingAngle]?.[1];
  const headings=[postLabels.thumbnailTitle,'사진문구',...Object.values(postLabels).slice(1)];
  const guide=window.CheonginFloorNotes;
@@ -134,27 +214,32 @@ function prompt(editor){
    compare?'시공 전·후가 확인된 사진끼리만 비교하고, 두 사진에서 눈으로 확인할 수 있는 차이를 써 주세요.':'현장 미리보기입니다. 여러 사진은 같은 현장의 다른 시선입니다. 사진 순서로 시공 전후나 완공 여부를 판단하지 마세요.',
    '사진 순서가 있으면 파일명과 대조하고, 순서를 따로 주지 않으면 첨부 순서대로 쓰세요. 카탈로그·샘플·연출 사진이 섞이면 그 사진은 소재의 패턴을 설명하는 데만 쓰세요. 연출 사진의 가구나 용도를 이 현장의 정보로 옮기지 마세요. 같은 공간이 반복되면 전경, 가까이 보이는 무늬, 빛이 닿는 부분처럼 실제로 달라 보이는 점을 골라 주세요. 사진이 한 장도 보이지 않으면 사진 첨부만 한 번 요청하세요. 현장명이나 평형 등 비어 있는 정보는 생략하세요.'
   ].join('\n'),
-  ...(angle?[[angle,'썸네일은 그 고민을 고객이 말할 법한 짧은 질문으로 쓰세요. 두 번째 사진이 있으면 그 사진에서 답을 직접 볼 수 있는 질문을 고르고, 두 번째 사진문구는 어디를 보면 되는지 알려 주세요. 사진이 한 장이면 그 한 장 안에서 답을 찾게 하세요. 선택한 주제를 보여주는 사진이 없으면 눈으로 확인 가능한 다른 질문으로 바꿔 주세요. 잘 보이지 않는 이음새가 없다고 단정하거나 “믿고 맡기세요”라고 쓰지 마세요. 참여 질문은 인스타 캡션 마지막에 넣으세요.'].join('\n')]:[]),
+  ...(angle?[[angle,'썸네일은 그 고민을 고객이 말할 법한 짧은 질문으로 쓰세요. 두 번째 사진이 있으면 그 사진에서 답을 직접 볼 수 있는 질문을 고르고, 두 번째 사진문구는 어디를 보면 되는지 알려 주세요. 사진이 한 장이면 그 한 장 안에서 답을 찾게 하세요. 선택한 주제를 보여주는 사진이 없으면 눈으로 확인 가능한 다른 질문으로 바꿔 주세요. 잘 보이지 않는 이음새가 없다고 단정하거나 “믿고 맡기세요”라고 쓰지 마세요. 인스타 캡션의 질문은 첫 줄 한 번으로 충분합니다.'].join('\n')]:[]),
   ['문체와 사실 기준',
    '전시장에서 고객에게 사진을 한 장씩 보여주며 설명하듯 짧고 편안한 존댓말을 쓰세요. 사진에서 고객이 직접 찾아볼 수 있는 특징을 짚어 주세요. ‘고급스러운 공간의 완성’ 같은 상투적인 표현, 과장, 이모지는 빼 주세요.',
-   '제품명·색상명·규격은 제공한 표기를 따르세요. 제품 특징을 더 확인할 수 있으면 해당 모델의 제조사 홈페이지나 공식 카탈로그에서 찾아 주세요. 검색이 어려운 채팅방에서는 이 요청문에 담긴 자료와 사진으로 확인할 수 있는 특징을 사용하세요. 다른 패턴이나 다른 현장의 시공 사례를 이 현장에 섞지 마세요. 무늬가 닮았다는 이유로 실제 대리석이나 원목이라고 단정하지 마세요. 사진으로 알 수 없는 공법, 성능, 고객 반응, 가격, 박스 수, 연락처는 덧붙이지 마세요.'
+   '제품명·색상명·규격은 제공한 표기를 따르세요. 제품 특징을 더 확인할 수 있으면 해당 모델의 제조사 홈페이지나 공식 카탈로그에서 찾아 주세요. 검색이 어려운 채팅방에서는 이 요청문에 담긴 자료와 사진으로 확인할 수 있는 특징을 사용하세요. 다른 패턴이나 다른 현장의 시공 사례를 이 현장에 섞지 마세요. 무늬가 닮았다는 이유로 실제 대리석이나 원목이라고 단정하지 마세요. 공법·성능·고객 반응은 확인된 내용만 쓰세요. 가격과 박스 수는 생략하고 문의처는 아래의 청인마루 공식 문구를 사용하세요.'
   ].join('\n'),
   ['항목별 작성 방법',
    '썸네일 제목은 사진에서 가장 눈길이 가는 특징 하나를 고객의 말로 풀어낸 한 문장입니다. 휴대폰에서 읽기 쉽게 20자 안팎으로 쓰고 줄바꿈은 앱에 맡기세요.',
    '사진문구는 정확히 '+count+'줄입니다. 첫 줄은 썸네일 제목과 같게, 다음 줄부터는 해당 장면에서만 보이는 특징을 한 줄에 하나씩 짧게 쓰세요. 같은 제품의 이름과 규격은 표지의 제품 정보로 충분합니다. 본문은 사진의 특징에 집중하세요. 특히 마지막 줄에는 모델명을 되풀이하지 말고 이 제품을 골랐을 때 눈에 보이는 차이 한 가지를 담으세요. 문장 앞에 숫자, “1장 ·”, “사진 1”, 글머리표를 붙이지 마세요.',
    '게시물·영상 제목은 한 줄로 쓰세요. 확인된 공간 종류나 지역, 제품명 중 필요한 정보와 사진의 특징을 조합해 검색하는 고객도 내용을 짐작할 수 있게 해 주세요.',
-   '인스타 캡션은 짧은 2~3문단입니다. 첫 문단은 사진에서 눈에 띄는 장면으로 시작하고, 다음 문단에서 실제 시공 제품을 한 번 소개하고 그 장면에 어울리는 이유를 확인된 제품 특징 하나와 연결해 주세요.',
+   '[인스타 캡션]만 복사해 인스타그램에 붙여넣어도 게시물이 완성되어야 합니다. 아래 다섯 부분을 순서대로 쓰고, 부분 사이에는 빈 줄 하나를 두세요. 번호, 소제목, 구분선, 별표는 넣지 마세요.',
+   '첫 줄에는 고객이 궁금해할 짧은 질문 한 문장. 다음 단락은 사진에서 직접 보이는 포인트 한 가지와 그 의미를 두 문장 이내로 설명하세요. 같은 무늬·색·규격을 여러 문단에서 되풀이하지 마세요.',
+   '그 아래에는 다음 현장 정보만 줄 단위로 그대로 넣으세요. 모델 → 규격 → 현장 순서입니다. 입력된 항목만 쓰고 빈칸이나 자리표시자는 출력하지 마세요.\n'+instagramFactLines(f).join('\n'),
+   '다음 두 줄은 청인마루 소개와 문의처입니다. 매번 아래 원문을 그대로 넣으세요.\n'+instagramIntro+'\n'+instagramContact,
+   '캡션 맨 마지막에는 해시태그를 한 줄로 넣으세요. 별도 [해시태그] 항목에도 같은 한 줄을 복사하세요. [인스타 캡션] 안에 태그를 한 번만 넣으세요.',
    '유튜브 설명글은 이 현장의 어떤 부분을 볼 수 있는지 2~3문장으로 소개하세요. 인스타 캡션을 그대로 반복하지 마세요.',
    ...(['signature','partner'].includes(mode)?['청인마루는 같은 자재도 시공하는 사람에 따라 마감이 달라진다는 관점으로 현장을 소개합니다. 캡션에서는 사진에서 실제로 보이는 이음선, 문틀 옆 또는 모서리 중 한 곳을 고객이 직접 볼 수 있게 짚어 주세요. 그런 장면이 없으면 시공 품질이나 작업 과정을 추측하지 마세요.']:[]),
    ...(phrase&&count>1?['마지막 사진문구는 선택한 마무리 문구 “'+phrase+'”를 그대로 사용하세요. 연락처는 앱에서 따로 그립니다.']:[]),
    ...(style?.pinnedComment?['고정댓글에 넣을 공통 원문입니다. 모든 게시물에 줄바꿈까지 그대로 넣으세요.\n'+style.pinnedComment]:[]),
-   '해시태그는 #청인마루를 포함해 현장과 직접 관련된 4~7개를 한 줄에 써 주세요.'
+   '해시태그는 최대 5개입니다. #청인마루를 첫 자리에 넣고, 실제 제조사·브랜드, 제품 시리즈·모델, 색상·패턴을 각각 독립된 태그로 쓰세요. 마지막 자리는 확인된 지역과 시공 분야(예: 지역명+벽장재시공) 또는 자재 종류와 시공 분야 등 고객이 찾을 구체적인 말로 고르세요. 검색량이나 노출 순위를 단정하지 마세요. 방염 등급·규격·포장 수량을 제품명에 통째로 붙이지 마세요. 모르는 정보나 무관한 인기 태그로 개수를 채우지 마세요.',
+   '이번 입력값으로 만든 태그 후보 · '+instagramTags(f)
   ].join('\n'),
   '앱에 붙여넣을 답변 형식\n아래 일곱 제목의 글자·괄호·순서를 그대로 유지하고, 각 제목 바로 다음 줄에 완성 문구를 채워 주세요. 게시 문구 전체를 복사할 수 있도록 일반 텍스트 코드 블록 하나에 담으세요. 게시 문구에는 파일명, 출처 링크, 인용 기호나 작성 지시를 옮기지 마세요. 블록 밖 인사말, 작업 설명, 대안 제목은 생략하세요.',
   headings.map(label=>'['+label+']').join('\n')
  ].join('\n\n');
 }
-window.CheonginPostCopy={postLabels,parse,cleanPhotoCaption,sceneCaption};
+window.CheonginPostCopy={postLabels,parse,cleanPhotoCaption,sceneCaption,instagramPack,instagramTags};
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
 let mounted=false;
 function mount(){

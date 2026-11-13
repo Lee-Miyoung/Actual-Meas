@@ -275,8 +275,13 @@ async function exportProductionPlatform({share=false}={}) {
   if(currentExport.disabled)return;
   const button = currentExport; button.disabled = true;
   const signatureBatch=window.signatureExportRenderer?.(),format=state.format;
-  const pack=document.body.classList.contains('simple-marketing-mode')?{...state.thumbnailPosting?.pack,pinnedComment:window.CheonginCoverStyle.pinnedComment}:{};
+  const simple=document.body.classList.contains('simple-marketing-mode'),editor=window.CheonginThumbnailEditor;
+  const pack=simple?{...state.thumbnailPosting?.pack,pinnedComment:window.CheonginCoverStyle.pinnedComment}:{};
   const packField=({carousel:'instagramCaption',reels:'instagramCaption',shorts:'youtubeDescription',youtubeCover:'youtubeDescription'})[format];
+  if(simple&&packField==='instagramCaption'&&editor?.publishPack){
+    pack.instagramCaption=pack.instagramCaption?.trim()||platformCaption();
+    Object.assign(pack,editor.publishPack(pack));
+  }
   const caption=pack[packField]?.trim()||platformCaption();
   const postText=Object.entries(window.CheonginPostCopy?.postLabels||{})
     .filter(([key])=>pack[key]?.trim()).map(([key,label])=>'['+label+']\n'+pack[key]).join('\n\n');

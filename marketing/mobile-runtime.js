@@ -133,7 +133,8 @@ window.exportShortFilm=async function(format,share=false){
     const name=(format==='shorts'?'청인마루_쇼츠':'청인마루_릴스')+'.mp4';
     const render=i=>batch?batch.render(i,format):card(state.theme,i,format);
     const blob=await recordMarketingVideo(render,count,msg=>{$('video-status').textContent=msg;});
-    const pack=state.thumbnailPosting?.pack||{};
+    const saved=state.thumbnailPosting?.pack||{};
+    const pack=format==='reels'&&window.CheonginThumbnailEditor?.publishPack?window.CheonginThumbnailEditor.publishPack(saved):saved;
     showDeviceExport(blob,name,[],{share,caption:(format==='shorts'?pack.youtubeDescription:pack.instagramCaption)||'',comment:window.CheonginCoverStyle?.pinnedComment});
     $('video-status').textContent='MP4 준비 완료';
   }catch(e){toast(e.message);$('video-status').textContent=e.message;}
