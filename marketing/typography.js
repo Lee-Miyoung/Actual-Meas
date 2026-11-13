@@ -13,7 +13,7 @@
     }
     return pieces;
   }
-  function paragraph(text,width,maxLines,measure){
+  function paragraph(text,width,maxLines,measure,preferClauses=false){
     text=text.trim();if(!text)return {lines:[''],widths:[0]};
     if(measure(text)<=width)return {lines:[text],widths:[measure(text)]};
     const pieces=piecesFor(text,width,measure),n=pieces.length,cache=new Map();
@@ -33,7 +33,16 @@
           const tiny=(end===n&&line.width<width*.32)?30:0;
           const split=pieces[end-1].emergency&&end<n&&!/\s$/u.test(pieces[end-1].text)?8:0;
           const pause=/[,，:：]$/u.test(line.value)?-3:0;
-          const cost=tail.cost+Math.pow((line.width-target)/width,2)*100+orphan+tiny+split+pause;
+          // In descriptive Korean copy, favor complete thoughts over equal line lengths.
+          let phraseCost=0;
+          if(preferClauses&&end<n){
+            const next=pieces[end].text.trim();
+            if(/[.!?。！？][”’」)]?$/u.test(line.value))phraseCost=-100;
+            else if(/[,，]$/u.test(line.value))phraseCost=-36;
+            else if(/(?:할지|될지|인지|는지|을지|을\s수|할\s수|될\s수|있을\s수)$/u.test(line.value)
+              || /^(?:정합니다|봅니다|있습니다|없습니다|싶어요|볼게요|주세요|드려요)[.!?]?$/u.test(next))phraseCost=150;
+          }
+          const cost=phraseCost+tail.cost+Math.pow((line.width-target)/width,2)*100+orphan+tiny+split+pause;
           if(!best||cost<best.cost)best={cost,lines:[line.value,...tail.lines],widths:[line.width,...tail.widths]};
         }
         memo.set(key,best);return best;
@@ -68,7 +77,7 @@
     let size=maxSize,last=[];
     for(;size>=minSize;size=Math.max(minSize,size-2)){
       const measure=s=>options.measure(s,size);let lines=[],fits=true;
-      for(const p of paragraphs){const result=paragraph(p,width,maxLines-lines.length,measure);if(!result){fits=false;break;}lines.push(...result.lines);}
+      for(const p of paragraphs){const result=paragraph(p,width,maxLines-lines.length,measure,options.preferClauses);if(!result){fits=false;break;}lines.push(...result.lines);}
       if(fits&&lines.length<=maxLines&&chars.length<=512)return {lines,size,lineHeight:size*leading,widths:lines.map(measure),truncated:false,source};
       last=paragraphs.flatMap(p=>greedy(p,width,measure));if(size===minSize)break;
     }
