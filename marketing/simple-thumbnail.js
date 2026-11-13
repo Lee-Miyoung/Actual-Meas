@@ -13,10 +13,21 @@ function postingPack(v){
  const intro=[v.location,subject+' 시공 기록'].filter(Boolean).join(' ')+'입니다.';
  const observation={floor:'공간 전체에서 보이는 바닥의 색과 가까이에서 보이는 결을 담았습니다.',wall:'벽면을 넓게 본 모습과 가까이에서 보이는 질감을 담았습니다.',both:'벽과 바닥이 만나는 자리와 두 소재의 조화를 담았습니다.'}[kind];
  const setting=state.thumbnailPosting||{};
+ const photos=state.photos||[];
+ const coverPhoto=photos.find(photo=>photo.id===setting.photoId);
+ const ordered=coverPhoto?[coverPhoto,...photos.filter(photo=>photo!==coverPhoto)]:photos;
+ const notes=[...new Set(ordered.map(photo=>state.signaturePhotos?.[photo.id]?.note?.trim()).filter(Boolean))];
+ const siteLine=v.location?v.location+'에 쓴 '+subject+'입니다.':subject+' 시공 사진입니다.';
+ const size=/^\s*(\d+(?:\.\d+)?)\s*[×xX*]\s*(\d+(?:\.\d+)?)\s*[×xX*]\s*\d+(?:\.\d+)?\s*(?:T|㎜|mm)\s*$/iu.exec(cleanDisplaySpec(v.spec));
+ const unitName=kind==='wall'?'벽판':'마루판';
+ const dimension=size&&['floor','wall'].includes(kind)?unitName+' 한 장은 '+Number(size[1])/10+'cm × '+Number(size[2])/10+'cm예요.':'';
+ const firstLine=v.title?.trim()||notes[0]||siteLine;
+ const detail=notes.find(note=>note!==firstLine)||dimension;
+ const caption=[firstLine,detail].filter(Boolean).join('\n\n');
  const hasPair=Boolean(setting.afterId && (setting.beforeId||setting.photoId)!==setting.afterId);
  const feedTitle=CheonginChannelCovers.feedTitle?.(setting.layout,kind,hasPair,setting.pairConcept==='compare');
  const body=[intro,observation,facts,'시공 상담은 지역과 시공할 공간의 사진을 보내주세요.','공간의 위로가 되다, 청인마루'].filter(Boolean).join('\n\n');
- return {thumbnailTitle:v.title||feedTitle||CheonginChannelCovers.suggestedTitle('carousel',v,kind,false),postTitle:[v.location,v.product||subject,subject+' 시공 기록'].filter(Boolean).join(' | '),instagramCaption:[v.title||feedTitle||CheonginChannelCovers.suggestedTitle('carousel',v,kind,false),observation].join('\n\n'),youtubeDescription:body,pinnedComment:window.CheonginCoverStyle.pinnedComment,hashtags:window.CheonginPostCopy.instagramTags(v)};
+ return {thumbnailTitle:v.title||feedTitle||CheonginChannelCovers.suggestedTitle('carousel',v,kind,false),postTitle:[v.location,v.product||subject,subject+' 시공 기록'].filter(Boolean).join(' | '),instagramCaption:caption,youtubeDescription:body,pinnedComment:window.CheonginCoverStyle.pinnedComment,hashtags:window.CheonginPostCopy.instagramTags(v)};
 
 }
 window.CheonginPostingPack={create:postingPack};
