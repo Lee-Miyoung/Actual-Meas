@@ -1,8 +1,8 @@
 {
   "schema": "cheonginmaru.product-feed.v1",
-  "generatedAt": "2026-11-16T22:03:47.155Z",
+  "generatedAt": "2026-11-17T07:56:28.993Z",
   "source": "Lee-Miyoung/maru_calc",
-  "digest": "7745773f5ba4ec53eeb51213461071f3ebdbc0c72041fd5f28a5011880c7a2b8",
+  "digest": "21f0521ace38ddb60c789bc0065f976880bd29593b2c008df54840fb631a9be4",
   "rows": [
     {
       "brand": "동화자연마루",
@@ -2666,22 +2666,29 @@
     },
     {
       "brand": "한솔홈데코",
-      "name": "합판_울트라96",
+      "name": "합판_울트라95",
       "model": "프로스트화이트(new)",
       "spec": "95*800*7.5T(42pcs)",
       "category": "마루"
     },
     {
       "brand": "한솔홈데코",
-      "name": "합판_울트라97",
+      "name": "합판_울트라95",
       "model": "루멘그레이(new)",
       "spec": "95*800*7.5T(42pcs)",
       "category": "마루"
     },
     {
       "brand": "한솔홈데코",
-      "name": "합판_울트라98",
+      "name": "합판_울트라95",
       "model": "미드나잇브라운(new)",
+      "spec": "95*800*7.5T(42pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라95",
+      "model": "로얄티크",
       "spec": "95*800*7.5T(42pcs)",
       "category": "마루"
     },
@@ -2710,13 +2717,6 @@
       "brand": "한솔홈데코",
       "name": "합판_울트라95",
       "model": "미니멀엘름(단종)",
-      "spec": "95*800*7.5T(42pcs)",
-      "category": "마루"
-    },
-    {
-      "brand": "한솔홈데코",
-      "name": "합판_울트라95",
-      "model": "로얄티크(단종)",
       "spec": "95*800*7.5T(42pcs)",
       "category": "마루"
     },
