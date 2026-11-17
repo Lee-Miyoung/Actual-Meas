@@ -1,0 +1,46 @@
+/* Everything is scoped: legacy design, quotes and storage controls stay untouched. */
+#maruni-story{--mr-ink:#303a32;--mr-accent:#365e48;box-sizing:border-box;background:#faf9f5;color:var(--mr-ink);border:1px solid #dedfd5;border-radius:18px;margin:18px 0 28px;font-family:inherit;overflow:clip}
+#maruni-story *{box-sizing:border-box}
+#maruni-story summary{padding:20px;cursor:pointer;font-size:18px;font-weight:600;min-height:60px}
+#maruni-story summary small{display:block;font-size:13px;font-weight:400;color:#697266;margin-top:5px}
+#maruni-story .mr-body{padding:0 18px 20px}
+#maruni-story .mr-projectbar,#maruni-story .mr-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#maruni-story button,#maruni-story select,#maruni-story input:not([type=range]):not([type=file]),#maruni-story textarea{min-height:44px;border:1px solid #d5d9cf;background:#fff;color:var(--mr-ink);border-radius:9px;padding:10px 12px;font:inherit;font-size:14px;max-width:100%;box-shadow:none}
+#maruni-story button{cursor:pointer;line-height:1.3}
+#maruni-story button:hover{border-color:var(--mr-accent)}
+#maruni-story button:focus-visible,#maruni-story select:focus-visible,#maruni-story input:focus-visible,#maruni-story textarea:focus-visible{outline:3px solid #87a993;outline-offset:2px}
+#maruni-story button:disabled{opacity:.45;cursor:not-allowed}
+#maruni-story button[aria-pressed=true],#maruni-story .mr-primary{background:var(--mr-accent);color:#fff;border-color:var(--mr-accent)}
+#maruni-story .mr-projectbar input{flex:1;min-width:150px}
+#maruni-story .mr-projectbar select{max-width:230px}
+#maruni-story .mr-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;margin-top:18px;align-items:start}
+#maruni-story .mr-stage{min-width:0;position:sticky;top:12px}
+#maruni-story .mr-canvas-wrap{background:#eae8e0;border-radius:12px;display:flex;justify-content:center;padding:12px}
+#maruni-story canvas{width:auto;max-width:100%;height:auto;max-height:55vh;display:block;aspect-ratio:4/5;touch-action:none;user-select:none;border-radius:3px}
+#maruni-story .mr-scenes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:10px}
+#maruni-story .mr-scenes button{padding:5px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;background:#fff}
+#maruni-story .mr-scenes button[aria-pressed=true]{outline:2px solid var(--mr-accent);color:var(--mr-accent);background:#eef3eb}
+#maruni-story .mr-scenes img{width:100%;aspect-ratio:4/5;max-height:78px;object-fit:cover;border-radius:3px}
+#maruni-story .mr-empty-thumb{display:grid;place-items:center;width:100%;aspect-ratio:4/5;max-height:78px;background:#eeeee7;color:#7b8277}
+#maruni-story .mr-controls{display:flex;flex-direction:column;gap:12px;min-width:0}
+#maruni-story .mr-controls fieldset{border:1px solid #dedfd5;border-radius:12px;margin:0;padding:12px;min-width:0}
+#maruni-story legend{font-size:14px;padding:0 6px;font-weight:600}
+#maruni-story label{display:flex;flex-direction:column;gap:6px;font-size:13px;margin:8px 0}
+#maruni-story input[type=range]{width:100%;min-height:44px;margin:0;accent-color:var(--mr-accent)}
+#maruni-story input[type=file]{width:100%;font-size:12px;min-height:44px}
+#maruni-story textarea{width:100%;resize:vertical;min-height:90px}
+#maruni-story .mr-assets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;max-height:250px;overflow:auto;margin-top:8px}
+#maruni-story .mr-assets button{padding:5px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:4px}
+#maruni-story .mr-assets img{width:100%;height:76px;object-fit:contain}
+#maruni-story .mr-layers{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+#maruni-story .mr-note,#maruni-story #mr-status{font-size:12px;line-height:1.65;color:#66705f;margin:8px 0}
+#maruni-story #mr-status[data-error=true]{color:#a43827}
+#maruni-story .mr-export{border-top:1px solid #dfe1d7;margin-top:16px;padding-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+#maruni-story dialog{max-width:min(680px,94vw);max-height:88vh;border:1px solid #d5d9cf;border-radius:16px;padding:18px;background:#faf9f5}
+#maruni-story dialog::backdrop{background:#19231e70}
+#maruni-story .mr-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+#maruni-story .mr-results img{display:block;width:100%;height:auto}
+#maruni-story a{color:var(--mr-accent);text-decoration:underline;display:inline-block;padding:10px 3px}
+@media(max-width:950px){#maruni-story .mr-grid{grid-template-columns:minmax(0,1fr) 265px}#maruni-story .mr-body{padding:0 12px 14px}}
+@media(max-width:700px){#maruni-story .mr-grid{grid-template-columns:1fr}#maruni-story .mr-stage{position:relative;top:auto}#maruni-story canvas{max-height:55vh}#maruni-story .mr-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#maruni-story .mr-controls fieldset:last-child{grid-column:1/-1}#maruni-story .mr-projectbar select{max-width:100%;flex:1}#maruni-story summary{font-size:16px}#maruni-story .mr-assets img{height:60px}}
+@media(max-width:430px){#maruni-story .mr-controls{grid-template-columns:1fr}#maruni-story .mr-controls fieldset:last-child{grid-column:auto}}
