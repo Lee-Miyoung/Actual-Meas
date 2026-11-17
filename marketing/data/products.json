@@ -1,8 +1,8 @@
 {
   "schema": "cheonginmaru.product-feed.v1",
-  "generatedAt": "2026-11-11T19:37:37.739Z",
+  "generatedAt": "2026-11-16T22:03:47.155Z",
   "source": "Lee-Miyoung/maru_calc",
-  "digest": "9ec4a2f53dae323cf72fa2476f7333218542cff8dbf1f1f1caaf91962fa6a736",
+  "digest": "7745773f5ba4ec53eeb51213461071f3ebdbc0c72041fd5f28a5011880c7a2b8",
   "rows": [
     {
       "brand": "동화자연마루",
@@ -2666,6 +2666,27 @@
     },
     {
       "brand": "한솔홈데코",
+      "name": "합판_울트라96",
+      "model": "프로스트화이트(new)",
+      "spec": "95*800*7.5T(42pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라97",
+      "model": "루멘그레이(new)",
+      "spec": "95*800*7.5T(42pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라98",
+      "model": "미드나잇브라운(new)",
+      "spec": "95*800*7.5T(42pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
       "name": "합판_울트라95",
       "model": "화이트워시오크 (단종)",
       "spec": "95*800*7.5T(42pcs)",
@@ -2709,14 +2730,42 @@
     {
       "brand": "한솔홈데코",
       "name": "합판_울트라165",
-      "model": "던화이트오크",
+      "model": "인피니티오크(new)",
       "spec": "165*1205*7.5T(16pcs)",
       "category": "마루"
     },
     {
       "brand": "한솔홈데코",
       "name": "합판_울트라165",
-      "model": "보르도오크",
+      "model": "인피니티그레이(new)",
+      "spec": "165*1205*7.5T(16pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라165",
+      "model": "리바오크(new)",
+      "spec": "165*1205*7.5T(16pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라165",
+      "model": "리바딥오크(new)",
+      "spec": "165*1205*7.5T(16pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라165",
+      "model": "소프트컷(new)",
+      "spec": "165*1205*7.5T(16pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라165",
+      "model": "보르드오크",
       "spec": "165*1205*7.5T(16pcs)",
       "category": "마루"
     },
@@ -2730,7 +2779,35 @@
     {
       "brand": "한솔홈데코",
       "name": "합판_울트라165",
-      "model": "던내추럴오크",
+      "model": "프라임티크(new)",
+      "spec": "165*1205*7.5T(16pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라165",
+      "model": "캐시미어화이트(new)",
+      "spec": "165*1205*7.5T(16pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라165",
+      "model": "캐시미어오크(new)",
+      "spec": "165*1205*7.5T(16pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라165",
+      "model": "캐시미어블랙(new)",
+      "spec": "165*1205*7.5T(16pcs)",
+      "category": "마루"
+    },
+    {
+      "brand": "한솔홈데코",
+      "name": "합판_울트라165",
+      "model": "노블월넛(new)",
       "spec": "165*1205*7.5T(16pcs)",
       "category": "마루"
     },

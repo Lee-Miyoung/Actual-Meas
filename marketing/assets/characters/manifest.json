@@ -1,0 +1,649 @@
+{
+  "schemaVersion": 1,
+  "targetPerActor": 30,
+  "assets": [
+    {
+      "id": "maruni-01",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "손인사",
+      "tags": [
+        "인사",
+        "환영"
+      ],
+      "allowFlip": false,
+      "path": "assets/characters/maruni/01.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "e50a0d3311819f5f4b868ecfbad59f3eb8ccafa6c47d7e73ff6e36ed5452ffee",
+      "source": {
+        "filename": "마루니_소년의_활기찬_손인사(1).png",
+        "libraryFileId": "libfile_162f02a36c8c81919bf6b1ae8daed84d"
+      },
+      "alphaBounds": [
+        33,
+        40,
+        1186,
+        1214
+      ]
+    },
+    {
+      "id": "maruni-02",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "양손으로 설명",
+      "tags": [
+        "설명",
+        "소개"
+      ],
+      "allowFlip": false,
+      "path": "assets/characters/maruni/02.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "07d3a23e50b24b2b0e038a2b13217f37fdaa48a15adc851af1f26bc8eb043bee",
+      "source": {
+        "filename": "마루니_소년의_생각하는_포즈(1).png",
+        "libraryFileId": "libfile_15c72a9ed128819189a6af6f4179ccf3"
+      },
+      "alphaBounds": [
+        0,
+        24,
+        1224,
+        1254
+      ]
+    },
+    {
+      "id": "maruni-03",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "손가락으로 안내",
+      "tags": [
+        "설명",
+        "안내"
+      ],
+      "allowFlip": false,
+      "path": "assets/characters/maruni/03.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "41c067a3e13aed552840c7904c1424edeb76e0a5c2535618201f5481d535f8fa",
+      "source": {
+        "filename": "마루니의_자신감_넘치는_설명_포즈(2).png",
+        "libraryFileId": "libfile_89ebdecb53248191a1f12ce097c901fd"
+      },
+      "alphaBounds": [
+        23,
+        20,
+        1218,
+        1222
+      ]
+    },
+    {
+      "id": "maruni-04",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 04",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-05",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 05",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-06",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 06",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-07",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 07",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-08",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 08",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-09",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 09",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-10",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 10",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-11",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 11",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-12",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 12",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-13",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 13",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-14",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 14",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-15",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 15",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-16",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 16",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-17",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 17",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-18",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 18",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-19",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 19",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-20",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 20",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-21",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 21",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-22",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 22",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-23",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 23",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-24",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 24",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-25",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 25",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-26",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 26",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-27",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 27",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-28",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 28",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-29",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 29",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "maruni-30",
+      "actor": "maruni",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 30",
+      "tags": [],
+      "allowFlip": false
+    },
+    {
+      "id": "ruru-01",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "손바닥 인사",
+      "tags": [
+        "인사",
+        "환영"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/01.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "d8367a1734a8335064d960c7a07fd71f992a14da20ec4dce5d5025fdb2088688",
+      "source": {
+        "filename": "루루의_귀여운_손바닥_인사(1).png",
+        "libraryFileId": "libfile_cf0d031248f48191bb59554e31653f85"
+      },
+      "alphaBounds": [
+        41,
+        67,
+        1200,
+        1214
+      ]
+    },
+    {
+      "id": "ruru-02",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "자재 점검",
+      "tags": [
+        "자재",
+        "점검",
+        "호기심"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/02.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "07f1935f3d4c6085bdd340f49d230fcc5c9ce1f5ed74491dece2432013a07036",
+      "source": {
+        "filename": "룰루의_호기심_가득한_자재_점검(2).png",
+        "libraryFileId": "libfile_d8909eb1a1408191a81ebedc17bfe36f"
+      },
+      "alphaBounds": [
+        0,
+        33,
+        1216,
+        1230
+      ]
+    },
+    {
+      "id": "ruru-03",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "반짝이는 반응",
+      "tags": [
+        "감탄",
+        "반응"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/03.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "70016c09001a75805a9584c0ce03acf1c44920a0a98a12082994c419dbd0648e",
+      "source": {
+        "filename": "행복한_강아지_루루와_반짝이는_느낌표(1).png",
+        "libraryFileId": "libfile_07376887ea7081919eb8f19d31f3ab82"
+      },
+      "alphaBounds": [
+        0,
+        20,
+        1210,
+        1254
+      ]
+    },
+    {
+      "id": "ruru-04",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 04",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-05",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 05",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-06",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 06",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-07",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 07",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-08",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 08",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-09",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 09",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-10",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 10",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-11",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 11",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-12",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 12",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-13",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 13",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-14",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 14",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-15",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 15",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-16",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 16",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-17",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 17",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-18",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 18",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-19",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 19",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-20",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 20",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-21",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 21",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-22",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 22",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-23",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 23",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-24",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 24",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-25",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 25",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-26",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 26",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-27",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 27",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-28",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 28",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-29",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 29",
+      "tags": [],
+      "allowFlip": true
+    },
+    {
+      "id": "ruru-30",
+      "actor": "ruru",
+      "version": 1,
+      "status": "pending",
+      "label": "원본 미등록 30",
+      "tags": [],
+      "allowFlip": true
+    }
+  ]
+}
