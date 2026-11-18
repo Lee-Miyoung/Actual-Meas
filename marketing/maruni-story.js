@@ -32,6 +32,7 @@
         <fieldset><legend>02 · 공식 캐릭터</legend>
           <div class="mr-toolbar"><button id="mr-tab-maruni" type="button" aria-pressed="true">마루니</button><button id="mr-tab-ruru" type="button" aria-pressed="false">루루</button></div>
           <label>포즈 찾기<input id="mr-search" type="search" placeholder="인사, 설명, 자재…"></label>
+          <div class="mr-toolbar"><button id="mr-manage-poses" type="button" aria-pressed="false">목록 관리</button></div>
           <p id="mr-asset-count" class="mr-note"></p><div id="mr-assets" class="mr-assets"></div>
           <label>보유한 원본 투명 PNG 추가<input id="mr-character" type="file" accept="image/png"></label>
         </fieldset>
@@ -54,6 +55,21 @@
   let history = [], revision = 0, savedRevision = -1, timer, saving = Promise.resolve(), busy = false, ready = false, paintFrame = 0;
   const cache = new Map(), thumbs = new Map(), resultURLs = [];
   let boxes = new Map();
+  const hiddenPosePrefix = 'cheonginmaru-maruni-story:hidden-pose:';
+  let managingPoses = false;
+  function isPoseHidden(id) {
+    try { return localStorage.getItem(hiddenPosePrefix + id) === '1'; }
+    catch { return false; }
+  }
+  function setPoseHidden(id, hidden) {
+    try {
+      if (hidden) localStorage.setItem(hiddenPosePrefix + id, '1');
+      else localStorage.removeItem(hiddenPosePrefix + id);
+      assets();
+    } catch {
+      status('이 기기에 목록 설정을 저장하지 못했습니다.', true);
+    }
+  }
   const scene = () => project.scenes[active], layer = () => scene().layers.find(l => l.id === selected);
   function status(text, error = false) { $('#mr-status').textContent = text; $('#mr-status').dataset.error = String(error); }
   function remember() { history.push(C.copy(project)); if (history.length > 30) history.shift(); $('#mr-undo').disabled = !history.length; }
@@ -132,11 +148,23 @@
   function assets() {
     $('#mr-tab-maruni').setAttribute('aria-pressed', String(actorTab === 'maruni')); $('#mr-tab-ruru').setAttribute('aria-pressed', String(actorTab === 'ruru'));
     const all = manifest.filter(a => a.actor === actorTab), q = $('#mr-search').value.trim(), available = all.filter(a => a.status === 'ready');
-    $('#mr-asset-count').textContent = `공식 원본 ${available.length}/30종 · 나머지 ${30-available.length}종 확인 필요`;
+    const hiddenCount = available.filter(a => isPoseHidden(a.id)).length;
+    $('#mr-asset-count').textContent = managingPoses
+      ? `등록 ${available.length}종 · 이 기기에서 숨김 ${hiddenCount}종`
+      : `선택 가능 ${available.length - hiddenCount}종 · 숨김 ${hiddenCount}종`;
     const host = $('#mr-assets'); host.replaceChildren();
     for (const a of all.filter(a => (a.label + ' ' + a.tags.join(' ')).includes(q))) {
       if (a.status !== 'ready') { const b = el('button', a.label + ' · 확인 필요'); b.type = 'button'; b.disabled = true; host.append(b); continue; }
-      const b = el('button'), im = el('img'); b.type = 'button'; im.src = a.path; im.alt = ''; im.loading = 'lazy'; b.append(im, el('span', a.label)); b.onclick = () => run(async () => {
+      const hidden = isPoseHidden(a.id);
+      if (hidden && !managingPoses) continue;
+      const b = el('button'), im = el('img'); b.type = 'button'; im.src = a.path; im.alt = ''; im.loading = 'lazy'; b.dataset.assetId = a.id;
+      if (managingPoses) {
+        b.append(im, el('span', a.label + (hidden ? ' · 복원' : ' · 숨기기')));
+        b.onclick = () => setPoseHidden(a.id, !isPoseHidden(a.id));
+        host.append(b);
+        continue;
+      }
+      b.append(im, el('span', a.label)); b.onclick = () => run(async () => {
         if (scene().layers.length >= 12) throw Error('한 컷에는 캐릭터·말풍선을 합해 12개까지 넣을 수 있습니다.');
         const resp = await fetch(a.path); if (!resp.ok) throw Error('캐릭터 원본을 불러오지 못했습니다.'); const blob = await resp.blob();
         const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()))].map(n => n.toString(16).padStart(2, '0')).join('');
@@ -174,6 +202,15 @@
   });
   for (const actor of ['maruni', 'ruru']) $('#mr-tab-' + actor).onclick = () => { if (busy) return; actorTab = actor; assets(); };
   $('#mr-search').oninput = assets;
+  $('#mr-manage-poses').onclick = () => {
+    managingPoses = !managingPoses;
+    $('#mr-manage-poses').setAttribute('aria-pressed', String(managingPoses));
+    $('#mr-manage-poses').textContent = managingPoses ? '관리 마치기' : '목록 관리';
+    assets();
+  };
+  window.addEventListener('storage', event => {
+    if (event.key === null || event.key.startsWith(hiddenPosePrefix)) assets();
+  });
   let renaming = false;
   $('#mr-name').oninput = e => { if (busy) { e.target.value = project.name; return; } if (!renaming) { remember(); renaming = true; } project.name = e.target.value.trim() || '현장 이야기'; changed(); };
   $('#mr-name').onblur = () => { renaming = false; };

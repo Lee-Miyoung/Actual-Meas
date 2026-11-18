@@ -84,244 +84,805 @@
       "id": "maruni-04",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 04",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "줄자로 마루 폭 재기",
+      "tags": [
+        "시공",
+        "공구",
+        "줄자",
+        "실측",
+        "치수"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/04.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "0edee335951e9eca07629f3735f928b6df36f3789b3c3b6e60a96e21229da098",
+      "source": {
+        "kind": "user-original",
+        "filename": "8DA266CB-050F-44FF-8005-7A28F7990527.jpeg",
+        "libraryFileId": "libfile_fcd83d6f8ef881918cd1cdf0b8a1447c"
+      },
+      "alphaBounds": [
+        206,
+        79,
+        1022,
+        1184
+      ]
     },
     {
       "id": "maruni-05",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 05",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "고무망치로 마루 끼우기",
+      "tags": [
+        "시공",
+        "공구",
+        "고무망치",
+        "결합"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/05.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "4319c5bdb239c2000e3541b71b7cf6a6b12762c09c3544b04497158889c7bd36",
+      "source": {
+        "kind": "user-original",
+        "filename": "EDB04C30-1CFE-4311-A70E-7BC23635C71D.jpeg",
+        "libraryFileId": "libfile_f0a21e588e888191aeacc0fef11568d2"
+      },
+      "alphaBounds": [
+        126,
+        40,
+        1127,
+        1167
+      ]
     },
     {
       "id": "maruni-06",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 06",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "레이저 줄자로 벽 실측",
+      "tags": [
+        "시공",
+        "공구",
+        "레이저",
+        "거리",
+        "측정"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/06.png",
+      "width": 1217,
+      "height": 1293,
+      "sha256": "3899b1f933e35c44d907306877f1ec02d4f023f16f2b3c7ba0224ba5d98ca382",
+      "source": {
+        "kind": "user-original",
+        "filename": "D5CAF8E5-F42E-4AB3-8860-C3099017678B.jpeg",
+        "libraryFileId": "libfile_287ac2b7080c81918f9743f60aa4c82c"
+      },
+      "alphaBounds": [
+        160,
+        24,
+        1133,
+        1243
+      ]
     },
     {
       "id": "maruni-07",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 07",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "보호안경 쓰고 재단선 긋기",
+      "tags": [
+        "안전",
+        "보안경",
+        "직각자",
+        "연필",
+        "표시"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/07.png",
+      "width": 1199,
+      "height": 1312,
+      "sha256": "4c47c863912e34b450e30b92e4a8e3787a403d7a09640f056f297fd366cfb507",
+      "source": {
+        "kind": "user-original",
+        "filename": "6BE0F17E-32C1-4E15-BEE0-21A7CDB77D4C.jpeg",
+        "libraryFileId": "libfile_c72d4013fe788191a10573f70321c3bf"
+      },
+      "alphaBounds": [
+        201,
+        36,
+        997,
+        1264
+      ]
     },
     {
       "id": "maruni-08",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 08",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "긴 마루판 소개",
+      "tags": [
+        "자재",
+        "장척",
+        "규격",
+        "소개"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/08.png",
+      "width": 1199,
+      "height": 1312,
+      "sha256": "97d245b6ccde5d025f6b6952a9a76dc7e73cb29cd406e08a93312328f49bba02",
+      "source": {
+        "kind": "user-original",
+        "filename": "FC421897-9594-4065-A712-070D42F1B9CD.jpeg",
+        "libraryFileId": "libfile_a4725054c3e481918f3f46482e704489"
+      },
+      "alphaBounds": [
+        209,
+        49,
+        1088,
+        1212
+      ]
     },
     {
       "id": "maruni-09",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 09",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "방진마스크 착용",
+      "tags": [
+        "안전",
+        "보호구",
+        "방진",
+        "마스크"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/09.png",
+      "width": 1199,
+      "height": 1312,
+      "sha256": "71370412200d9af7a93ed84ba27c7c3b1e5da38a1396d45bcf177c0328f87bf0",
+      "source": {
+        "kind": "user-original",
+        "filename": "54315F9B-FFEB-437D-A4EB-5313D353C890.png",
+        "libraryFileId": "libfile_820e15dc21188191af1419b8f316ad15"
+      },
+      "alphaBounds": [
+        0,
+        18,
+        1163,
+        1278
+      ]
     },
     {
       "id": "maruni-10",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 10",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "공구 허리띠 착용",
+      "tags": [
+        "공구",
+        "벨트",
+        "현장",
+        "준비"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/10.png",
+      "width": 1199,
+      "height": 1312,
+      "sha256": "725bc20799ae4576a2a015a0ca8e961ef539bd4a41b8f969920aec0f25b472c5",
+      "source": {
+        "kind": "user-original",
+        "filename": "ECB78D7D-8863-4F9E-BD59-1EC6CE2135EB.png",
+        "libraryFileId": "libfile_cc1f779d8f4081919cb8322cc3719654"
+      },
+      "alphaBounds": [
+        171,
+        30,
+        962,
+        1274
+      ]
     },
     {
       "id": "maruni-11",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 11",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "여름 반팔로 땀 닦기",
+      "tags": [
+        "여름",
+        "반팔",
+        "수건",
+        "휴식"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/11.png",
+      "width": 1199,
+      "height": 1312,
+      "sha256": "e478193f2b366532ef77094071f0443d0523ca9b8f132d0864dbdf1154e5e302",
+      "source": {
+        "kind": "user-original",
+        "filename": "B2065DD7-155E-4D34-93AE-705073D56F7C.png",
+        "libraryFileId": "libfile_29d8df43f21c8191a3d12b7bfdc579ba"
+      },
+      "alphaBounds": [
+        90,
+        37,
+        1144,
+        1232
+      ]
     },
     {
       "id": "maruni-12",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 12",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "두 색상 비교",
+      "tags": [
+        "샘플",
+        "색상",
+        "비교",
+        "상담"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/12.png",
+      "width": 1199,
+      "height": 1312,
+      "sha256": "aeaf960764bc958d76de5c329e4da96eaa463984c0ddb936d4187c85843f2841",
+      "source": {
+        "kind": "user-original",
+        "filename": "87D5EA55-7175-4814-BC92-CDF210C3C92A.png",
+        "libraryFileId": "libfile_f389dd7e6f488191832379242ec40797"
+      },
+      "alphaBounds": [
+        56,
+        35,
+        1116,
+        1246
+      ]
     },
     {
       "id": "maruni-13",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 13",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "손바닥 위 마루 샘플",
+      "tags": [
+        "자재",
+        "견본",
+        "샘플",
+        "안내"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/13.png",
+      "width": 1199,
+      "height": 1312,
+      "sha256": "da62677e89181eb4e62fbb1fa3dd58f7297b0aa5602f4d842e6485f8c98fb2c1",
+      "source": {
+        "kind": "user-original",
+        "filename": "C36153B4-55C6-44EC-9F91-75189AB9C86C.png",
+        "libraryFileId": "libfile_2c5dccf9f5e48191ba39f818fc2544e9"
+      },
+      "alphaBounds": [
+        82,
+        38,
+        1163,
+        1288
+      ]
     },
     {
       "id": "maruni-14",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 14",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "마루판 들고 이동",
+      "tags": [
+        "자재",
+        "운반",
+        "이동"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/14.png",
+      "width": 253,
+      "height": 301,
+      "sha256": "83f731e87c707f90d740da19552661607e61f5e48b6fe0b0e07c8d09923697fb",
+      "source": {
+        "kind": "user-sheet",
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png",
+        "libraryFileId": "libfile_7da9dea91e6c81918b9b6055a45e0ad1",
+        "sourceRect": [
+          68,
+          295,
+          300,
+          285
+        ]
+      },
+      "alphaBounds": [
+        10,
+        10,
+        243,
+        291
+      ]
     },
     {
       "id": "maruni-15",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 15",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "양손 모아 환호",
+      "tags": [
+        "기쁨",
+        "반응",
+        "응원"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/15.png",
+      "width": 258,
+      "height": 305,
+      "sha256": "f2e5fd1c6aabd05dd6509fbcfa002a9d88b8e725897f217e237e941fc751b603",
+      "source": {
+        "kind": "user-sheet",
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png",
+        "libraryFileId": "libfile_7da9dea91e6c81918b9b6055a45e0ad1",
+        "sourceRect": [
+          1120,
+          0,
+          341,
+          295
+        ]
+      },
+      "alphaBounds": [
+        10,
+        10,
+        248,
+        295
+      ]
     },
     {
       "id": "maruni-16",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 16",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "마루 단면 설명",
+      "tags": [
+        "자재",
+        "구조",
+        "단면",
+        "샘플"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/16.png",
+      "width": 277,
+      "height": 403,
+      "sha256": "8738747b4f55a05adb350605b8cccb78a162d17e59b0c21fe7d41fd711ad13dc",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-a",
+        "cell": 1
+      },
+      "alphaBounds": [
+        10,
+        10,
+        267,
+        393
+      ]
     },
     {
       "id": "maruni-17",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 17",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "손끝으로 나뭇결 확인",
+      "tags": [
+        "맨손",
+        "무늬",
+        "질감",
+        "점검"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/17.png",
+      "width": 355,
+      "height": 363,
+      "sha256": "b342098431f07415ff1a5c172efd1157e07f8750418f53a16b8b99cdcfa7a0f9",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-a",
+        "cell": 4
+      },
+      "alphaBounds": [
+        10,
+        10,
+        345,
+        353
+      ]
     },
     {
       "id": "maruni-18",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 18",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "붓과 공구 벨트",
+      "tags": [
+        "공구",
+        "붓",
+        "준비"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/18.png",
+      "width": 258,
+      "height": 398,
+      "sha256": "2c1c4ee84e36cfe7a2ba9df9c59d062bc3cc3d23a6f586a973076ee718d94eb1",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-a",
+        "cell": 5
+      },
+      "alphaBounds": [
+        10,
+        10,
+        248,
+        388
+      ]
     },
     {
       "id": "maruni-19",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 19",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "앉아서 샘플 조합",
+      "tags": [
+        "상담",
+        "선택",
+        "색상",
+        "비교"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/19.png",
+      "width": 315,
+      "height": 382,
+      "sha256": "e97a8b0c17ed9734d739ccff68ca4f609811a66fdfa451334e04e325f6fddca1",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-a",
+        "cell": 6
+      },
+      "alphaBounds": [
+        10,
+        10,
+        305,
+        372
+      ]
     },
     {
       "id": "maruni-20",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 20",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "겨울 목도리",
+      "tags": [
+        "계절",
+        "겨울",
+        "목도리"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/20.png",
+      "width": 228,
+      "height": 412,
+      "sha256": "785cbd8463c7752830609b62fa72edaf200f5eacd4866164492fc160b43bfc58",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-a",
+        "cell": 7
+      },
+      "alphaBounds": [
+        10,
+        10,
+        218,
+        402
+      ]
     },
     {
       "id": "maruni-21",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 21",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "공구함 들고 이동",
+      "tags": [
+        "작업",
+        "준비",
+        "공구함"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/21.png",
+      "width": 302,
+      "height": 415,
+      "sha256": "e436dee13cbf5d640973a2977ea4c4eb27f68ea3bca5b33b97a0035a3be66d66",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-a",
+        "cell": 8
+      },
+      "alphaBounds": [
+        10,
+        10,
+        292,
+        405
+      ]
     },
     {
       "id": "maruni-22",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 22",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "양팔 벌려 환영",
+      "tags": [
+        "고객",
+        "인사",
+        "환영"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/22.png",
+      "width": 359,
+      "height": 411,
+      "sha256": "d8510493f21358daa13478f13a8fa5a0bd90fe7868059d6f9b39496be7d13066",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-a",
+        "cell": 9
+      },
+      "alphaBounds": [
+        10,
+        10,
+        349,
+        401
+      ]
     },
     {
       "id": "maruni-23",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 23",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "확대경으로 이음매 확인",
+      "tags": [
+        "디테일",
+        "마감",
+        "점검",
+        "확대경"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/23.png",
+      "width": 349,
+      "height": 352,
+      "sha256": "0885cf9ff0b3d979b5e15c7d5f6b9b94f2752b84b81199c9e18d45a4a9c0a19e",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-b",
+        "cell": 2
+      },
+      "alphaBounds": [
+        10,
+        10,
+        339,
+        342
+      ]
     },
     {
       "id": "maruni-24",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 24",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "도면 들고 방향 안내",
+      "tags": [
+        "도면",
+        "동선",
+        "손가락",
+        "안내"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/24.png",
+      "width": 267,
+      "height": 390,
+      "sha256": "41243924c7badc0001a4aa74df2d532b7d5225787beddc7abbaffdcb8d1fc3eb",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-b",
+        "cell": 3
+      },
+      "alphaBounds": [
+        10,
+        10,
+        257,
+        380
+      ]
     },
     {
       "id": "maruni-25",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 25",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "팔짱 끼고 고민",
+      "tags": [
+        "표정",
+        "질문",
+        "생각",
+        "고민"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/25.png",
+      "width": 208,
+      "height": 399,
+      "sha256": "94d2d752a0b5627b6ce1be0030b576950a128b5d740c62ab395ab74c494dcd35",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-b",
+        "cell": 4
+      },
+      "alphaBounds": [
+        10,
+        10,
+        198,
+        389
+      ]
     },
     {
       "id": "maruni-26",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 26",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "천으로 마루 닦기",
+      "tags": [
+        "작업",
+        "관리",
+        "청소"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/26.png",
+      "width": 328,
+      "height": 368,
+      "sha256": "3de1fec5deb3ddfd2c6f6597c8e61f53a82697b42a517a2e84e92f0e5184aff5",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-b",
+        "cell": 5
+      },
+      "alphaBounds": [
+        10,
+        10,
+        318,
+        358
+      ]
     },
     {
       "id": "maruni-27",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 27",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "수평계 확인",
+      "tags": [
+        "공구",
+        "수평",
+        "점검"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/27.png",
+      "width": 222,
+      "height": 404,
+      "sha256": "d079c98ba400430dfde837335eb64fb082f48d2f28698f66a851f72d5658f58b",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-b",
+        "cell": 6
+      },
+      "alphaBounds": [
+        10,
+        10,
+        212,
+        394
+      ]
     },
     {
       "id": "maruni-28",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 28",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "손가락으로 순서 안내",
+      "tags": [
+        "맨손",
+        "숫자",
+        "순서",
+        "설명"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/28.png",
+      "width": 261,
+      "height": 410,
+      "sha256": "83c9430342f1d2efc944a48d9d10423edc1d076980e9f088ab1a0630e79d6007",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-b",
+        "cell": 7
+      },
+      "alphaBounds": [
+        10,
+        10,
+        251,
+        400
+      ]
     },
     {
       "id": "maruni-29",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 29",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "고개 숙여 인사",
+      "tags": [
+        "인사",
+        "감사",
+        "마무리"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/29.png",
+      "width": 221,
+      "height": 397,
+      "sha256": "39bf38f7e8fbd018c7cc513593c0eb8a45be8237093380f9fb8eb8fa95a99a14",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-b",
+        "cell": 8
+      },
+      "alphaBounds": [
+        10,
+        10,
+        211,
+        387
+      ]
     },
     {
       "id": "maruni-30",
       "actor": "maruni",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 30",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "손선풍기로 쉬기",
+      "tags": [
+        "반팔",
+        "여름",
+        "휴식",
+        "선풍기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/30.png",
+      "width": 263,
+      "height": 411,
+      "sha256": "42deb28c29ccc5c19b5a518e34158d2220fa4393dbd5164bcab9eb6efc13937a",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "maruni-01",
+        "sheet": "boy-b",
+        "cell": 9
+      },
+      "alphaBounds": [
+        10,
+        10,
+        253,
+        401
+      ]
     },
     {
       "id": "ruru-01",
@@ -406,244 +967,798 @@
       "id": "ruru-04",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 04",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "눈 감고 미소",
+      "tags": [
+        "표정",
+        "만족",
+        "휴식"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/04.png",
+      "width": 194,
+      "height": 200,
+      "sha256": "9b952b48081bb1597f4dbc1e6c5b0ca128acd7b6d9b49f1759167e9200be5420",
+      "source": {
+        "kind": "user-sheet",
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png",
+        "libraryFileId": "libfile_7da9dea91e6c81918b9b6055a45e0ad1",
+        "sourceRect": [
+          760,
+          581,
+          345,
+          198
+        ]
+      },
+      "alphaBounds": [
+        10,
+        10,
+        184,
+        190
+      ]
     },
     {
       "id": "ruru-05",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 05",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "몸을 말고 낮잠",
+      "tags": [
+        "휴식",
+        "수면",
+        "잠"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/05.png",
+      "width": 275,
+      "height": 184,
+      "sha256": "aeb02a9c4d260a650a39794a3f39e56cb4c26ba953137c490f89e70a473b175d",
+      "source": {
+        "kind": "user-sheet",
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png",
+        "libraryFileId": "libfile_7da9dea91e6c81918b9b6055a45e0ad1",
+        "sourceRect": [
+          1095,
+          578,
+          380,
+          204
+        ]
+      },
+      "alphaBounds": [
+        10,
+        10,
+        265,
+        174
+      ]
     },
     {
       "id": "ruru-06",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 06",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "궁금해서 갸웃",
+      "tags": [
+        "표정",
+        "질문",
+        "궁금"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/06.png",
+      "width": 246,
+      "height": 240,
+      "sha256": "c079c660c2e32966f38ffd036692d3e2c437c33cbafb613ea8c39ae07d4a9004",
+      "source": {
+        "kind": "user-sheet",
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png",
+        "libraryFileId": "libfile_7da9dea91e6c81918b9b6055a45e0ad1",
+        "sourceRect": [
+          1110,
+          782,
+          366,
+          242
+        ]
+      },
+      "alphaBounds": [
+        10,
+        10,
+        236,
+        230
+      ]
     },
     {
       "id": "ruru-07",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 07",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "꼬리 들고 놀자",
+      "tags": [
+        "즐거움",
+        "장난",
+        "몸짓"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/07.png",
+      "width": 330,
+      "height": 315,
+      "sha256": "bb2625ee473d97e204ed513d5878347860a1cc99ced0d5b746bbeffc4e58bddb",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-a",
+        "cell": 2
+      },
+      "alphaBounds": [
+        10,
+        10,
+        320,
+        305
+      ]
     },
     {
       "id": "ruru-08",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 08",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "도면 물고 달리기",
+      "tags": [
+        "도면",
+        "심부름",
+        "이동"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/08.png",
+      "width": 374,
+      "height": 333,
+      "sha256": "815cd50d49c57e4bae1c77c0fd98fba0710b0e0adca47c568aeaedea94826ef4",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-a",
+        "cell": 3
+      },
+      "alphaBounds": [
+        10,
+        10,
+        364,
+        323
+      ]
     },
     {
       "id": "ruru-09",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 09",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "두 발로 볼을 감싸고 깜짝",
+      "tags": [
+        "반응",
+        "표정",
+        "놀람"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/09.png",
+      "width": 304,
+      "height": 338,
+      "sha256": "8fb84f780ff39231912ec128f0a9f3d51da3f6c3200ed13db125332e469be683",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-a",
+        "cell": 5
+      },
+      "alphaBounds": [
+        10,
+        10,
+        294,
+        328
+      ]
     },
     {
       "id": "ruru-10",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 10",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "바닥을 콕 짚기",
+      "tags": [
+        "안내",
+        "위치",
+        "앞발"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/10.png",
+      "width": 347,
+      "height": 322,
+      "sha256": "38420c5a44e3402b41253f54781187e43f3ecde70bc74e76a4c7831959acc864",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-a",
+        "cell": 6
+      },
+      "alphaBounds": [
+        10,
+        10,
+        337,
+        312
+      ]
     },
     {
       "id": "ruru-11",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 11",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "앞발 뻗고 기지개",
+      "tags": [
+        "휴식",
+        "스트레칭"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/11.png",
+      "width": 353,
+      "height": 304,
+      "sha256": "bd4d751ba7183275e9dd7ba4085d669ad098c8d76c756aec987c06dfebcae184",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-a",
+        "cell": 7
+      },
+      "alphaBounds": [
+        10,
+        10,
+        343,
+        294
+      ]
     },
     {
       "id": "ruru-12",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 12",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "마루판 냄새 맡기",
+      "tags": [
+        "자재",
+        "점검",
+        "냄새"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/12.png",
+      "width": 366,
+      "height": 276,
+      "sha256": "c0cb7b5622bb2cf497ed8d1a405b5cec01a72b6924eec8c853ff4b43c3ba4581",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-a",
+        "cell": 8
+      },
+      "alphaBounds": [
+        10,
+        10,
+        356,
+        266
+      ]
     },
     {
       "id": "ruru-13",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 13",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "줄자 들기",
+      "tags": [
+        "공구",
+        "실측",
+        "줄자"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/13.png",
+      "width": 346,
+      "height": 354,
+      "sha256": "695795349eae664af062c0cd43f9f44b352044ad63d0020e887dbf95d02e5828",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-a",
+        "cell": 9
+      },
+      "alphaBounds": [
+        10,
+        10,
+        336,
+        344
+      ]
     },
     {
       "id": "ruru-14",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 14",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "연필 물고 걷기",
+      "tags": [
+        "연필",
+        "현장",
+        "심부름"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/14.png",
+      "width": 352,
+      "height": 338,
+      "sha256": "0717547c0c4646ddba8eb2411a0bf76e0cf70785868cff60ee59eec421f331b1",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-b",
+        "cell": 1
+      },
+      "alphaBounds": [
+        10,
+        10,
+        342,
+        328
+      ]
     },
     {
       "id": "ruru-15",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 15",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "겨울 목도리 두르기",
+      "tags": [
+        "겨울",
+        "계절",
+        "목도리"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/15.png",
+      "width": 309,
+      "height": 349,
+      "sha256": "b3c0498c99ba5e85e048b0ff35085592dc362b887f3f794108d75d6cdd16646b",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-b",
+        "cell": 2
+      },
+      "alphaBounds": [
+        10,
+        10,
+        299,
+        339
+      ]
     },
     {
       "id": "ruru-16",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 16",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "샘플 더미에 앞발 올리기",
+      "tags": [
+        "샘플",
+        "제품",
+        "비교"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/16.png",
+      "width": 367,
+      "height": 375,
+      "sha256": "afe92caf49ac1babc2e1a90bc785021b628038c38a1111aa3fe9b7d6f048d368",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-b",
+        "cell": 3
+      },
+      "alphaBounds": [
+        10,
+        10,
+        357,
+        365
+      ]
     },
     {
       "id": "ruru-17",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 17",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "물방울 살피기",
+      "tags": [
+        "습기",
+        "관리",
+        "물"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/17.png",
+      "width": 363,
+      "height": 323,
+      "sha256": "7ab2ac00accfbf528a3f411530d93521bb1030189ca9e25af27fb90174023236",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-b",
+        "cell": 4
+      },
+      "alphaBounds": [
+        10,
+        10,
+        353,
+        313
+      ]
     },
     {
       "id": "ruru-18",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 18",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "천으로 샘플 닦기",
+      "tags": [
+        "청소",
+        "관리",
+        "마감"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/18.png",
+      "width": 367,
+      "height": 355,
+      "sha256": "b7b15fc30cd8d830ba093392a75ccd5a3567b639bddb198f151caff9d8f28753",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-b",
+        "cell": 5
+      },
+      "alphaBounds": [
+        10,
+        10,
+        357,
+        345
+      ]
     },
     {
       "id": "ruru-19",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 19",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "마루 샘플 안기",
+      "tags": [
+        "샘플",
+        "자재",
+        "애정"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/19.png",
+      "width": 301,
+      "height": 365,
+      "sha256": "7e2fe9103bdf8dc8bf0aeb650941e0a8e25f069451a9f2667e45c9c74315d2cf",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-b",
+        "cell": 6
+      },
+      "alphaBounds": [
+        10,
+        10,
+        291,
+        355
+      ]
     },
     {
       "id": "ruru-20",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 20",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "테이프 건네기",
+      "tags": [
+        "공구",
+        "테이프",
+        "준비"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/20.png",
+      "width": 351,
+      "height": 360,
+      "sha256": "4fa8a5ba39a4e5ef82dec90dc5751b0cef1a31eb38be2d0feccae2b7bbac1939",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-b",
+        "cell": 7
+      },
+      "alphaBounds": [
+        10,
+        10,
+        341,
+        350
+      ]
     },
     {
       "id": "ruru-21",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 21",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "배 보이며 뒹굴기",
+      "tags": [
+        "놀이",
+        "기분",
+        "반응"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/21.png",
+      "width": 374,
+      "height": 341,
+      "sha256": "e8ea261a6358a07994eaaa4ad1424cf301a4751e8ac7616502d53ddb49b4f89d",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-b",
+        "cell": 8
+      },
+      "alphaBounds": [
+        10,
+        10,
+        364,
+        331
+      ]
     },
     {
       "id": "ruru-22",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 22",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "뒤돌아보기",
+      "tags": [
+        "동선",
+        "뒤돌기",
+        "안내"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/22.png",
+      "width": 324,
+      "height": 360,
+      "sha256": "e18aa11b8170d3c0d8acbb96852708cb01444e7eb5b6cfbb0408ac6ded18b4d0",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-b",
+        "cell": 9
+      },
+      "alphaBounds": [
+        10,
+        10,
+        314,
+        350
+      ]
     },
     {
       "id": "ruru-23",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 23",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "보호안경 쓰고 대기",
+      "tags": [
+        "안전",
+        "고글",
+        "준비"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/23.png",
+      "width": 323,
+      "height": 373,
+      "sha256": "28d9a6882125288151040db91e2cbe03bdbcca049631ed648deb4fcf4429ce79",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-c",
+        "cell": 1
+      },
+      "alphaBounds": [
+        10,
+        10,
+        313,
+        363
+      ]
     },
     {
       "id": "ruru-24",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 24",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "확대경으로 틈새 보기",
+      "tags": [
+        "마감",
+        "검사",
+        "확대경"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/24.png",
+      "width": 406,
+      "height": 293,
+      "sha256": "ee89259d2f3d4a31710c7089dedfe7a96ab3e2f8e09527b7945001aabbce1a26",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-c",
+        "cell": 2
+      },
+      "alphaBounds": [
+        10,
+        10,
+        396,
+        283
+      ]
     },
     {
       "id": "ruru-25",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 25",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "상자에서 빼꼼",
+      "tags": [
+        "배송",
+        "박스",
+        "개봉"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/25.png",
+      "width": 383,
+      "height": 376,
+      "sha256": "412fe3cf5d33edb189414636a56677ace54953d384f12cccc4729bc46958d704",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-c",
+        "cell": 4
+      },
+      "alphaBounds": [
+        10,
+        10,
+        373,
+        366
+      ]
     },
     {
       "id": "ruru-26",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 26",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "앞발 벌리고 폴짝",
+      "tags": [
+        "기쁨",
+        "신남",
+        "반응"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/26.png",
+      "width": 311,
+      "height": 360,
+      "sha256": "19180bcb011c797fc33dc845b99f22a3f80c7c0c66b242035f10e00f91bad975",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-c",
+        "cell": 5
+      },
+      "alphaBounds": [
+        10,
+        10,
+        301,
+        350
+      ]
     },
     {
       "id": "ruru-27",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 27",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "코 위에 샘플 올리기",
+      "tags": [
+        "샘플",
+        "균형",
+        "장난"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/27.png",
+      "width": 334,
+      "height": 379,
+      "sha256": "b914bd9f6cc50a260db2c890cf679a94edc3e276cf7d567c2d612af4e93c779d",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-c",
+        "cell": 6
+      },
+      "alphaBounds": [
+        10,
+        10,
+        324,
+        369
+      ]
     },
     {
       "id": "ruru-28",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 28",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "물 마시며 쉬기",
+      "tags": [
+        "여름",
+        "물",
+        "휴식"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/28.png",
+      "width": 346,
+      "height": 321,
+      "sha256": "2b43b0c929f190bfe2e0bea7a8ab8df97957037c27d409ee46135ba266227230",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-c",
+        "cell": 7
+      },
+      "alphaBounds": [
+        10,
+        10,
+        336,
+        311
+      ]
     },
     {
       "id": "ruru-29",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 29",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "턱 괴고 기다리기",
+      "tags": [
+        "대기",
+        "휴식",
+        "기대"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/29.png",
+      "width": 373,
+      "height": 288,
+      "sha256": "9e3776ea7b227ae11431015a6cf3eda227859f917127590708abc56f6d8e6a68",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-c",
+        "cell": 8
+      },
+      "alphaBounds": [
+        10,
+        10,
+        363,
+        278
+      ]
     },
     {
       "id": "ruru-30",
       "actor": "ruru",
       "version": 1,
-      "status": "pending",
-      "label": "원본 미등록 30",
-      "tags": [],
-      "allowFlip": true
+      "status": "ready",
+      "label": "점검표 내밀기",
+      "tags": [
+        "검수",
+        "점검표",
+        "안내"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/30.png",
+      "width": 347,
+      "height": 384,
+      "sha256": "5896a6e929cbcbb5f9b381b1aa7501c7405794230b3e63a51776e18de33a429a",
+      "source": {
+        "kind": "reference-illustration",
+        "referenceId": "ruru-01",
+        "sheet": "dog-c",
+        "cell": 9
+      },
+      "alphaBounds": [
+        10,
+        10,
+        337,
+        374
+      ]
     }
   ]
 }
