@@ -1,0 +1,31 @@
+/* 청인마루 공식 마루니·루루 고정 4컷: 모든 스타일은 독립 범위 */
+#maruni-locked-template{margin:0 0 22px;border:1px solid #d8d9cc;border-radius:16px;background:#faf9f5;overflow:hidden;color:#332b26}
+#maruni-locked-template>summary{cursor:pointer;padding:19px 22px;font-weight:750;color:#2d4731;font-size:18px}
+#maruni-locked-template>summary small{display:block;color:#777b70;font-size:12px;font-weight:400;margin-top:5px}
+#maruni-locked-template .ml-body{padding:0 20px 20px}
+#maruni-locked-template .ml-projectbar,#maruni-locked-template .ml-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+#maruni-locked-template button,#maruni-locked-template select,#maruni-locked-template input:not([type=file]){min-height:44px;box-sizing:border-box}
+#maruni-locked-template button{cursor:pointer;border:1px solid #bfc7b6;background:#fff;color:#263f2d;border-radius:9px;padding:9px 12px;font-size:13px}
+#maruni-locked-template button.ml-primary{background:#365231;color:#fff;border-color:#365231;font-weight:700}
+#maruni-locked-template button[aria-pressed="true"]{background:#e4e9dc;border-color:#365231;font-weight:700}
+#maruni-locked-template .ml-projectbar input{flex:1;min-width:180px}
+#maruni-locked-template #ml-projects{max-width:220px}
+#maruni-locked-template .ml-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(260px,.9fr);gap:20px}
+#maruni-locked-template .ml-stage{min-width:0}
+#maruni-locked-template .ml-stage canvas{display:block;width:min(100%,440px);height:auto;aspect-ratio:4/5;margin:auto;border:1px solid #e0ded5;background:#e8e6de;border-radius:7px}
+#maruni-locked-template .ml-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:10px 0}
+#maruni-locked-template .ml-tabs button{padding:6px 4px;font-size:12px}
+#maruni-locked-template .ml-controls{min-width:0;display:grid;grid-template-columns:1fr;gap:8px;align-content:start}
+#maruni-locked-template .ml-controls label{display:flex;flex-direction:column;font-size:13px;font-weight:650;gap:5px;margin:0}
+#maruni-locked-template input,#maruni-locked-template textarea,#maruni-locked-template select{border:1px solid #d0d3c9;border-radius:7px;padding:9px;background:#fff;color:#30291f;min-width:0;font-size:14px}
+#maruni-locked-template textarea{resize:vertical;min-height:65px}
+#maruni-locked-template input[type=file]{font-size:12px;min-height:44px;max-width:100%}
+#maruni-locked-template input[type=range]{width:100%;accent-color:#4d683e;padding:0}
+#maruni-locked-template .ml-minirow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#maruni-locked-template .ml-note{color:#697365;font-size:12px;line-height:1.6}
+#maruni-locked-template #ml-status{min-height:24px;font-size:13px;color:#405c37;line-height:1.5;margin:8px 0}
+#maruni-locked-template #ml-status[data-error=true]{color:#a23a2d}
+#maruni-locked-template .ml-divider{margin:9px 0;border-top:1px solid #dddcd4}
+#maruni-locked-template .ml-hidden{display:none!important}
+@media(max-width:760px){#maruni-locked-template .ml-layout{grid-template-columns:1fr}#maruni-locked-template .ml-body{padding:0 12px 15px}#maruni-locked-template .ml-stage canvas{max-height:58vh;width:auto;max-width:100%}#maruni-locked-template .ml-projectbar input{min-width:120px;flex-basis:100%}#maruni-locked-template .ml-controls{grid-template-columns:1fr}#maruni-locked-template .ml-minirow{grid-template-columns:1fr 1fr}}
+@media(max-width:380px){#maruni-locked-template .ml-minirow{grid-template-columns:1fr}}
