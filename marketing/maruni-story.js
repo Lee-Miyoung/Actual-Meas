@@ -299,7 +299,7 @@
   });
   async function init() {
     try {
-      const response = await fetch('assets/characters/manifest.json'); if (!response.ok) throw Error('공식 캐릭터 목록을 불러오지 못했습니다.'); const data = await response.json(); manifest = data.assets; assets();
+      const response = await fetch('assets/characters/manifest.json?v=20261118-poses', { cache: 'no-cache' }); if (!response.ok) throw Error('공식 캐릭터 목록을 불러오지 못했습니다.'); const data = await response.json(); manifest = data.assets; assets();
       const list = await S.list(); ready = true;
       if (list.length) { const next = await S.load(list[0].id); await switchProject(next.project, next.media); }
       else { savedRevision = revision; render(); }
