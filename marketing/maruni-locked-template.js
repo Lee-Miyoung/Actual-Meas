@@ -23,6 +23,7 @@
     '<div class="ml-minirow"><label>시공 분야<select id="ml-field"><option>벽장재</option><option>마루</option><option>기타</option></select></label><label>시공 지역<input id="ml-region" maxlength="45" placeholder="예: 인천 송도"></label></div>',
     '<label>제품 규격(확인된 경우만)<input id="ml-spec" maxlength="65" placeholder="예: 1010 × 2460 × 9T"></label>',
     '<label>현재 장 현장 사진(JPG·PNG·WebP)<input id="ml-photo" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif"></label>',
+    '<div class="ml-actions"><button id="ml-copy-photo-next" type="button">현재 사진을 다음 컷에 복사</button><button id="ml-copy-photo-all" type="button">현재 사진을 5장에 사용</button></div>',
     '<label>현재 장 제목(위치·크기 고정)<textarea id="ml-title" maxlength="44" rows="2"></textarea></label>',
     '<label id="ml-bubble-wrap">현재 장 짧은 말풍선(1개만)<input id="ml-bubble" maxlength="34"></label>',
     '<label>하단 핵심 문구(한 줄)<input id="ml-foot" maxlength="34"></label>',
@@ -293,9 +294,11 @@
       current()[key]=key==='focusY'?Number(e.target.value):e.target.value;changed();
     });
     q('#ml-photo').addEventListener('change',async e=>{
-      try{if(e.target.files&&e.target.files[0]){const file=addPhotoBlob(e.target.files[0]);await photoImage(file);current().photo=file;changed();}}
+      try{if(e.target.files&&e.target.files[0]){if(current().photo&&!confirm('현재 컷의 사진을 새 사진으로 교체할까요?'))return;const file=addPhotoBlob(e.target.files[0]);await photoImage(file);current().photo=file;changed();}}
       catch(err){status(err.message,true);}
     });
+    q('#ml-copy-photo-next').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}const next=(active+1)%COUNT;if(project.scenes[next].photo&&!confirm('다음 컷의 기존 사진을 교체할까요?'))return;project.scenes[next].photo=current().photo;changed();status((next===0?'썸네일':next+'컷')+'에 사진을 복사했습니다.');});
+    q('#ml-copy-photo-all').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}if(!confirm('현재 사진을 썸네일과 본편 4장에 모두 적용할까요? 기존 사진도 바뀝니다.'))return;for(const item of project.scenes)item.photo=current().photo;changed();status('5장에 같은 사진을 적용했습니다.');});
     q('#ml-tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-cut]');if(!b)return;active=Number(b.dataset.cut);fields();preview();});
     q('#ml-save').addEventListener('click',()=>save().catch(()=>{}));
     q('#ml-new').addEventListener('click',async()=>{try{await save();project=makeProject();active=0;fields();await save();preview();}catch(e){status(e.message,true);}});
