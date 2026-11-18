@@ -20,6 +20,8 @@
     '</div><div class="ml-controls">',
     '<label>제품 / 현장 제품명<input id="ml-product" maxlength="65" placeholder="예: 동화 시그니월 슬레이트모티프"></label>',
     '<label>공통 시리즈 이름<input id="ml-series" maxlength="26" value="마루니·루루 제품 이야기"></label>',
+    '<div class="ml-minirow"><label>시공 분야<select id="ml-field"><option>벽장재</option><option>마루</option><option>기타</option></select></label><label>시공 지역<input id="ml-region" maxlength="45" placeholder="예: 인천 송도"></label></div>',
+    '<label>제품 규격(확인된 경우만)<input id="ml-spec" maxlength="65" placeholder="예: 1010 × 2460 × 9T"></label>',
     '<label>현재 장 현장 사진(JPG·PNG·WebP)<input id="ml-photo" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif"></label>',
     '<label>현재 장 제목(위치·크기 고정)<textarea id="ml-title" maxlength="44" rows="2"></textarea></label>',
     '<label id="ml-bubble-wrap">현재 장 짧은 말풍선(1개만)<input id="ml-bubble" maxlength="34"></label>',
@@ -45,7 +47,7 @@
   const clone = x => JSON.parse(JSON.stringify(x));
   const makeId = () => (crypto.randomUUID ? crypto.randomUUID() : 'p'+Date.now()+'x'+Math.random().toString(16).slice(2));
   function makeProject() {
-    return {schema:'cheonginmaru-maruni-locked-v1',id:makeId(),name:'새 마루니·루루 시리즈',series:'마루니·루루 제품 이야기',product:'동화 시그니월 슬레이트모티프',
+    return {schema:'cheonginmaru-maruni-locked-v1',id:makeId(),name:'새 마루니·루루 시리즈',series:'마루니·루루 제품 이야기',product:'동화 시그니월 슬레이트모티프',field:'벽장재',region:'',spec:'',
       updatedAt:Date.now(),scenes:sceneDefaults.map(s => Object.assign({},s,{photo:null,focusY:50}))};
   }
   let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false;
@@ -234,6 +236,9 @@
     q('#ml-name').value=project.name;
     q('#ml-product').value=project.product;
     q('#ml-series').value=project.series;
+    q('#ml-field').value=project.field||'벽장재';
+    q('#ml-region').value=project.region||'';
+    q('#ml-spec').value=project.spec||'';
     const s=current();
     q('#ml-title').value=s.title;q('#ml-bubble').value=s.bubble;
     q('#ml-foot').value=s.foot;q('#ml-side').value=s.side;
@@ -257,11 +262,13 @@
   }
   function caption(){
     const s=project.scenes;
-    return [s[0].title.replace(/\n/g,' '),'','제품 · '+project.product,'',
+    const region=String(project.region||'').trim(), field=String(project.field||'').trim(), product=String(project.product||'').trim(), spec=String(project.spec||'').trim();
+    const brand=product.split(/\s+/)[0]||'', model=product.replace(/\s/g,'');
+    const tags=['#청인마루',brand?'#'+brand:null,model?'#'+model:null,region?'#'+region.replace(/\s/g,''):null,field?'#'+field+'시공':null].filter(Boolean).join(' ');
+    return [s[0].title.replace(/\n/g,' '),'','제품 · '+product,spec?'규격 · '+spec:null,region?'현장 · '+region:null,'',
       s[1].foot,s[2].foot,s[3].foot,s[4].foot,'',
       '청인마루는 마루와 벽장재를 전문으로 시공합니다. 자재의 색상과 결, 현장 조건, 마감까지 함께 살펴봅니다.','',
-      '시공 상담 · 전시장 방문 예약','카카오채널 · 청인마루','032-210-6268','cheonginmaru.com','',
-      '#청인마루 #벽장재시공 #시그니월 #동화자연마루 #슬레이트모티프'].join('\n');
+      '시공 상담 · 전시장 방문 예약','카카오채널 · 청인마루','032-210-6268','cheonginmaru.com','',tags].filter(v=>v!==null).join('\n');
   }
   async function copyText(s){
     try{await navigator.clipboard.writeText(s);status('복사했습니다. 내용을 검수한 뒤 게시해 주세요.');}
@@ -279,8 +286,8 @@
     }
   }
   function setupEvents(){
-    const fixed=[['#ml-name','name'],['#ml-product','product'],['#ml-series','series']];
-    for(const [selector,key] of fixed)q(selector).addEventListener('input',e=>{project[key]=e.target.value;changed();});
+    const fixed=[['#ml-name','name'],['#ml-product','product'],['#ml-series','series'],['#ml-field','field'],['#ml-region','region'],['#ml-spec','spec']];
+    for(const [selector,key] of fixed)q(selector).addEventListener(selector==='#ml-field'?'change':'input',e=>{project[key]=e.target.value;changed();});
     const sceneFields=[['#ml-title','title'],['#ml-bubble','bubble'],['#ml-foot','foot'],['#ml-maruni','maruni'],['#ml-ruru','ruru'],['#ml-side','side'],['#ml-photo-y','focusY']];
     for(const [selector,key] of sceneFields)q(selector).addEventListener(selector.includes('photo-y')||selector.includes('ml-side')||selector.includes('ml-maruni')||selector.includes('ml-ruru')?'change':'input',e=>{
       current()[key]=key==='focusY'?Number(e.target.value):e.target.value;changed();
@@ -317,7 +324,7 @@
       }else download(b,f.name);
     }));
     q('#ml-copy-caption').addEventListener('click',()=>copyText(caption()));
-    q('#ml-copy-comment').addEventListener('click',()=>copyText('어떤 공간에 이 마감이 어울릴까요? 색상과 질감 중 더 중요하게 보는 점을 알려주세요.'));
+    q('#ml-copy-comment').addEventListener('click',()=>copyText((project.product||'이 마감재')+'을 어느 공간에 적용해 보고 싶으신가요?'));
   }
   async function init(){
     for(let i=0;i<COUNT;i++){
