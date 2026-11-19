@@ -12,6 +12,7 @@
     '<select id="ml-projects" aria-label="저장한 고정 템플릿"><option value="">저장한 작업 선택</option></select><button id="ml-open" type="button">불러오기</button></div>',
     '<p id="ml-status" role="status" aria-live="polite"></p>',
     '<div class="ml-layout"><div class="ml-stage">',
+    '<div class="ml-quick-upload"><button id="ml-quick-photo" type="button">＋ 현재 컷 사진 선택</button><small id="ml-photo-tip">사진은 아래에서 선택하거나 이 버튼을 눌러 추가하세요.</small></div>',
     '<canvas id="ml-canvas" width="540" height="675" aria-label="고정 포맷 4대5 이미지 미리보기"></canvas>',
     '<div id="ml-tabs" class="ml-tabs" aria-label="썸네일 및 4컷 선택"></div>',
     '<div class="ml-actions"><button id="ml-export-one" type="button">현재 장 PNG 저장</button><button id="ml-export-all" class="ml-primary" type="button">썸네일+4컷 ZIP 저장</button>',
@@ -362,6 +363,8 @@
     q('#ml-foot').value=s.foot;q('#ml-side').value=s.side;
     q('#ml-photo-y').value=s.focusY===undefined?50:s.focusY;
     q('#ml-photo').value='';
+    q('#ml-quick-photo').textContent=s.photo?'사진 교체하기':'＋ 현재 컷 사진 선택';
+    q('#ml-photo-tip').textContent=(active===0?'썸네일':active+'컷')+(s.photo?' · 사진 등록됨':' · 사진 필요');
     q('#ml-bubble-wrap').classList.toggle('ml-hidden',active===0);
     q('#ml-maruni').value=s.maruni||'';q('#ml-ruru').value=s.ruru||'';
     for(const actor of ['maruni','ruru']){
@@ -499,8 +502,9 @@
     for(const [selector,key] of sceneFields)q(selector).addEventListener(selector.includes('photo-y')||selector.includes('ml-side')||selector.includes('ml-maruni')||selector.includes('ml-ruru')?'change':'input',e=>{
       current()[key]=key==='focusY'?Number(e.target.value):e.target.value; if(key==='maruni'||key==='ruru'){selectedActor=key;fields();}changed();
     });
+    q('#ml-quick-photo').addEventListener('click',()=>{q('#ml-photo').click();});
     q('#ml-photo').addEventListener('change',async e=>{
-      try{if(e.target.files&&e.target.files[0]){if(current().photo&&!confirm('현재 컷의 사진을 새 사진으로 교체할까요?'))return;const target=current(),file=addPhotoBlob(e.target.files[0]);await photoImage(file);target.photo=file;target.photoId=makeId();changed();}}
+      try{if(e.target.files&&e.target.files[0]){if(current().photo&&!confirm('현재 컷의 사진을 새 사진으로 교체할까요?'))return;const target=current(),file=addPhotoBlob(e.target.files[0]);await photoImage(file);target.photo=file;target.photoId=makeId();q('#ml-quick-photo').textContent='사진 교체하기';q('#ml-photo-tip').textContent=(active===0?'썸네일':active+'컷')+' · 사진 등록됨';changed();}}
       catch(err){status(err.message,true);}
     });
     q('#ml-copy-photo-next').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}const next=(active+1)%COUNT;if(project.scenes[next].photo&&!confirm('다음 컷의 기존 사진을 교체할까요?'))return;project.scenes[next].photo=current().photo;project.scenes[next].photoId=current().photoId;changed();status((next===0?'썸네일':next+'컷')+'에 사진을 복사했습니다.');});
@@ -552,6 +556,13 @@
       status('마루니·루루 4컷 고정 포맷 준비 완료. 사진과 문구만 바꾸세요.');
     } catch(e){status('편집기를 준비하지 못했습니다: '+e.message,true);}
   }
-  root.addEventListener('toggle',()=>{if(root.open)init();});
+  function syncEditorScrolling(){
+    const other=document.getElementById('maruni-story');
+    const expanded=Boolean(root.open||(other&&other.open));
+    document.body.classList.toggle('maruni-editor-scrolling',expanded);
+  }
+  root.addEventListener('toggle',()=>{syncEditorScrolling();if(root.open)init();});
+  document.getElementById('maruni-story')?.addEventListener('toggle',syncEditorScrolling);
+  syncEditorScrolling();
   if(root.open)init();
 })();

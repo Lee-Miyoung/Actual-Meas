@@ -59,3 +59,18 @@ test('아이패드 공식 포즈 목록은 6개씩 로드, 2개 편집기 모두
   assert.match(story, /root\.addEventListener\('toggle'/);
   assert.doesNotThrow(()=>new Function(story));
 });
+
+test('아이패드에서 사진 업로드 중 전체 페이지와 하단 컨트롤 스크롤이 가능하다',()=>{
+  assert.match(css, /body\.simple-marketing-mode\.maruni-editor-scrolling\s*\{/);
+  assert.match(css, /overflow-y:auto!important/);
+  assert.match(css, /body\.simple-marketing-mode\.maruni-editor-scrolling main\s*\{/);
+  assert.match(css, /overflow:visible!important/);
+  assert.match(css, /#maruni-locked-template \.ml-stage,\s*#maruni-story \.mr-stage/);
+  assert.match(css, /position:static!important/);
+  assert.match(js, /id="ml-quick-photo"/);
+  assert.match(js, /q\('#ml-quick-photo'\)\.addEventListener\('click'/);
+  assert.match(js, /document\.body\.classList\.toggle\('maruni-editor-scrolling',expanded\)/);
+  assert.match(story, /id="mr-quick-photo"/);
+  assert.match(story, /\$\('#mr-quick-photo'\)\.onclick/);
+  assert.match(html, /maruni-locked-template\.css\?v=ipad-scroll-20261119b/);
+});
