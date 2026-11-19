@@ -51,7 +51,8 @@
     '<label>루루 크기<input id="ml-size-ruru" type="range" min="65" max="130" value="100"></label></div>',
     '<button id="ml-actor-reset" type="button">캐릭터 위치·크기 초기화</button>',
     '<p class="ml-note">캐릭터를 손가락으로 끌어 이동할 수 있습니다. 제목·로고·말풍선은 고정입니다.</p>',
-    '<div class="ml-minirow"><label>마루니 공식 포즈<select id="ml-maruni"><option value="">없음</option></select></label>',
+    '<div class="ml-actions ml-actor-choose-actions"><button id="ml-open-pose-maruni" type="button">마루니 다른 동작 보기</button><button id="ml-open-pose-ruru" type="button">루루 다른 동작 보기</button></div>',
+    '<div class="ml-minirow ml-native-actor-selects"><label>마루니 공식 포즈<select id="ml-maruni"><option value="">없음</option></select></label>',
     '<label>루루 공식 포즈<select id="ml-ruru"><option value="">없음</option></select></label></div>',
     '<div class="ml-minirow"><label>캐릭터 배치 방향<select id="ml-side"><option value="right">오른쪽 아래</option><option value="left">왼쪽 아래</option></select></label>',
     '<label>사진 위아래 위치<input id="ml-photo-y" type="range" min="0" max="100" value="50"></label></div>',
@@ -139,12 +140,12 @@
     loaded.type=Workflow.TEMPLATES[loaded.type]?loaded.type:'product';
     loaded.library=Array.isArray(loaded.library)?loaded.library:[];
     const ids=Workflow.photoIds(loaded);
-    const files=new Map();
+    const files=new Map(),storedKeys=new Set();
     if(ids.length)await new Promise((resolve,reject)=>{
       const tx=d.transaction('media','readonly'),store=tx.objectStore('media');
       for(const key of ids){
         const req=store.get(key);
-        req.onsuccess=()=>{if(req.result?.blob instanceof Blob)files.set(key,req.result.blob);};
+        req.onsuccess=()=>{if(req.result?.blob instanceof Blob){files.set(key,req.result.blob);storedKeys.add(key);}};
       }
       tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('사진 보관함 로드 실패'));
     });
@@ -167,7 +168,7 @@
       const blob=files.get(row.id);
       if(blob)libraryBlobs.set(row.id,blob);else missing++;
     }
-    project=loaded;persistedPhotos=new Set(ids.filter(key=>files.has(key)));
+    project=loaded;persistedPhotos=storedKeys;
     for(const scene of project.scenes)if(!scene.photo&&scene.photoId)missing++;
     active=0;libraryPage=0;clearGalleryThumbs();fields();renderPhotoLibrary();preview();
     status(missing?'이전 작업을 불러왔지만 일부 사진을 찾지 못했습니다. 보관함을 확인해 주세요.':'저장한 작업의 사진·컷·대사를 불러왔습니다.',missing>0);
@@ -289,15 +290,15 @@
       // Safari 메모리 급증 방지: 각 파일을 순서대로 확인한다.
       for(let i=0;i<incoming.length;i++){
         const file=incoming[i];
-        status('사진 '+(i+1)+' / '+incoming.length+' 불러오는 중…');
-        try{await photoImage(file);valid.push({id:makeId(),name:file.name||'붙여넣은 사진',blob:file,addedAt:Date.now()});}
-        catch(e){throw Error((file.name||'사진')+'을 열 수 없습니다: '+e.message);}
-        await new Promise(resolve=>setTimeout(resolve,0));
+        // 처음 사진 하나만 검증하고 나머지는 컷/썸네일에 실제로 보여줄 때 순차 디코딩.
+        // 20장 선택 시 20개의 고해상도 사진을 한꺼번에 펼치지 않는다.
+        if(i===0)try{await photoImage(file);}catch(e){throw Error((file.name||'사진')+'을 열 수 없습니다: '+e.message);}
+        valid.push({id:makeId(),name:file.name||'붙여넣은 사진',blob:file,addedAt:Date.now()});
       }
       project.library=photoRows().concat(valid.map(({id,name,addedAt})=>({id,name,addedAt})));
       for(const file of valid)libraryBlobs.set(file.id,file.blob);
       for(let i=0;i<Math.min(valid.length,slots.length);i++)Workflow.changePhoto(project.scenes[slots[i]],valid[i].blob,valid[i].id);
-      libraryPage=Math.floor((project.library.length-1)/6);
+      libraryPage=0;
       fields();renderPhotoLibrary();changed();
       status(valid.length+'장 등록 완료 · '+Math.min(valid.length,slots.length)+'장은 컷에 배치했고 나머지는 보관함에서 골라 사용할 수 있어요.');
     }finally{uploadInProgress=false;}
@@ -505,7 +506,7 @@
       const asset=catalog.find(a=>a.id===s[actor]);
       if(asset)q('#ml-img-'+actor).src=asset.path;else q('#ml-img-'+actor).removeAttribute('src');
       q('#ml-img-'+actor).alt=asset?asset.label:'표시 안 함';
-      q('#ml-label-'+actor).textContent=(actor==='maruni'?'마루니':'루루')+' · '+(asset?asset.label:'표시 안 함');
+      q('#ml-label-'+actor).textContent=(actor==='maruni'?'마루니':'루루')+' · '+(asset?asset.label+' · 탭하면 선택':'사진에 바로 추가');
       q('#ml-size-'+actor).value=Math.round(100*(s.actorTransform?.[actor]?.scale||1));
     }
     q('#ml-tabs').querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-pressed',String(active===i)));
@@ -606,8 +607,23 @@
     canvas.addEventListener('pointercancel',finish);
   }
   function setupEvents(){
+    q('#ml-type').addEventListener('change',e=>{
+      const type=e.target.value;
+      if(type===project.type)return;
+      if(!confirm('선택한 형식에 맞춰 제목·말풍선·하단 문구를 바꿀까요? 사진과 캐릭터는 그대로 보존됩니다.')){e.target.value=project.type||'product';return;}
+      Workflow.chooseTemplate(project,type);
+      if(type==='everyday'||type==='behind')project.spec='';
+      fields();renderPhotoLibrary();changed();
+      status(Workflow.label(type)+' 형식으로 전환했습니다. 사진·캐릭터는 유지됩니다.');
+    });
     for(const actor of ['maruni','ruru']){
-      q('#ml-card-'+actor).addEventListener('click',()=>openPosePicker(actor));
+      q('#ml-card-'+actor).addEventListener('click',()=>{
+        const a=catalog.find(asset=>asset.actor===actor&&asset.status==='ready');
+        if(!current()[actor]&&a)current()[actor]=a.id;
+        selectedActor=actor;fields();changed();
+        status((actor==='maruni'?'마루니':'루루')+'를 사진 위에 표시했습니다. 손가락으로 위치를 옮겨 보세요.');
+      });
+      q('#ml-open-pose-'+actor).addEventListener('click',()=>openPosePicker(actor));
       q('#ml-size-'+actor).addEventListener('input',e=>{
         transform(current(),actor).scale=Number(e.target.value)/100;selectedActor=actor;changed();
       });
