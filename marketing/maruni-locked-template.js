@@ -78,8 +78,13 @@
         if(!d.objectStoreNames.contains('projects'))d.createObjectStore('projects',{keyPath:'id'});
         if(!d.objectStoreNames.contains('media'))d.createObjectStore('media',{keyPath:'id'});
       };
-      req.onsuccess=()=>resolve(req.result);
-      req.onerror=()=>reject(req.error||Error('저장소를 열 수 없습니다.'));
+      req.onsuccess=()=>{
+        const d=req.result;
+        d.onversionchange=()=>{d.close();dbPromise=null;};
+        resolve(d);
+      };
+      req.onerror=()=>{dbPromise=null;reject(req.error||Error('저장소를 열 수 없습니다.'));};
+      req.onblocked=()=>{dbPromise=null;reject(Error('같은 앱이 다른 탭에 열려 있어 저장소 업그레이드가 막혔습니다. 다른 탭을 닫고 새로고침해 주세요.'));};
     });
     return dbPromise;
   }
