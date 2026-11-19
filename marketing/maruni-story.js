@@ -14,6 +14,7 @@
     <p id="mr-status" role="status" aria-live="polite">편집기를 준비하고 있습니다.</p>
     <div class="mr-grid">
       <div class="mr-stage">
+        <div class="mr-quick-upload"><button id="mr-quick-photo" type="button">＋ 현재 컷부터 사진 선택</button><small>사진을 선택하면 화면 아래의 편집 메뉴도 계속 스크롤할 수 있습니다.</small></div>
         <div class="mr-canvas-wrap"><canvas id="mr-canvas" width="648" height="810" aria-label="선택한 장면 미리보기. 캐릭터를 눌러 선택한 뒤 끌어 이동합니다."></canvas></div>
         <div id="mr-scenes" class="mr-scenes" aria-label="6컷 장면 선택"></div>
         <div class="mr-toolbar" style="margin-top:10px"><button id="mr-prev" type="button">앞 순서로</button><button id="mr-next" type="button">뒤 순서로</button><button id="mr-copy-scene" type="button">다른 컷에 복제</button><button id="mr-undo" type="button">뒤로 한 단계</button></div>
@@ -190,6 +191,7 @@
   async function switchProject(next, nextMedia, dirty = false) {
     cancelGesture(); release(); project = next; media = nextMedia; active = 0; selected = null; photoMode = false; history = []; revision++; savedRevision = dirty ? -1 : revision; render(); if (dirty) await save();
   }
+  $('#mr-quick-photo').onclick = () => { if(!busy)$('#mr-photo').click(); };
   $('#mr-photo').onchange = e => run(async () => {
     const files = [...e.target.files]; e.target.value = ''; if (!files.length) return; if (files.length > 6) throw Error('사진은 한 번에 6장까지 선택하세요.');
     const targets = files.map((_, i) => (active + i) % 6);
