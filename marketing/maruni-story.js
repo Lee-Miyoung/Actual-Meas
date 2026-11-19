@@ -14,7 +14,7 @@
     <p id="mr-status" role="status" aria-live="polite">편집기를 준비하고 있습니다.</p>
     <div class="mr-grid">
       <div class="mr-stage">
-        <div class="mr-quick-upload"><button id="mr-quick-photo" type="button">＋ 현재 컷부터 사진 선택</button><small>사진을 선택하면 화면 아래의 편집 메뉴도 계속 스크롤할 수 있습니다.</small></div>
+        <div class="mr-quick-upload"><button id="mr-quick-photo" type="button">＋ 현장 사진 선택</button><button id="mr-touch-edit" type="button" aria-pressed="false">화면 스크롤 · 이동 끔</button><small id="mr-touch-help">사진 위에서 위아래로 밀면 화면이 움직입니다. 캐릭터 위치를 바꿀 때만 이동 모드를 켜 주세요.</small></div>
         <div class="mr-canvas-wrap"><canvas id="mr-canvas" width="648" height="810" aria-label="선택한 장면 미리보기. 캐릭터를 눌러 선택한 뒤 끌어 이동합니다."></canvas></div>
         <div id="mr-scenes" class="mr-scenes" aria-label="6컷 장면 선택"></div>
         <div class="mr-toolbar" style="margin-top:10px"><button id="mr-prev" type="button">앞 순서로</button><button id="mr-next" type="button">뒤 순서로</button><button id="mr-copy-scene" type="button">다른 컷에 복제</button><button id="mr-undo" type="button">뒤로 한 단계</button></div>
@@ -52,7 +52,7 @@
     <div class="mr-export"><button id="mr-export-one" type="button">현재 컷 PNG</button><button id="mr-export-all" type="button" class="mr-primary">6컷 PNG · ZIP 준비</button><button id="mr-backup" type="button">편집 프로젝트 ZIP 백업</button><button id="mr-restore-button" type="button">프로젝트 ZIP 복원</button><input id="mr-restore" type="file" accept=".zip,application/zip" hidden></div>
     <p class="mr-note">이 기기 자동 저장 · 다른 기기에서 이어 작업할 때는 편집 프로젝트 ZIP을 옮겨 복원하세요. PNG 출력 ZIP은 편집 프로젝트와 다릅니다.</p>
     <dialog id="mr-result-dialog" aria-labelledby="mr-result-title"><h3 id="mr-result-title">저장할 파일이 준비됐어요</h3><div id="mr-result-actions" class="mr-toolbar"></div><div id="mr-results" class="mr-results"></div><button id="mr-result-close" type="button">닫기</button></dialog>`;
-  let project = C.create(), media = new Map(), manifest = [], active = 0, selected = null, actorTab = 'maruni', photoMode = false;
+  let project = C.create(), media = new Map(), manifest = [], active = 0, selected = null, actorTab = 'maruni', photoMode = false, touchEdit = false;
   let history = [], revision = 0, savedRevision = -1, timer, saving = Promise.resolve(), busy = false, ready = false, paintFrame = 0;
   const cache = new Map(), thumbs = new Map(), resultURLs = [];
   let boxes = new Map();
@@ -253,8 +253,23 @@
   const point = e => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * R.W, y: (e.clientY - r.top) / r.height * R.H }; };
   const distance = () => { const [a, b] = [...points.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
   function cancelGesture() { for (const pid of points.keys()) { try { canvas.releasePointerCapture(pid); } catch {} } points.clear(); gesture = null; }
+  function updateTouchEdit(){
+    canvas.dataset.touchEdit=String(touchEdit);
+    const button=$('#mr-touch-edit');
+    button.setAttribute('aria-pressed',String(touchEdit));
+    button.textContent=touchEdit?'캐릭터 이동 켜짐 · 손가락으로 옮기기':'화면 스크롤 · 이동 끔';
+    $('#mr-touch-help').textContent=touchEdit
+      ? '사진 위 캐릭터를 잡고 움직이세요. 아래 설정을 보려면 이동 모드를 끄세요.'
+      : '사진 위를 위아래로 밀면 화면이 스크롤됩니다. 캐릭터를 옮길 때만 이동 모드를 켜세요.';
+  }
+  $('#mr-touch-edit').addEventListener('click',()=>{
+    cancelGesture();touchEdit=!touchEdit;updateTouchEdit();
+  });
+  updateTouchEdit();
   canvas.addEventListener('pointerdown', e => {
-    if (busy || !ready || (e.pointerType === 'mouse' && e.button !== 0)) return; e.preventDefault(); const p = point(e);
+    if (busy || !ready || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    if (e.pointerType === 'touch' && !touchEdit) return; // 사진 위에서도 Safari 기본 세로 스크롤
+    e.preventDefault(); const p = point(e);
     if (points.size >= 2) return;
     if (points.size === 0) {
       if (!photoMode) { const hit = [...scene().layers].reverse().find(l => { const b = boxes.get(l.id); return b && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h; }); selected = hit?.id || null; }
@@ -268,7 +283,8 @@
     controls(); schedulePaint();
   });
   canvas.addEventListener('pointermove', e => {
-    if (!gesture || !points.has(e.pointerId) || busy) return; e.preventDefault(); const p = point(e); points.set(e.pointerId, p); const t = gesture.target;
+    if (!gesture || !points.has(e.pointerId) || busy || (e.pointerType === 'touch' && !touchEdit)) return;
+    e.preventDefault(); const p = point(e); points.set(e.pointerId, p); const t = gesture.target;
     if (points.size === 2) {
       const factor = distance() / Math.max(1, gesture.pinch);
       if (gesture.photo) t.zoom = C.clamp(gesture.zoom * factor, 1, 3); else t.width = C.clamp(gesture.width * factor, .08, .9);
@@ -284,7 +300,7 @@
     else if (!points.size) gesture = null;
   }
   canvas.addEventListener('pointerup', endPointer); canvas.addEventListener('pointercancel', () => cancelGesture()); canvas.addEventListener('lostpointercapture', endPointer);
-  root.addEventListener('toggle', () => { if (!root.open) cancelGesture(); else schedulePaint(); }); window.addEventListener('blur', cancelGesture);
+  root.addEventListener('toggle', () => { if (!root.open) { cancelGesture(); touchEdit=false;updateTouchEdit(); } else schedulePaint(); }); window.addEventListener('blur', cancelGesture);
   document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelGesture(); if (ready) save().catch(() => {}); } }); window.addEventListener('pagehide', () => { if (ready) save().catch(() => {}); });
   function clearResults() { for (const url of resultURLs) URL.revokeObjectURL(url); resultURLs.length = 0; $('#mr-results').replaceChildren(); $('#mr-result-actions').replaceChildren(); }
   function showResults(blob, filename, files = []) {
