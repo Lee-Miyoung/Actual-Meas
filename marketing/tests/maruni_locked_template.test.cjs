@@ -52,7 +52,7 @@ test('기존 작업을 보존하면서 큰 사진 파일은 별도 저장',()=>{
 });
 test('아이패드 공식 포즈 목록은 6개씩 로드, 2개 편집기 모두 지연 시작',()=>{
   assert.match(js, /list\.slice\(pickerPage\*6,pickerPage\*6\+6\)/);
-  assert.match(js, /im\.loading\s*=\s*'lazy'/);
+  assert.match(js, /image\.loading\s*=\s*'lazy'/);
   assert.match(js, /canvas\.addEventListener\('pointerdown'/);
   assert.match(js, /root\.addEventListener\('toggle'/);
   assert.match(story, /matching\.slice\(assetPage\*6,assetPage\*6\+6\)/);
