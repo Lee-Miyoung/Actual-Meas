@@ -12,7 +12,7 @@
     '<select id="ml-projects" aria-label="저장한 고정 템플릿"><option value="">저장한 작업 선택</option></select><button id="ml-open" type="button">불러오기</button></div>',
     '<p id="ml-status" role="status" aria-live="polite"></p>',
     '<div class="ml-layout"><div class="ml-stage">',
-    '<div class="ml-quick-upload"><button id="ml-quick-photo" type="button">＋ 사진 여러 장 선택</button><small id="ml-photo-tip">지금 컷부터 차례대로 배치 · 나머지는 사진 보관함</small></div>',
+    '<div class="ml-quick-upload"><button id="ml-quick-photo" type="button">＋ 사진 여러 장 선택</button><button id="ml-touch-edit" type="button" aria-pressed="false">화면 스크롤 · 이동 끔</button><small id="ml-photo-tip">사진 위에서도 화면을 밀어 스크롤할 수 있어요. 캐릭터를 옮길 때만 이동 모드를 켜세요.</small></div>',
     '<canvas id="ml-canvas" width="540" height="675" aria-label="고정 포맷 4대5 이미지 미리보기"></canvas>',
     '<div id="ml-tabs" class="ml-tabs" aria-label="썸네일 및 4컷 선택"></div>',
     '<div class="ml-actions ml-photo-order"><button id="ml-photo-left" type="button">← 사진 이전 컷과 교환</button>',
@@ -78,7 +78,7 @@
   }
   let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false, persistedPhotos=new Set();
   const canvas=q('#ml-canvas'), ctx=canvas.getContext('2d'), imagePromises=new Map(), blobCache=new Map();
-  let paintFrame=0, painting=false, pickerActor='', pickerPage=0, selectedActor='', drag=null, initializeStarted=false;
+  let paintFrame=0, painting=false, pickerActor='', pickerPage=0, selectedActor='', drag=null, initializeStarted=false, touchEdit=false;
   let actorBoxes=new Map(), libraryBlobs=new Map(),libraryPage=0, libraryThumbs=new Map(), uploadInProgress=false;
   function status(text, bad=false){q('#ml-status').textContent=text;q('#ml-status').dataset.error=String(bad);}
   function current(){return project.scenes[active];}
@@ -604,6 +604,12 @@
     q('#ml-picker').hidden=false;renderPosePicker();preview();
   }
   function closePosePicker(){q('#ml-picker').hidden=true;pickerActor='';}
+  function updateTouchEdit(){
+    canvas.dataset.touchEdit=String(touchEdit);
+    const button=q('#ml-touch-edit');
+    button.setAttribute('aria-pressed',String(touchEdit));
+    button.textContent=touchEdit?'캐릭터 이동 켜짐 · 손가락으로 옮기기':'화면 스크롤 · 이동 끔';
+  }
   function listenToCanvasTouch(){
     const point=e=>{
       const box=canvas.getBoundingClientRect();
@@ -611,6 +617,7 @@
     };
     canvas.addEventListener('pointerdown',e=>{
       if(busy||!current().photo)return;
+      if(e.pointerType==='touch'&&!touchEdit)return; // 빈 사진 위에서도 아이패드 기본 스크롤 유지
       const p=point(e);
       for(const actor of ['ruru','maruni']){
         const b=actorBoxes.get(actor);
@@ -623,7 +630,7 @@
       }
     });
     canvas.addEventListener('pointermove',e=>{
-      if(!drag||e.pointerId!==drag.pointer||busy)return;
+      if(!drag||e.pointerId!==drag.pointer||busy||(e.pointerType==='touch'&&!touchEdit))return;
       const p=point(e),t=transform(current(),drag.actor);
       t.dx=Math.max(-900,Math.min(900,drag.dx+p.x-drag.x));
       t.dy=Math.max(-500,Math.min(500,drag.dy+p.y-drag.y));
@@ -637,6 +644,13 @@
     canvas.addEventListener('pointercancel',finish);
   }
   function setupEvents(){
+    q('#ml-touch-edit').addEventListener('click',()=>{
+      drag=null;touchEdit=!touchEdit;updateTouchEdit();
+      q('#ml-photo-tip').textContent=touchEdit
+        ?'캐릭터를 옮기거나 크기 조절 후 이동 모드를 끄면 화면을 스크롤할 수 있어요.'
+        :'사진 위에서도 스크롤할 수 있어요. 캐릭터를 옮길 때만 이동 모드를 켜세요.';
+    });
+    updateTouchEdit();
     q('#ml-type').addEventListener('change',e=>{
       const type=e.target.value;
       if(type===project.type)return;
@@ -827,7 +841,7 @@
     const expanded=Boolean(root.open||(other&&other.open));
     document.body.classList.toggle('maruni-editor-scrolling',expanded);
   }
-  root.addEventListener('toggle',()=>{syncEditorScrolling();if(root.open)init();});
+  root.addEventListener('toggle',()=>{syncEditorScrolling();if(root.open)init();else {touchEdit=false;drag=null;if(initializeStarted)updateTouchEdit();}});
   document.getElementById('maruni-story')?.addEventListener('toggle',syncEditorScrolling);
   syncEditorScrolling();
   if(root.open)init();
