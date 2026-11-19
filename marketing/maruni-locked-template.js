@@ -652,13 +652,90 @@
     for(const [selector,key] of sceneFields)q(selector).addEventListener(selector.includes('photo-y')||selector.includes('ml-side')||selector.includes('ml-maruni')||selector.includes('ml-ruru')?'change':'input',e=>{
       current()[key]=key==='focusY'?Number(e.target.value):e.target.value; if(key==='maruni'||key==='ruru'){selectedActor=key;fields();}changed();
     });
-    q('#ml-quick-photo').addEventListener('click',()=>{q('#ml-photo').click();});
-    q('#ml-photo').addEventListener('change',async e=>{
-      try{if(e.target.files&&e.target.files[0]){if(current().photo&&!confirm('현재 컷의 사진을 새 사진으로 교체할까요?'))return;const target=current(),file=addPhotoBlob(e.target.files[0]);await photoImage(file);target.photo=file;target.photoId=makeId();q('#ml-quick-photo').textContent='사진 교체하기';q('#ml-photo-tip').textContent=(active===0?'썸네일':active+'컷')+' · 사진 등록됨';changed();}}
+    q('#ml-quick-photo').addEventListener('click',()=>q('#ml-photo').click());
+    q('#ml-photo').addEventListener('change',async event=>{
+      const files=[...event.target.files||[]];event.target.value='';
+      try{await importPhotos(files,active);}
       catch(err){status(err.message,true);}
     });
-    q('#ml-copy-photo-next').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}const next=(active+1)%COUNT;if(project.scenes[next].photo&&!confirm('다음 컷의 기존 사진을 교체할까요?'))return;project.scenes[next].photo=current().photo;project.scenes[next].photoId=current().photoId;changed();status((next===0?'썸네일':next+'컷')+'에 사진을 복사했습니다.');});
-    q('#ml-copy-photo-all').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}if(!confirm('현재 사진을 썸네일과 본편 4장에 모두 적용할까요? 기존 사진도 바뀝니다.'))return;for(const item of project.scenes){item.photo=current().photo;item.photoId=current().photoId;}changed();status('5장에 같은 사진을 적용했습니다.');});
+    q('#ml-clipboard').addEventListener('click',async()=>{
+      try{
+        if(!navigator.clipboard?.read)throw Error('이 Safari에서는 버튼을 통한 붙여넣기가 지원되지 않습니다. 사진 앱에서 복사한 뒤 이 페이지에 붙여넣거나 사진 선택을 사용하세요.');
+        const files=[];
+        for(const item of await navigator.clipboard.read()){
+          const type=item.types.find(t=>/^image\/(png|jpeg|webp)$/.test(t));
+          if(type){
+            const blob=await item.getType(type);
+            files.push(new File([blob],'붙여넣은사진-'+(files.length+1)+'.'+type.split('/')[1],{type}));
+          }
+        }
+        if(!files.length)throw Error('복사한 이미지가 없습니다. 사진 앱에서 이미지를 복사해 주세요.');
+        await importPhotos(files,active);
+      }catch(err){status(err.message,true);}
+    });
+    document.addEventListener('paste',event=>{
+      if(!root.open||!initializeStarted)return;
+      const target=event.target;
+      if(target instanceof Element&&target.closest('input,textarea,select,[contenteditable=true]'))return;
+      const files=[...(event.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/'));
+      if(!files.length&&event.clipboardData?.items){
+        for(const item of event.clipboardData.items){
+          if(item.kind==='file'&&item.type.startsWith('image/')){const f=item.getAsFile();if(f)files.push(f);}
+        }
+      }
+      if(!files.length)return;
+      event.preventDefault();
+      importPhotos(files,active).catch(err=>status(err.message,true));
+    });
+    q('#ml-photo-grid').addEventListener('click',event=>{
+      const button=event.target.closest('button[data-photo-id]');
+      if(button)showPhotoAt(button.dataset.photoId);
+    });
+    q('#ml-photo-grid').addEventListener('dragstart',event=>{
+      const button=event.target.closest('button[data-photo-id]');
+      if(!button||!event.dataTransfer)return;
+      event.dataTransfer.effectAllowed='copy';
+      event.dataTransfer.setData('application/x-cheonginmaru-photo-id',button.dataset.photoId);
+      event.dataTransfer.setData('text/plain',button.dataset.photoId);
+    });
+    q('#ml-library-prev').addEventListener('click',()=>{libraryPage--;renderPhotoLibrary();});
+    q('#ml-library-next').addEventListener('click',()=>{libraryPage++;renderPhotoLibrary();});
+    for(const selector of ['#ml-drop-zone','#ml-canvas','#ml-tabs']){
+      const zone=q(selector);
+      zone.addEventListener('dragenter',event=>{event.preventDefault();zone.classList.add('ml-drag-active');});
+      zone.addEventListener('dragover',event=>{event.preventDefault();event.dataTransfer.dropEffect='copy';zone.classList.add('ml-drag-active');});
+      zone.addEventListener('dragleave',event=>{if(!zone.contains(event.relatedTarget))zone.classList.remove('ml-drag-active');});
+      zone.addEventListener('drop',async event=>{
+        event.preventDefault();zone.classList.remove('ml-drag-active');
+        const slotButton=event.target.closest('button[data-cut]');
+        const targetSlot=slotButton?Number(slotButton.dataset.cut):active;
+        const photos=[...(event.dataTransfer?.files||[])].filter(f=>f.type.startsWith('image/')||/\.(png|jpe?g|webp|heic|heif)$/i.test(f.name));
+        try{
+          if(photos.length)await importPhotos(photos,targetSlot);
+          else{
+            const id=event.dataTransfer?.getData('application/x-cheonginmaru-photo-id')||event.dataTransfer?.getData('text/plain');
+            if(id&&photoRows().some(r=>r.id===id))showPhotoAt(id,targetSlot);
+          }
+        }catch(err){status(err.message,true);}
+      });
+    }
+    q('#ml-photo-left').addEventListener('click',()=>changePhotoOrder(-1));
+    q('#ml-photo-right').addEventListener('click',()=>changePhotoOrder(1));
+    q('#ml-scene-up').addEventListener('click',()=>moveFullScene(-1));
+    q('#ml-scene-down').addEventListener('click',()=>moveFullScene(1));
+    q('#ml-copy-photo-next').addEventListener('click',()=>{
+      if(!current().photo){status('현재 컷에 사진을 먼저 넣어 주세요.',true);return;}
+      const next=(active+1)%COUNT;
+      if(project.scenes[next].photo&&!confirm('다음 컷의 사진을 바꿀까요? 기존 사진은 보관함에 남습니다.'))return;
+      Workflow.changePhoto(project.scenes[next],current().photo,current().photoId);
+      active=next;fields();renderPhotoLibrary();changed();status('다음 컷에 사진을 복사했습니다.');
+    });
+    q('#ml-copy-photo-all').addEventListener('click',()=>{
+      if(!current().photo){status('현재 컷에 사진을 먼저 넣어 주세요.',true);return;}
+      if(!confirm('현재 사진을 썸네일과 본편 4컷 모두에 적용할까요?'))return;
+      for(const item of project.scenes)Workflow.changePhoto(item,current().photo,current().photoId);
+      fields();renderPhotoLibrary();changed();status('5장에 같은 사진을 적용했습니다.');
+    });
     q('#ml-tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-cut]');if(!b)return;active=Number(b.dataset.cut);closePosePicker();selectedActor='';fields();renderPhotoLibrary();preview();});
     q('#ml-save').addEventListener('click',()=>save().catch(()=>{}));
     q('#ml-new').addEventListener('click',async()=>{try{await save();project=makeProject();persistedPhotos=new Set();libraryBlobs=new Map();libraryPage=0;clearGalleryThumbs();active=0;fields();renderPhotoLibrary();await save();preview();}catch(e){status(e.message,true);}});
