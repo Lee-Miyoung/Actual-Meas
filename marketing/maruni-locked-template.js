@@ -51,15 +51,19 @@
     return {schema:'cheonginmaru-maruni-locked-v1',id:makeId(),name:'새 마루니·루루 시리즈',series:'마루니·루루 제품 이야기',product:'동화 시그니월 슬레이트모티프',field:'벽장재',region:'',spec:'',
       updatedAt:Date.now(),scenes:sceneDefaults.map(s => Object.assign({},s,{photo:null,focusY:50}))};
   }
-  let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false;
+  let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false, persistedPhotos=new Set();
   const canvas=q('#ml-canvas'), ctx=canvas.getContext('2d'), imagePromises=new Map(), blobCache=new WeakMap();
   function status(text, bad=false){q('#ml-status').textContent=text;q('#ml-status').dataset.error=String(bad);}
   function current(){return project.scenes[active];}
   function db(){
     if (dbPromise) return dbPromise;
     dbPromise=new Promise((resolve,reject)=>{
-      const req=indexedDB.open(DB_NAME,1);
-      req.onupgradeneeded=()=>req.result.createObjectStore('projects',{keyPath:'id'});
+      const req=indexedDB.open(DB_NAME,2);
+      req.onupgradeneeded=()=>{
+        const d=req.result;
+        if(!d.objectStoreNames.contains('projects'))d.createObjectStore('projects',{keyPath:'id'});
+        if(!d.objectStoreNames.contains('media'))d.createObjectStore('media',{keyPath:'id'});
+      };
       req.onsuccess=()=>resolve(req.result);
       req.onerror=()=>reject(req.error||Error('저장소를 열 수 없습니다.'));
     });
@@ -79,27 +83,68 @@
   async function listProjects() {
     const d=await db();
     return new Promise((resolve,reject)=>{
-      const tx=d.transaction('projects','readonly'), req=tx.objectStore('projects').getAll();
-      req.onsuccess=()=>resolve((req.result||[]).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)));
-      req.onerror=()=>reject(req.error);
+      const rows=[],tx=d.transaction('projects','readonly'),req=tx.objectStore('projects').openCursor();
+      req.onsuccess=()=>{const cur=req.result;if(cur){rows.push({id:cur.value.id,name:cur.value.name,updatedAt:cur.value.updatedAt||0});cur.continue();}};
+      tx.oncomplete=()=>resolve(rows.sort((a,b)=>b.updatedAt-a.updatedAt));
+      tx.onerror=()=>reject(tx.error||Error('저장된 작업 목록 오류'));
     });
   }
   async function refreshProjects() {
-    const all=await listProjects(), sel=q('#ml-projects'), old=sel.value;
-    sel.replaceChildren(new Option('저장한 작업 선택',''));
-    for (const item of all) sel.add(new Option(item.name,item.id));
-    sel.value=all.some(p=>p.id===old)?old:project.id;
+    const all=await listProjects(),select=q('#ml-projects'),previous=select.value;
+    select.replaceChildren(new Option('저장한 작업 선택',''));
+    for(const item of all)select.add(new Option(item.name,item.id));
+    select.value=all.some(p=>p.id===previous)?previous:project.id;
+  }
+  async function openProject(id){
+    if(!id)return;
+    await saving;
+    const d=await db();
+    const item=await new Promise((resolve,reject)=>{
+      const req=d.transaction('projects','readonly').objectStore('projects').get(id);
+      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+    });
+    if(!item)throw Error('작업을 찾을 수 없습니다.');
+    const loaded=checkProject(item),ids=[...new Set(loaded.scenes.map(s=>s.photoId).filter(Boolean))];
+    const files=new Map();
+    if(ids.length)await new Promise((resolve,reject)=>{
+      const tx=d.transaction('media','readonly'),store=tx.objectStore('media');
+      for(const key of ids){const req=store.get(key);req.onsuccess=()=>{if(req.result?.blob instanceof Blob)files.set(key,req.result.blob);};}
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+    });
+    let missing=0;
+    for(const scene of loaded.scenes){
+      if(scene.photoId&&!scene.photo){scene.photo=files.get(scene.photoId)||null;if(!scene.photo)missing++;}
+    }
+    project=loaded;persistedPhotos=new Set(files.keys());active=0;fields();preview();
+    status(missing?'저장 사진 '+missing+'개가 없어 해당 컷의 사진을 다시 넣어야 합니다.':'저장한 작업을 불러왔습니다.',missing>0);
   }
   async function save() {
     clearTimeout(saveTimer);
-    const snapshot=Object.assign({},project,{updatedAt:Date.now(),scenes:project.scenes.map(s=>Object.assign({},s))});
+    const photos=new Map();
+    const scenes=project.scenes.map(scene=>{
+      if(scene.photo instanceof Blob){
+        if(!scene.photoId)scene.photoId=makeId();
+        if(!persistedPhotos.has(scene.photoId))photos.set(scene.photoId,scene.photo);
+      }
+      const slim={...scene};
+      delete slim.photo;  // 사진 Blob은 전용 media 저장소에 한 번만 저장
+      return slim;
+    });
+    const snapshot={...project,updatedAt:Date.now(),scenes};
     project.updatedAt=snapshot.updatedAt;
     saving=saving.catch(()=>{}).then(async()=>{
-      await transact('readwrite',s=>s.put(snapshot));
+      const d=await db();
+      await new Promise((resolve,reject)=>{
+        const tx=d.transaction(['projects','media'],'readwrite'),p=tx.objectStore('projects'),m=tx.objectStore('media');
+        for(const [id,blob] of photos)m.put({id,blob});
+        p.put(snapshot);
+        tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('기기 저장 실패'));tx.onabort=()=>reject(tx.error||Error('기기 저장 취소'));
+      });
+      for(const id of photos.keys())persistedPhotos.add(id);
       await refreshProjects();
     });
-    try{await saving;status('현재 작업을 이 기기에 저장했습니다.');}
-    catch(e){status('자동 저장 실패: '+e.message+'. 사진을 다른 곳에 보관해 주세요.',true);throw e;}
+    try{await saving;status('저장 완료 · 사진은 텍스트 수정 때 다시 저장하지 않습니다.');}
+    catch(e){status('자동 저장 실패: '+e.message,true);throw e;}
   }
   function changed(){clearTimeout(saveTimer);status('변경 사항 저장 대기');saveTimer=setTimeout(()=>save().catch(()=>{}),800);preview();}
   function checkProject(p) {
@@ -294,14 +339,14 @@
       current()[key]=key==='focusY'?Number(e.target.value):e.target.value;changed();
     });
     q('#ml-photo').addEventListener('change',async e=>{
-      try{if(e.target.files&&e.target.files[0]){if(current().photo&&!confirm('현재 컷의 사진을 새 사진으로 교체할까요?'))return;const file=addPhotoBlob(e.target.files[0]);await photoImage(file);current().photo=file;changed();}}
+      try{if(e.target.files&&e.target.files[0]){if(current().photo&&!confirm('현재 컷의 사진을 새 사진으로 교체할까요?'))return;const file=addPhotoBlob(e.target.files[0]);await photoImage(file);current().photo=file;current().photoId=makeId();changed();}}
       catch(err){status(err.message,true);}
     });
-    q('#ml-copy-photo-next').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}const next=(active+1)%COUNT;if(project.scenes[next].photo&&!confirm('다음 컷의 기존 사진을 교체할까요?'))return;project.scenes[next].photo=current().photo;changed();status((next===0?'썸네일':next+'컷')+'에 사진을 복사했습니다.');});
-    q('#ml-copy-photo-all').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}if(!confirm('현재 사진을 썸네일과 본편 4장에 모두 적용할까요? 기존 사진도 바뀝니다.'))return;for(const item of project.scenes)item.photo=current().photo;changed();status('5장에 같은 사진을 적용했습니다.');});
+    q('#ml-copy-photo-next').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}const next=(active+1)%COUNT;if(project.scenes[next].photo&&!confirm('다음 컷의 기존 사진을 교체할까요?'))return;project.scenes[next].photo=current().photo;project.scenes[next].photoId=current().photoId;changed();status((next===0?'썸네일':next+'컷')+'에 사진을 복사했습니다.');});
+    q('#ml-copy-photo-all').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}if(!confirm('현재 사진을 썸네일과 본편 4장에 모두 적용할까요? 기존 사진도 바뀝니다.'))return;for(const item of project.scenes){item.photo=current().photo;item.photoId=current().photoId;}changed();status('5장에 같은 사진을 적용했습니다.');});
     q('#ml-tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-cut]');if(!b)return;active=Number(b.dataset.cut);fields();preview();});
     q('#ml-save').addEventListener('click',()=>save().catch(()=>{}));
-    q('#ml-new').addEventListener('click',async()=>{try{await save();project=makeProject();active=0;fields();await save();preview();}catch(e){status(e.message,true);}});
+    q('#ml-new').addEventListener('click',async()=>{try{await save();project=makeProject();persistedPhotos=new Set();active=0;fields();await save();preview();}catch(e){status(e.message,true);}});
     q('#ml-open').addEventListener('click',()=>openProject(q('#ml-projects').value).catch(e=>status(e.message,true)));
     q('#ml-export-one').addEventListener('click',()=>withBusy(async()=>{
       const b=await makePng(active),n=active===0?'00_썸네일':String(active).padStart(2,'0')+'_컷';
@@ -338,7 +383,7 @@
     try {
       await prepareCatalog();
       const projects=await listProjects();
-      if(projects.length){project=checkProject(projects[0]);}
+      if(projects.length){await openProject(projects[0].id);}
       else await save();
       fields();await refreshProjects();preview();
       status('마루니·루루 4컷 고정 포맷 준비 완료. 사진과 문구만 바꾸세요.');
