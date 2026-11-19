@@ -12,7 +12,7 @@
     '<select id="ml-projects" aria-label="저장한 고정 템플릿"><option value="">저장한 작업 선택</option></select><button id="ml-open" type="button">불러오기</button></div>',
     '<p id="ml-status" role="status" aria-live="polite"></p>',
     '<div class="ml-layout"><div class="ml-stage">',
-    '<canvas id="ml-canvas" width="1080" height="1350" aria-label="고정 포맷 4대5 이미지 미리보기"></canvas>',
+    '<canvas id="ml-canvas" width="540" height="675" aria-label="고정 포맷 4대5 이미지 미리보기"></canvas>',
     '<div id="ml-tabs" class="ml-tabs" aria-label="썸네일 및 4컷 선택"></div>',
     '<div class="ml-actions"><button id="ml-export-one" type="button">현재 장 PNG 저장</button><button id="ml-export-all" class="ml-primary" type="button">썸네일+4컷 ZIP 저장</button>',
     '<button id="ml-share" type="button">현재 장 공유(아이폰)</button></div>',
@@ -52,7 +52,8 @@
       updatedAt:Date.now(),scenes:sceneDefaults.map(s => Object.assign({},s,{photo:null,focusY:50}))};
   }
   let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false, persistedPhotos=new Set();
-  const canvas=q('#ml-canvas'), ctx=canvas.getContext('2d'), imagePromises=new Map(), blobCache=new WeakMap();
+  const canvas=q('#ml-canvas'), ctx=canvas.getContext('2d'), imagePromises=new Map(), blobCache=new Map();
+  let paintFrame=0, painting=false;
   function status(text, bad=false){q('#ml-status').textContent=text;q('#ml-status').dataset.error=String(bad);}
   function current(){return project.scenes[active];}
   function db(){
@@ -165,20 +166,43 @@
     return file;
   }
   function assetImage(src){
-    if(!imagePromises.has(src))imagePromises.set(src,new Promise((resolve,reject)=>{
+    if(imagePromises.has(src)){
+      const value=imagePromises.get(src);imagePromises.delete(src);imagePromises.set(src,value);return value;
+    }
+    const promise=new Promise((resolve,reject)=>{
       const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('공식 자산을 불러오지 못했습니다: '+src));im.src=src;
-    }));
-    return imagePromises.get(src);
+    });
+    imagePromises.set(src,promise);
+    while(imagePromises.size>8)imagePromises.delete(imagePromises.keys().next().value);
+    return promise.catch(e=>{imagePromises.delete(src);throw e;});
   }
   function photoImage(blob){
     if(!blob)return Promise.resolve(null);
-    if(!blobCache.has(blob))blobCache.set(blob,new Promise((resolve,reject)=>{
-      const url=URL.createObjectURL(blob), im=new Image();
-      im.onload=()=>{URL.revokeObjectURL(url);resolve(im);};
-      im.onerror=()=>{URL.revokeObjectURL(url);reject(Error('사진 파일을 열 수 없습니다. JPG로 다시 저장해 주세요.'));};
-      im.src=url;
-    }));
-    return blobCache.get(blob);
+    if(blobCache.has(blob)){
+      const p=blobCache.get(blob);blobCache.delete(blob);blobCache.set(blob,p);return p;
+    }
+    const promise=(async()=>{
+      const url=URL.createObjectURL(blob),im=new Image();
+      try{
+        await new Promise((resolve,reject)=>{
+          im.onload=resolve;im.onerror=()=>reject(Error('이 사진을 읽을 수 없습니다. 아이패드에서 JPG로 변환한 후 다시 넣어 주세요.'));
+          im.src=url;
+        });
+        if(im.width*im.height>48000000)throw Error('사진 최대 4800만 화소를 넘었습니다.');
+        const ratio=Math.min(1,2048/Math.max(im.width,im.height));
+        const small=document.createElement('canvas');
+        small.width=Math.max(1,Math.round(im.width*ratio));small.height=Math.max(1,Math.round(im.height*ratio));
+        small.getContext('2d',{alpha:false}).drawImage(im,0,0,small.width,small.height);
+        return small;
+      }finally{im.src='';URL.revokeObjectURL(url);}
+    })();
+    blobCache.set(blob,promise);
+    while(blobCache.size>2){
+      const key=blobCache.keys().next().value,old=blobCache.get(key);
+      blobCache.delete(key);
+      old.then(img=>{img.width=1;img.height=1;}).catch(()=>{});
+    }
+    return promise.catch(e=>{blobCache.delete(blob);throw e;});
   }
   function rounded(x,y,w,h,r,fill,stroke){
     ctx.beginPath();ctx.roundRect(x,y,w,h,r);
@@ -216,33 +240,36 @@
     ctx.beginPath();ctx.moveTo(x+175,y+h);ctx.lineTo(x+211,y+h+34);ctx.lineTo(x+235,y+h);ctx.closePath();ctx.fillStyle='rgba(255,252,246,.96)';ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=3;ctx.stroke();
     textBlock(text,x+w/2,y+43,w-90,43,51,2,ink,'center');
   }
-  async function drawActors(scene,index){
-    const a=catalog.find(z=>z.id===scene.maruni), b=catalog.find(z=>z.id===scene.ruru);
-    const left=scene.side==='left', y=index===0?865:835, sizeA=315,sizeB=270;
+  function drawActors(scene,index,images){
+    const left=scene.side==='left', y=index===0?865:835, sizeA=315, sizeB=270;
     const aX=left?62:520,bX=left?365:787;
-    if(a){const im=await assetImage(a.path);ctx.drawImage(im,aX,y,sizeA,sizeA);}
-    if(b){const im=await assetImage(b.path);ctx.drawImage(im,bX,y+44,sizeB,sizeB);}
+    if(images.maruni)ctx.drawImage(images.maruni,aX,y,sizeA,sizeA);
+    if(images.ruru)ctx.drawImage(images.ruru,bX,y+44,sizeB,sizeB);
   }
   function pillCaption(text,y){
     rounded(55,y,970,98,46,'rgba(255,252,246,.94)','#c8b69b');
     textBlock(text,540,y+27,900,36,46,1,ink,'center');
   }
-  async function draw(index,target=canvas){
-    await window.MaruniStoryRender.fonts();
-    if(!catalog.length)throw Error('공식 캐릭터 목록을 불러오지 못했습니다.');
-    const scene=project.scenes[index], c=target.getContext('2d'), original=ctx;
+  async function draw(index,guard=()=>true){
+    const scene=project.scenes[index];
     if(!scene.photo)throw Error((index===0?'썸네일':index+'컷')+'에 실제 현장 사진을 넣어 주세요.');
-    const im=await photoImage(scene.photo);
-    if(im.width*im.height>48000000)throw Error('이미지 용량이 너무 큽니다. 최대 4800만 화소를 사용해 주세요.');
-    // All rendering routines below use the same physical canvas context.
-    if(target!==canvas) { /* all exports draw at full W×H on the shared canvas */ }
-    ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle='#e6e3dc';ctx.fillRect(0,0,W,H);
+    const a=catalog.find(z=>z.id===scene.maruni),b=catalog.find(z=>z.id===scene.ruru);
+    // 한 번에 필요한 이미지 읽기. 이후 프레임은 동기적으로 그려 Safari에서 컷 전환이 섞이지 않게 한다.
+    const [im,logo,maruni,ruru]=await Promise.all([
+      photoImage(scene.photo),
+      index===0?assetImage('brand/logo-black.svg'):Promise.resolve(null),
+      a?assetImage(a.path):Promise.resolve(null),
+      b?assetImage(b.path):Promise.resolve(null),
+      window.MaruniStoryRender.fonts()
+    ]);
+    if(!guard())return false;
+    ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
+    ctx.clearRect(0,0,W,H);ctx.fillStyle='#e6e3dc';ctx.fillRect(0,0,W,H);
     photoCover(im,scene);
     if(index===0){
-      const gradient=ctx.createLinearGradient(0,0,0,890);gradient.addColorStop(0,'rgba(255,252,246,.89)');gradient.addColorStop(.6,'rgba(255,252,246,.45)');gradient.addColorStop(1,'rgba(255,252,246,0)');
+      const gradient=ctx.createLinearGradient(0,0,0,890);
+      gradient.addColorStop(0,'rgba(255,252,246,.89)');gradient.addColorStop(.6,'rgba(255,252,246,.45)');gradient.addColorStop(1,'rgba(255,252,246,0)');
       ctx.fillStyle=gradient;ctx.fillRect(0,0,W,900);
-      // 공식 SVG 파일의 좌표/비례를 그대로 합성하며 임의로 그리지 않는다.
-      const logo=await assetImage('brand/logo-black.svg');
       ctx.drawImage(logo,55,50,235,85);
       rounded(544,63,480,74,37,green,null);
       textBlock(project.series,784,82,420,31,43,1,'#fffaf0','center');
@@ -250,8 +277,6 @@
       textBlock(scene.title,88,289,904,72,100,2,ink);
       rounded(80,543,850,74,35,bronze,null);
       textBlock(project.product,505,561,780,34,46,1,'#fffdf7','center');
-      await drawActors(scene,index);
-      pillCaption(scene.foot,1204);
     }else{
       rounded(0,0,W,285,0,'rgba(255,252,246,.84)',null);
       textBlock(project.series,52,49,600,30,42,1,ink);
@@ -260,24 +285,29 @@
       textBlock(String(index).padStart(2,'0'),109,169,100,54,70,1,'#fffdf6','center');
       textBlock(scene.title,185,152,820,62,76,2,ink);
       bubble(scene.bubble);
-      await drawActors(scene,index);
-      pillCaption(scene.foot,1203);
     }
-    return canvas;
+    drawActors(scene,index,{maruni,ruru});
+    pillCaption(scene.foot,1204);
+    return true;
   }
-  async function preview(){
-    const seq=++drawToken;
-    try{
-      if(!current().photo){
-        ctx.fillStyle='#efede6';ctx.fillRect(0,0,W,H);
-        textBlock((active===0?'썸네일':active+'컷')+'의 현장 사진을 선택하세요',85,570,920,47,62,2,ink);
-        status('현재 장에 사진을 넣으면 고정 포맷 미리보기가 나옵니다.');
-        return;
-      }
-      await draw(active);
-      if(seq!==drawToken)preview();
-    }catch(e){if(seq===drawToken)status(e.message,true);}
+  function queuePaint(){
+    if(paintFrame||painting||busy)return;
+    paintFrame=requestAnimationFrame(async()=>{
+      paintFrame=0;
+      if(busy||!root.open)return;
+      painting=true;
+      const token=drawToken,index=active;
+      try{
+        if(!project.scenes[index].photo){
+          ctx.setTransform(1,0,0,1,0,0);
+          ctx.fillStyle='#e9e5dd';ctx.fillRect(0,0,canvas.width,canvas.height);
+          ctx.fillStyle='#34251b';ctx.font='22px sans-serif';ctx.fillText((index===0?'썸네일':index+'컷')+' 현장 사진을 선택하세요',35,330);
+        }else await draw(index,()=>!busy&&token===drawToken&&index===active);
+      }catch(e){if(token===drawToken)status(e.message,true);}
+      finally{painting=false;if(token!==drawToken&&!busy)queuePaint();}
+    });
   }
+  function preview(){drawToken++;queuePaint();}
   function fields(){
     q('#ml-name').value=project.name;
     q('#ml-product').value=project.product;
@@ -297,14 +327,14 @@
   function filename(s){return String(s||'현장이야기').replace(/[\\/:*?"<>|\u0000-\u001f]/g,'').slice(0,42)||'현장이야기';}
   function png(){return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PNG 변환에 실패했습니다.')),'image/png'));}
   function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),15000);}
-  async function makePng(i){await draw(i);return png();}
+  async function makePng(i){canvas.width=W;canvas.height=H;await draw(i);return png();}
   async function withBusy(fn){
     if(busy)return;busy=true;
     q('#ml-export-one').disabled=q('#ml-export-all').disabled=q('#ml-share').disabled=true;
     clearTimeout(saveTimer);
     try{await save();await fn();status('파일 생성 완료. 저장 위치를 확인해 주세요.');}
     catch(e){status(e.message,true);}
-    finally{busy=false;q('#ml-export-one').disabled=q('#ml-export-all').disabled=q('#ml-share').disabled=false;preview();}
+    finally{busy=false;canvas.width=540;canvas.height=675;q('#ml-export-one').disabled=q('#ml-export-all').disabled=q('#ml-share').disabled=false;preview();}
   }
   function caption(){
     const s=project.scenes;
