@@ -130,24 +130,47 @@
     if(!id)return;
     await saving;
     const d=await db();
-    const item=await new Promise((resolve,reject)=>{
+    const saved=await new Promise((resolve,reject)=>{
       const req=d.transaction('projects','readonly').objectStore('projects').get(id);
       req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
     });
-    if(!item)throw Error('작업을 찾을 수 없습니다.');
-    const loaded=checkProject(item),ids=[...new Set(loaded.scenes.map(s=>s.photoId).filter(Boolean))];
+    if(!saved)throw Error('저장한 작업을 찾을 수 없습니다.');
+    const loaded=checkProject(saved);
+    loaded.type=Workflow.TEMPLATES[loaded.type]?loaded.type:'product';
+    loaded.library=Array.isArray(loaded.library)?loaded.library:[];
+    const ids=Workflow.photoIds(loaded);
     const files=new Map();
     if(ids.length)await new Promise((resolve,reject)=>{
       const tx=d.transaction('media','readonly'),store=tx.objectStore('media');
-      for(const key of ids){const req=store.get(key);req.onsuccess=()=>{if(req.result?.blob instanceof Blob)files.set(key,req.result.blob);};}
-      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+      for(const key of ids){
+        const req=store.get(key);
+        req.onsuccess=()=>{if(req.result?.blob instanceof Blob)files.set(key,req.result.blob);};
+      }
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('사진 보관함 로드 실패'));
     });
-    let missing=0;
+    // 구버전에서는 장면 안에 직접 저장된 원본 사진도 복원한다.
+    const inLibrary=new Set(loaded.library.map(row=>row.id));
     for(const scene of loaded.scenes){
-      if(scene.photoId&&!scene.photo){scene.photo=files.get(scene.photoId)||null;if(!scene.photo)missing++;}
+      if(!scene.photo&&scene.photoId)scene.photo=files.get(scene.photoId)||null;
+      if(scene.photo instanceof Blob){
+        if(!scene.photoId)scene.photoId=makeId();
+        files.set(scene.photoId,scene.photo);
+        if(!inLibrary.has(scene.photoId)){
+          loaded.library.push({id:scene.photoId,name:'기존 컷 사진',addedAt:Date.now()});
+          inLibrary.add(scene.photoId);
+        }
+      }
     }
-    project=loaded;persistedPhotos=new Set(files.keys());active=0;fields();preview();
-    status(missing?'저장 사진 '+missing+'개가 없어 해당 컷의 사진을 다시 넣어야 합니다.':'저장한 작업을 불러왔습니다.',missing>0);
+    libraryBlobs=new Map();
+    let missing=0;
+    for(const row of loaded.library){
+      const blob=files.get(row.id);
+      if(blob)libraryBlobs.set(row.id,blob);else missing++;
+    }
+    project=loaded;persistedPhotos=new Set(ids.filter(key=>files.has(key)));
+    for(const scene of project.scenes)if(!scene.photo&&scene.photoId)missing++;
+    active=0;libraryPage=0;clearGalleryThumbs();fields();renderPhotoLibrary();preview();
+    status(missing?'이전 작업을 불러왔지만 일부 사진을 찾지 못했습니다. 보관함을 확인해 주세요.':'저장한 작업의 사진·컷·대사를 불러왔습니다.',missing>0);
   }
   async function save() {
     clearTimeout(saveTimer);
@@ -157,10 +180,12 @@
         if(!scene.photoId)scene.photoId=makeId();
         if(!persistedPhotos.has(scene.photoId))photos.set(scene.photoId,scene.photo);
       }
-      const slim={...scene};
-      delete slim.photo;  // 사진 Blob은 전용 media 저장소에 한 번만 저장
-      return slim;
+      const slim={...scene};delete slim.photo;return slim;
     });
+    for(const row of project.library||[]){
+      const blob=libraryBlobs.get(row.id);
+      if(blob instanceof Blob&&!persistedPhotos.has(row.id))photos.set(row.id,blob);
+    }
     const snapshot={...project,updatedAt:Date.now(),scenes};
     project.updatedAt=snapshot.updatedAt;
     saving=saving.catch(()=>{}).then(async()=>{
@@ -169,27 +194,19 @@
         const tx=d.transaction(['projects','media'],'readwrite'),p=tx.objectStore('projects'),m=tx.objectStore('media');
         for(const [id,blob] of photos)m.put({id,blob});
         p.put(snapshot);
-        tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('기기 저장 실패'));tx.onabort=()=>reject(tx.error||Error('기기 저장 취소'));
+        tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('사진·프로젝트 저장 실패'));tx.onabort=()=>reject(tx.error||Error('저장이 취소되었습니다.'));
       });
       for(const id of photos.keys())persistedPhotos.add(id);
       await refreshProjects();
     });
-    try{await saving;status('저장 완료 · 사진은 텍스트 수정 때 다시 저장하지 않습니다.');}
-    catch(e){status('자동 저장 실패: '+e.message,true);throw e;}
+    try{await saving;status('저장 완료 · 사진 원본은 중복 저장하지 않습니다.');}
+    catch(e){status('저장 실패: '+e.message+' · 원본 사진을 유지하고 다시 시도하세요.',true);throw e;}
   }
+  function clearGalleryThumbs(){libraryThumbs.clear();}
   function changed(){clearTimeout(saveTimer);status('변경 사항 저장 대기');saveTimer=setTimeout(()=>save().catch(()=>{}),800);preview();}
   function checkProject(p) {
     if(!p||p.schema!=='cheonginmaru-maruni-locked-v1'||!Array.isArray(p.scenes)||p.scenes.length!==COUNT)throw Error('지원하지 않는 작업 형식입니다.');
     return p;
-  }
-  async function openProject(id){
-    if(!id)return;
-    const d=await db(), item=await new Promise((resolve,reject)=>{
-      const tx=d.transaction('projects','readonly'), req=tx.objectStore('projects').get(id);
-      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
-    });
-    if(!item)throw Error('작업을 찾을 수 없습니다.');
-    await saving;project=checkProject(item);active=0;fields();preview();status('저장한 작업을 불러왔습니다.');
   }
   function addPhotoBlob(file){
     if(!file||file.size>25*1024*1024||file.size===0||(!/^image\/(png|jpeg|webp|heic|heif)$/.test(file.type)&&!/\.(png|jpe?g|webp|heic|heif)$/i.test(file.name)))throw Error('25MB 이하의 JPG·PNG·WebP 사진을 선택해 주세요.');
