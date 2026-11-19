@@ -14,7 +14,7 @@
     <p id="mr-status" role="status" aria-live="polite">편집기를 준비하고 있습니다.</p>
     <div class="mr-grid">
       <div class="mr-stage">
-        <div class="mr-quick-upload"><button id="mr-quick-photo" type="button">＋ 현장 사진 선택</button><button id="mr-touch-edit" type="button" aria-pressed="false">화면 스크롤 · 이동 끔</button><small id="mr-touch-help">사진 위에서 위아래로 밀면 화면이 움직입니다. 캐릭터 위치를 바꿀 때만 이동 모드를 켜 주세요.</small></div>
+        <div class="mr-quick-upload"><button id="mr-quick-photo" type="button">＋ 현장 사진 선택</button><button id="mr-touch-edit" type="button" aria-pressed="false">화면 스크롤 · 이동 끔</button><button id="mr-open-locked" type="button">4컷 고정 템플릿 열기</button><small id="mr-touch-help">사진 위에서 위아래로 밀면 화면이 움직입니다. 캐릭터 위치를 바꿀 때만 이동 모드를 켜 주세요. 4컷은 별도의 작업으로 저장됩니다.</small></div>
         <div class="mr-canvas-wrap"><canvas id="mr-canvas" width="648" height="810" aria-label="선택한 장면 미리보기. 캐릭터를 눌러 선택한 뒤 끌어 이동합니다."></canvas></div>
         <div id="mr-scenes" class="mr-scenes" aria-label="6컷 장면 선택"></div>
         <div class="mr-toolbar" style="margin-top:10px"><button id="mr-prev" type="button">앞 순서로</button><button id="mr-next" type="button">뒤 순서로</button><button id="mr-copy-scene" type="button">다른 컷에 복제</button><button id="mr-undo" type="button">뒤로 한 단계</button></div>
@@ -208,6 +208,13 @@
   async function switchProject(next, nextMedia, dirty = false) {
     cancelGesture(); release(); project = next; media = nextMedia; active = 0; selected = null; photoMode = false; history = []; revision++; savedRevision = dirty ? -1 : revision; render(); if (dirty) await save();
   }
+  $('#mr-open-locked').onclick = () => run(async()=>{
+    await flush();
+    const locked=document.getElementById('maruni-locked-template');
+    if(!locked)throw Error('4컷 고정 템플릿을 찾을 수 없습니다.');
+    root.open=false;locked.open=true;
+    locked.scrollIntoView({block:'start',behavior:'smooth'});
+  });
   $('#mr-quick-photo').onclick = () => { if(!busy)$('#mr-photo').click(); };
   $('#mr-photo').onchange = e => run(async () => {
     const files = [...e.target.files]; e.target.value = ''; if (!files.length) return; if (files.length > 6) throw Error('사진은 한 번에 6장까지 선택하세요.');
