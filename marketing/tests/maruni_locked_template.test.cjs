@@ -48,7 +48,7 @@ test('기존 작업을 보존하면서 큰 사진 파일은 별도 저장',()=>{
   assert.match(js, /delete slim\.photo/);
   assert.match(js, /m\.put\(\{id,blob\}\)/);
   assert.match(js, /files\.get\(scene\.photoId\)/);
-  assert.match(js, /persistedPhotos=new Set\(files\.keys\(\)\)/);
+  assert.match(js, /persistedPhotos=storedKeys/);
 });
 test('아이패드 공식 포즈 목록은 6개씩 로드, 2개 편집기 모두 지연 시작',()=>{
   assert.match(js, /list\.slice\(pickerPage\*6,pickerPage\*6\+6\)/);
@@ -72,5 +72,34 @@ test('아이패드에서 사진 업로드 중 전체 페이지와 하단 컨트�
   assert.match(js, /document\.body\.classList\.toggle\('maruni-editor-scrolling',expanded\)/);
   assert.match(story, /id="mr-quick-photo"/);
   assert.match(story, /\$\('#mr-quick-photo'\)\.onclick/);
-  assert.match(html, /maruni-locked-template\.css\?v=ipad-scroll-20261119b/);
+  assert.match(html, /maruni-locked-template\.css\?v=stories-20261119c/);
+});
+
+test('콘텐츠 형식 6종과 사진 한꺼번에 선택·드롭·붙여넣기·컷 순서 기능 연결',()=>{
+ assert.match(html,/maruni-locked-workflow-core\.js\?v=/);
+ assert.match(js,/id="ml-type"/);
+ assert.match(js,/id="ml-photo" type="file" multiple/);
+ assert.match(js,/id="ml-drop-zone"/);
+ assert.match(js,/id="ml-photo-grid"/);
+ assert.match(js,/id="ml-clipboard"/);
+ assert.match(js,/addEventListener\('paste'/);
+ assert.match(js,/addEventListener\('drop'/);
+ assert.match(js,/event\.dataTransfer\?\.files/);
+ assert.match(js,/async function importPhotos\(/);
+ assert.match(js,/Workflow\.batchTargets/);
+ assert.match(js,/Workflow\.swapPhotos/);
+ assert.match(js,/Workflow\.moveStoryScene/);
+ assert.match(js,/document\.createElement\('img'\)/);
+ assert.match(js,/id="ml-open-pose-maruni"/);
+ assert.match(js,/id="ml-open-pose-ruru"/);
+ assert.match(css,/\.ml-photo-grid/);
+ assert.match(css,/\.ml-photo-library/);
+});
+test('사진 보관함은 별도 저장되며 오래된 프로젝트의 사진 열기 함수가 중복되지 않는다',()=>{
+ assert.equal(js.split('async function openProject(id)').length,2);
+ assert.match(js,/const files=new Map\(\),storedKeys=new Set\(\)/);
+ assert.match(js,/persistedPhotos=storedKeys/);
+ assert.match(js,/libraryBlobs\.get\(row\.id\)/);
+ assert.match(js,/loaded\.library=Array\.isArray\(loaded\.library\)/);
+ assert.match(js,/s\.photoId/);
 });

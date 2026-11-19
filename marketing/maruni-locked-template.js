@@ -3,7 +3,7 @@
   'use strict';
   const root = document.getElementById('maruni-locked-template');
   if (!root) return;
-  const W = 1080, H = 1350, COUNT = 5, DB_NAME = 'cheonginmaru-maruni-locked-v1';
+  const W = 1080, H = 1350, COUNT = 5, DB_NAME = 'cheonginmaru-maruni-locked-v1', Workflow=window.MaruniLockedWorkflow;
   const q = s => root.querySelector(s);
   const $ = q('.ml-body');
   $.innerHTML = [
@@ -12,18 +12,29 @@
     '<select id="ml-projects" aria-label="저장한 고정 템플릿"><option value="">저장한 작업 선택</option></select><button id="ml-open" type="button">불러오기</button></div>',
     '<p id="ml-status" role="status" aria-live="polite"></p>',
     '<div class="ml-layout"><div class="ml-stage">',
-    '<div class="ml-quick-upload"><button id="ml-quick-photo" type="button">＋ 현재 컷 사진 선택</button><small id="ml-photo-tip">사진은 아래에서 선택하거나 이 버튼을 눌러 추가하세요.</small></div>',
+    '<div class="ml-quick-upload"><button id="ml-quick-photo" type="button">＋ 사진 여러 장 선택</button><small id="ml-photo-tip">지금 컷부터 차례대로 배치 · 나머지는 사진 보관함</small></div>',
     '<canvas id="ml-canvas" width="540" height="675" aria-label="고정 포맷 4대5 이미지 미리보기"></canvas>',
     '<div id="ml-tabs" class="ml-tabs" aria-label="썸네일 및 4컷 선택"></div>',
+    '<div class="ml-actions ml-photo-order"><button id="ml-photo-left" type="button">← 사진 이전 컷과 교환</button>',
+    '<button id="ml-photo-right" type="button">사진 다음 컷과 교환 →</button>',
+    '<button id="ml-scene-up" type="button">본편 순서 앞으로</button><button id="ml-scene-down" type="button">본편 순서 뒤로</button></div>',
     '<div class="ml-actions"><button id="ml-export-one" type="button">현재 장 PNG 저장</button><button id="ml-export-all" class="ml-primary" type="button">썸네일+4컷 ZIP 저장</button>',
     '<button id="ml-share" type="button">현재 장 공유(아이폰)</button></div>',
     '<p class="ml-note">모든 출력 1080×1350px · 로고는 표지만 · 글씨·말풍선·여백은 고정 · 사진은 기기 안에서만 처리합니다. 사진 원본 색상·결 보정 없음.</p>',
     '</div><div class="ml-controls">',
-    '<label>제품 / 현장 제품명<input id="ml-product" maxlength="65" placeholder="예: 동화 시그니월 슬레이트모티프"></label>',
+    '<div class="ml-story-type"><label>콘텐츠 형식 선택<select id="ml-type"><option value="product">제품 소개</option><option value="episode">시공 에피소드</option><option value="process">시공 과정·전후</option><option value="tips">생활·관리 정보</option><option value="everyday">그냥 사는 이야기</option><option value="behind">현장 밖 비하인드</option></select></label><p id="ml-type-tip" class="ml-note">기존 사진과 캐릭터는 유지하고 제목·대사만 형식에 맞게 바꿉니다.</p></div>',
+    '<label id="ml-topic-label"><span id="ml-topic-name">제품 / 현장 제품명</span><input id="ml-product" maxlength="65" placeholder="예: 동화 시그니월 슬레이트모티프"></label>',
     '<label>공통 시리즈 이름<input id="ml-series" maxlength="26" value="마루니·루루 제품 이야기"></label>',
     '<div class="ml-minirow"><label>시공 분야<select id="ml-field"><option>벽장재</option><option>마루</option><option>기타</option></select></label><label>시공 지역<input id="ml-region" maxlength="45" placeholder="예: 인천 송도"></label></div>',
     '<label>제품 규격(확인된 경우만)<input id="ml-spec" maxlength="65" placeholder="예: 1010 × 2460 × 9T"></label>',
-    '<label>현재 장 현장 사진(JPG·PNG·WebP)<input id="ml-photo" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif"></label>',
+    '<label>사진 1~20장 한번에 넣기(JPG·PNG·WebP)<input id="ml-photo" type="file" multiple accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif"></label>',
+    '<div class="ml-actions"><button type="button" id="ml-clipboard">복사한 사진 붙여넣기</button><small class="ml-note">아이패드 사진 앱·파일 앱에서 끌어다 놓거나, 복사 후 붙여넣기도 가능</small></div>',
+    '<div id="ml-drop-zone" class="ml-drop-zone" tabindex="0" role="region" aria-label="사진 끌어놓기 영역">여기에 사진을 끌어다 놓으세요 · 여러 장 가능</div>',
+    '<section class="ml-photo-library" aria-label="이 작업에서 사용할 사진 보관함">',
+    '<div class="ml-photo-library-head"><strong>사진 보관함</strong><span id="ml-library-count">0장</span></div>',
+    '<p class="ml-note">사진을 탭하면 현재 컷에 적용됩니다. 컴퓨터에서는 컷 번호나 미리보기로 끌어 놓을 수 있어요.</p>',
+    '<div id="ml-photo-grid" class="ml-photo-grid"></div>',
+    '<div class="ml-actions ml-gallery-pager"><button id="ml-library-prev" type="button">이전 사진</button><output id="ml-library-page">1 / 1</output><button id="ml-library-next" type="button">다음 사진</button></div></section>',
     '<div class="ml-actions"><button id="ml-copy-photo-next" type="button">현재 사진을 다음 컷에 복사</button><button id="ml-copy-photo-all" type="button">현재 사진을 5장에 사용</button></div>',
     '<label>현재 장 제목(위치·크기 고정)<textarea id="ml-title" maxlength="44" rows="2"></textarea></label>',
     '<label id="ml-bubble-wrap">현재 장 짧은 말풍선(1개만)<input id="ml-bubble" maxlength="34"></label>',
@@ -40,7 +51,8 @@
     '<label>루루 크기<input id="ml-size-ruru" type="range" min="65" max="130" value="100"></label></div>',
     '<button id="ml-actor-reset" type="button">캐릭터 위치·크기 초기화</button>',
     '<p class="ml-note">캐릭터를 손가락으로 끌어 이동할 수 있습니다. 제목·로고·말풍선은 고정입니다.</p>',
-    '<div class="ml-minirow"><label>마루니 공식 포즈<select id="ml-maruni"><option value="">없음</option></select></label>',
+    '<div class="ml-actions ml-actor-choose-actions"><button id="ml-open-pose-maruni" type="button">마루니 다른 동작 보기</button><button id="ml-open-pose-ruru" type="button">루루 다른 동작 보기</button></div>',
+    '<div class="ml-minirow ml-native-actor-selects"><label>마루니 공식 포즈<select id="ml-maruni"><option value="">없음</option></select></label>',
     '<label>루루 공식 포즈<select id="ml-ruru"><option value="">없음</option></select></label></div>',
     '<div class="ml-minirow"><label>캐릭터 배치 방향<select id="ml-side"><option value="right">오른쪽 아래</option><option value="left">왼쪽 아래</option></select></label>',
     '<label>사진 위아래 위치<input id="ml-photo-y" type="range" min="0" max="100" value="50"></label></div>',
@@ -61,13 +73,13 @@
   const clone = x => JSON.parse(JSON.stringify(x));
   const makeId = () => (crypto.randomUUID ? crypto.randomUUID() : 'p'+Date.now()+'x'+Math.random().toString(16).slice(2));
   function makeProject() {
-    return {schema:'cheonginmaru-maruni-locked-v1',id:makeId(),name:'새 마루니·루루 시리즈',series:'마루니·루루 제품 이야기',product:'동화 시그니월 슬레이트모티프',field:'벽장재',region:'',spec:'',
-      updatedAt:Date.now(),scenes:sceneDefaults.map(s => Object.assign({},s,{photo:null,focusY:50}))};
+    return {schema:'cheonginmaru-maruni-locked-v1',id:makeId(),name:'새 마루니·루루 시리즈',type:'product',series:'마루니·루루 제품 이야기',product:'동화 시그니월 슬레이트모티프',field:'벽장재',region:'',spec:'',library:[],
+      updatedAt:Date.now(),scenes:Workflow.scenesFor('product').map(s => Object.assign({},s,{photo:null,photoId:null,focusY:50}))};
   }
   let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false, persistedPhotos=new Set();
   const canvas=q('#ml-canvas'), ctx=canvas.getContext('2d'), imagePromises=new Map(), blobCache=new Map();
   let paintFrame=0, painting=false, pickerActor='', pickerPage=0, selectedActor='', drag=null, initializeStarted=false;
-  let actorBoxes=new Map();
+  let actorBoxes=new Map(), libraryBlobs=new Map(),libraryPage=0, libraryThumbs=new Map(), uploadInProgress=false;
   function status(text, bad=false){q('#ml-status').textContent=text;q('#ml-status').dataset.error=String(bad);}
   function current(){return project.scenes[active];}
   function db(){
@@ -119,24 +131,47 @@
     if(!id)return;
     await saving;
     const d=await db();
-    const item=await new Promise((resolve,reject)=>{
+    const saved=await new Promise((resolve,reject)=>{
       const req=d.transaction('projects','readonly').objectStore('projects').get(id);
       req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
     });
-    if(!item)throw Error('작업을 찾을 수 없습니다.');
-    const loaded=checkProject(item),ids=[...new Set(loaded.scenes.map(s=>s.photoId).filter(Boolean))];
-    const files=new Map();
+    if(!saved)throw Error('저장한 작업을 찾을 수 없습니다.');
+    const loaded=checkProject(saved);
+    loaded.type=Workflow.TEMPLATES[loaded.type]?loaded.type:'product';
+    loaded.library=Array.isArray(loaded.library)?loaded.library:[];
+    const ids=Workflow.photoIds(loaded);
+    const files=new Map(),storedKeys=new Set();
     if(ids.length)await new Promise((resolve,reject)=>{
       const tx=d.transaction('media','readonly'),store=tx.objectStore('media');
-      for(const key of ids){const req=store.get(key);req.onsuccess=()=>{if(req.result?.blob instanceof Blob)files.set(key,req.result.blob);};}
-      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+      for(const key of ids){
+        const req=store.get(key);
+        req.onsuccess=()=>{if(req.result?.blob instanceof Blob){files.set(key,req.result.blob);storedKeys.add(key);}};
+      }
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('사진 보관함 로드 실패'));
     });
-    let missing=0;
+    // 구버전에서는 장면 안에 직접 저장된 원본 사진도 복원한다.
+    const inLibrary=new Set(loaded.library.map(row=>row.id));
     for(const scene of loaded.scenes){
-      if(scene.photoId&&!scene.photo){scene.photo=files.get(scene.photoId)||null;if(!scene.photo)missing++;}
+      if(!scene.photo&&scene.photoId)scene.photo=files.get(scene.photoId)||null;
+      if(scene.photo instanceof Blob){
+        if(!scene.photoId)scene.photoId=makeId();
+        files.set(scene.photoId,scene.photo);
+        if(!inLibrary.has(scene.photoId)){
+          loaded.library.push({id:scene.photoId,name:'기존 컷 사진',addedAt:Date.now()});
+          inLibrary.add(scene.photoId);
+        }
+      }
     }
-    project=loaded;persistedPhotos=new Set(files.keys());active=0;fields();preview();
-    status(missing?'저장 사진 '+missing+'개가 없어 해당 컷의 사진을 다시 넣어야 합니다.':'저장한 작업을 불러왔습니다.',missing>0);
+    libraryBlobs=new Map();
+    let missing=0;
+    for(const row of loaded.library){
+      const blob=files.get(row.id);
+      if(blob)libraryBlobs.set(row.id,blob);else missing++;
+    }
+    project=loaded;persistedPhotos=storedKeys;
+    for(const scene of project.scenes)if(!scene.photo&&scene.photoId)missing++;
+    active=0;libraryPage=0;clearGalleryThumbs();fields();renderPhotoLibrary();preview();
+    status(missing?'이전 작업을 불러왔지만 일부 사진을 찾지 못했습니다. 보관함을 확인해 주세요.':'저장한 작업의 사진·컷·대사를 불러왔습니다.',missing>0);
   }
   async function save() {
     clearTimeout(saveTimer);
@@ -146,10 +181,12 @@
         if(!scene.photoId)scene.photoId=makeId();
         if(!persistedPhotos.has(scene.photoId))photos.set(scene.photoId,scene.photo);
       }
-      const slim={...scene};
-      delete slim.photo;  // 사진 Blob은 전용 media 저장소에 한 번만 저장
-      return slim;
+      const slim={...scene};delete slim.photo;return slim;
     });
+    for(const row of project.library||[]){
+      const blob=libraryBlobs.get(row.id);
+      if(blob instanceof Blob&&!persistedPhotos.has(row.id))photos.set(row.id,blob);
+    }
     const snapshot={...project,updatedAt:Date.now(),scenes};
     project.updatedAt=snapshot.updatedAt;
     saving=saving.catch(()=>{}).then(async()=>{
@@ -158,31 +195,143 @@
         const tx=d.transaction(['projects','media'],'readwrite'),p=tx.objectStore('projects'),m=tx.objectStore('media');
         for(const [id,blob] of photos)m.put({id,blob});
         p.put(snapshot);
-        tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('기기 저장 실패'));tx.onabort=()=>reject(tx.error||Error('기기 저장 취소'));
+        tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('사진·프로젝트 저장 실패'));tx.onabort=()=>reject(tx.error||Error('저장이 취소되었습니다.'));
       });
       for(const id of photos.keys())persistedPhotos.add(id);
       await refreshProjects();
     });
-    try{await saving;status('저장 완료 · 사진은 텍스트 수정 때 다시 저장하지 않습니다.');}
-    catch(e){status('자동 저장 실패: '+e.message,true);throw e;}
+    try{await saving;status('저장 완료 · 사진 원본은 중복 저장하지 않습니다.');}
+    catch(e){status('저장 실패: '+e.message+' · 원본 사진을 유지하고 다시 시도하세요.',true);throw e;}
   }
+  function clearGalleryThumbs(){libraryThumbs.clear();}
   function changed(){clearTimeout(saveTimer);status('변경 사항 저장 대기');saveTimer=setTimeout(()=>save().catch(()=>{}),800);preview();}
   function checkProject(p) {
     if(!p||p.schema!=='cheonginmaru-maruni-locked-v1'||!Array.isArray(p.scenes)||p.scenes.length!==COUNT)throw Error('지원하지 않는 작업 형식입니다.');
     return p;
   }
-  async function openProject(id){
-    if(!id)return;
-    const d=await db(), item=await new Promise((resolve,reject)=>{
-      const tx=d.transaction('projects','readonly'), req=tx.objectStore('projects').get(id);
-      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
-    });
-    if(!item)throw Error('작업을 찾을 수 없습니다.');
-    await saving;project=checkProject(item);active=0;fields();preview();status('저장한 작업을 불러왔습니다.');
-  }
   function addPhotoBlob(file){
     if(!file||file.size>25*1024*1024||file.size===0||(!/^image\/(png|jpeg|webp|heic|heif)$/.test(file.type)&&!/\.(png|jpe?g|webp|heic|heif)$/i.test(file.name)))throw Error('25MB 이하의 JPG·PNG·WebP 사진을 선택해 주세요.');
     return file;
+  }
+  function photoRows(){return Array.isArray(project.library)?project.library:[];}
+  async function libraryThumb(row){
+    if(libraryThumbs.has(row.id))return libraryThumbs.get(row.id);
+    const blob=libraryBlobs.get(row.id);
+    if(!blob)return null;
+    const image=await photoImage(blob);
+    const c=document.createElement('canvas');c.width=150;c.height=108;
+    const ratio=Math.max(c.width/image.width,c.height/image.height);
+    c.getContext('2d',{alpha:false}).drawImage(image,(c.width-image.width*ratio)/2,(c.height-image.height*ratio)/2,image.width*ratio,image.height*ratio);
+    const url=c.toDataURL('image/jpeg',.7);c.width=c.height=1;
+    libraryThumbs.set(row.id,url);
+    return url;
+  }
+  async function fillLibraryThumbs(nodes){
+    for(const [image,row] of nodes){
+      if(!image.isConnected)return;
+      try{
+        const data=await libraryThumb(row);
+        if(image.isConnected&&data)image.src=data;
+      }catch(e){if(image.isConnected)image.alt='사진 미리보기를 열 수 없음';}
+      await new Promise(resolve=>setTimeout(resolve,0));
+    }
+  }
+  function renderPhotoLibrary(){
+    const rows=photoRows(),numPages=Math.max(1,Math.ceil(rows.length/6));
+    libraryPage=Math.max(0,Math.min(libraryPage,numPages-1));
+    q('#ml-library-count').textContent=rows.length+' / 20장';
+    q('#ml-library-page').textContent=(libraryPage+1)+' / '+numPages;
+    q('#ml-library-prev').disabled=libraryPage===0;
+    q('#ml-library-next').disabled=libraryPage>=numPages-1;
+    const host=q('#ml-photo-grid');host.replaceChildren();
+    const images=[];
+    for(const row of rows.slice(libraryPage*6,libraryPage*6+6)){
+      const btn=document.createElement('button');btn.type='button';btn.draggable=true;
+      btn.className='ml-photo-option';btn.dataset.photoId=row.id;
+      const selected=project.scenes.some((scene,i)=>i===active&&scene.photoId===row.id);
+      btn.setAttribute('aria-pressed',String(selected));
+      btn.title=(row.name||'사진')+' · 탭하면 현재 컷에 적용';
+      const image=document.createElement('img');image.alt='';image.loading='lazy';image.decoding='async';
+      const cap=document.createElement('span');
+      const used=project.scenes.map((scene,i)=>scene.photoId===row.id?(i===0?'표지':i+'컷'):null).filter(Boolean);
+      cap.textContent=(row.name||'사진').slice(0,18)+(used.length?' · '+used.join(','):' · 미사용');
+      btn.append(image,cap);
+      const item=document.createElement('div');item.className='ml-photo-item';item.append(btn);
+      const remove=document.createElement('button');remove.type='button';remove.className='ml-photo-remove';
+      remove.dataset.removePhotoId=row.id;remove.textContent='보관함에서 제외';remove.title='이 사진을 삭제합니다';
+      item.append(remove);host.append(item);images.push([image,row]);
+    }
+    if(!rows.length){const p=document.createElement('p');p.className='ml-note';p.textContent='사진을 여러 장 넣으면 여기에 작은 미리보기가 생깁니다.';host.append(p);}
+    fillLibraryThumbs(images).catch(e=>status(e.message,true));
+    q('#ml-photo-left').disabled=active===0;
+    q('#ml-photo-right').disabled=active===COUNT-1;
+    q('#ml-scene-up').disabled=active<=1;
+    q('#ml-scene-down').disabled=active===0||active===COUNT-1;
+  }
+  function showPhotoAt(id,slot=active){
+    const row=photoRows().find(row=>row.id===id),blob=libraryBlobs.get(id);
+    if(!row||!(blob instanceof Blob)){status('보관함에서 사진을 찾을 수 없습니다.',true);return;}
+    const target=project.scenes[slot];
+    if(target.photoId===id){active=slot;fields();preview();status('이미 이 컷에 들어 있는 사진입니다.');return;}
+    if(target.photo&&target.photoId!==id&&!confirm((slot===0?'표지':slot+'컷')+'의 사진을 바꿀까요? 기존 사진은 보관함에 남습니다.'))return;
+    Workflow.changePhoto(target,blob,id);
+    active=slot;fields();renderPhotoLibrary();changed();status((slot===0?'표지':slot+'컷')+'에 사진을 적용했습니다.');
+  }
+  function removeLibraryPhoto(id){
+    const row=photoRows().find(item=>item.id===id);
+    if(!row)return;
+    const uses=project.scenes.map((s,i)=>s.photoId===id?(i===0?'표지':i+'컷'):null).filter(Boolean);
+    const prompt=uses.length?
+      (row.name+' 사진을 보관함과 '+uses.join(', ')+'에서도 제거할까요? 사진 없는 컷은 다시 채울 수 있습니다.'):
+      (row.name+' 사진을 보관함에서 제외할까요?');
+    if(!confirm(prompt))return;
+    for(const s of project.scenes)if(s.photoId===id){s.photo=null;s.photoId=null;}
+    project.library=photoRows().filter(item=>item.id!==id);
+    libraryBlobs.delete(id);libraryThumbs.delete(id);
+    libraryPage=Math.min(libraryPage,Math.ceil(project.library.length/6)-1);
+    fields();renderPhotoLibrary();changed();status('사진을 보관함에서 제외했습니다. 저장된 다른 작업에는 영향이 없습니다.');
+  }
+  async function importPhotos(files,start=active){
+    if(uploadInProgress)return;
+    const incoming=[...files].filter(Boolean);
+    if(!incoming.length)return;
+    if(photoRows().length+incoming.length>20)throw Error('사진은 작업당 20장까지 보관할 수 있어요. 이번에는 '+(20-photoRows().length)+'장까지 선택해 주세요.');
+    let total=[...libraryBlobs.values()].reduce((n,b)=>n+b.size,0);
+    for(const file of incoming){addPhotoBlob(file);total+=file.size;}
+    if(total>240*1024*1024)throw Error('이 작업의 사진 합계는 240MB까지입니다. 사진 크기를 줄이거나 나누어 등록해 주세요.');
+    const slots=Workflow.batchTargets(start,incoming.length);
+    const replacing=slots.some(i=>Boolean(project.scenes[i].photo));
+    if(replacing&&!confirm('현재 컷부터 '+slots.length+'장에 사진을 배치합니다. 기존 컷 사진은 보관함에 남겨 둘까요?'))return;
+    uploadInProgress=true;
+    try{
+      const valid=[];
+      // Safari 메모리 급증 방지: 각 파일을 순서대로 확인한다.
+      for(let i=0;i<incoming.length;i++){
+        const file=incoming[i];
+        // 처음 사진 하나만 검증하고 나머지는 컷/썸네일에 실제로 보여줄 때 순차 디코딩.
+        // 20장 선택 시 20개의 고해상도 사진을 한꺼번에 펼치지 않는다.
+        if(i===0)try{await photoImage(file);}catch(e){throw Error((file.name||'사진')+'을 열 수 없습니다: '+e.message);}
+        valid.push({id:makeId(),name:file.name||'붙여넣은 사진',blob:file,addedAt:Date.now()});
+      }
+      project.library=photoRows().concat(valid.map(({id,name,addedAt})=>({id,name,addedAt})));
+      for(const file of valid)libraryBlobs.set(file.id,file.blob);
+      for(let i=0;i<Math.min(valid.length,slots.length);i++)Workflow.changePhoto(project.scenes[slots[i]],valid[i].blob,valid[i].id);
+      libraryPage=0;
+      fields();renderPhotoLibrary();changed();
+      status(valid.length+'장 등록 완료 · '+Math.min(valid.length,slots.length)+'장은 컷에 배치했고 나머지는 보관함에서 골라 사용할 수 있어요.');
+    }finally{uploadInProgress=false;}
+  }
+  function changePhotoOrder(direction){
+    const other=active+direction;
+    if(other<0||other>=COUNT)return;
+    Workflow.swapPhotos(project.scenes,active,other);
+    active=other;fields();renderPhotoLibrary();changed();status('두 컷의 사진을 교환했습니다. 제목과 캐릭터는 그대로입니다.');
+  }
+  function moveFullScene(direction){
+    const other=active+direction;
+    if(active===0||other<=0||other>=COUNT)return;
+    Workflow.moveStoryScene(project.scenes,active,other);
+    active=other;fields();renderPhotoLibrary();changed();status('사진·제목·대사를 함께 옮겼습니다. 표지는 그대로입니다.');
   }
   function assetImage(src){
     if(imagePromises.has(src)){
@@ -353,6 +502,10 @@
   function preview(){drawToken++;queuePaint();}
   function fields(){
     q('#ml-name').value=project.name;
+    q('#ml-type').value=project.type||'product';
+    const daily=Workflow.get(project.type).channel==='daily';
+    q('#ml-topic-name').textContent=daily?'일상 이야기 주제':'제품명 / 현장·이야기 주제';
+    q('#ml-type-tip').textContent=Workflow.label(project.type)+' · 실제 사진과 공식 캐릭터를 유지하는 고정 양식';
     q('#ml-product').value=project.product;
     q('#ml-series').value=project.series;
     q('#ml-field').value=project.field||'벽장재';
@@ -371,7 +524,7 @@
       const asset=catalog.find(a=>a.id===s[actor]);
       if(asset)q('#ml-img-'+actor).src=asset.path;else q('#ml-img-'+actor).removeAttribute('src');
       q('#ml-img-'+actor).alt=asset?asset.label:'표시 안 함';
-      q('#ml-label-'+actor).textContent=(actor==='maruni'?'마루니':'루루')+' · '+(asset?asset.label:'표시 안 함');
+      q('#ml-label-'+actor).textContent=(actor==='maruni'?'마루니':'루루')+' · '+(asset?asset.label+' · 탭하면 선택':'사진에 바로 추가');
       q('#ml-size-'+actor).value=Math.round(100*(s.actorTransform?.[actor]?.scale||1));
     }
     q('#ml-tabs').querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-pressed',String(active===i)));
@@ -389,14 +542,26 @@
     finally{busy=false;canvas.width=540;canvas.height=675;q('#ml-export-one').disabled=q('#ml-export-all').disabled=q('#ml-share').disabled=false;preview();}
   }
   function caption(){
-    const s=project.scenes;
-    const region=String(project.region||'').trim(), field=String(project.field||'').trim(), product=String(project.product||'').trim(), spec=String(project.spec||'').trim();
-    const brand=product.split(/\s+/)[0]||'', model=product.replace(/\s/g,'');
-    const tags=['#청인마루',brand?'#'+brand:null,model?'#'+model:null,region?'#'+region.replace(/\s/g,''):null,field?'#'+field+'시공':null].filter(Boolean).join(' ');
-    return [s[0].title.replace(/\n/g,' '),'','제품 · '+product,spec?'규격 · '+spec:null,region?'현장 · '+region:null,'',
-      s[1].foot,s[2].foot,s[3].foot,s[4].foot,'',
-      '청인마루는 마루와 벽장재를 전문으로 시공합니다. 자재의 색상과 결, 현장 조건, 마감까지 함께 살펴봅니다.','',
-      '시공 상담 · 전시장 방문 예약','카카오채널 · 청인마루','032-210-6268','cheonginmaru.com','',tags].filter(v=>v!==null).join('\n');
+    const ss=project.scenes;
+    const kind=Workflow.get(project.type).channel;
+    const region=String(project.region||'').trim(),field=String(project.field||'').trim(),topic=String(project.product||'').trim(),spec=String(project.spec||'').trim();
+    const brand=topic.split(/\s+/)[0]||'';
+    const headline=(ss[0].title||'').replace(/\n/g,' ').trim();
+    const highlights=ss.slice(1).map(s=>s.foot).filter(Boolean);
+    if(kind==='daily'){
+      const tags=['#청인마루','#마루니루루',project.type==='behind'?'#현장비하인드':'#소소한일상',region?'#'+region.replace(/\s/g,''):null,'#사는이야기'].filter(Boolean).slice(0,5).join(' ');
+      return [headline,'',topic?('오늘의 이야기 · '+topic):null,region?('지역 · '+region):null,'',...highlights,'',
+      '별것 아닌 하루도 기록해 두면 오래 남더라고요. 마루니·루루와 함께한 오늘의 이야기입니다.','',tags].filter(x=>x!==null).join('\n');
+    }
+    const tags=['#청인마루',brand?'#'+brand.replace(/\s/g,''):null,
+      topic?'#'+topic.replace(/\s/g,''):null,region?'#'+region.replace(/\s/g,''):null,
+      field?'#'+field.replace(/\s/g,'')+'시공':null].filter(Boolean).slice(0,5).join(' ');
+    return [headline,'',
+      kind==='information'?'주제 · '+topic:'제품 / 현장 · '+topic,
+      kind==='product'&&spec?'규격 · '+spec:null,region?'시공 지역 · '+region:null,'',...highlights,'',
+      kind==='information'?'집에서 관리할 때는 자재 종류와 현장 상태도 함께 살펴보세요.':
+        '청인마루는 마루와 벽장재를 전문으로 시공합니다. 자재의 색상과 결, 현장 조건과 마감까지 함께 살펴봅니다.','',
+      '시공 상담 · 전시장 방문 예약','카카오채널 · 청인마루','032-210-6268','cheonginmaru.com','',tags].filter(x=>x!==null).join('\n');
   }
   async function copyText(s){
     try{await navigator.clipboard.writeText(s);status('복사했습니다. 내용을 검수한 뒤 게시해 주세요.');}
@@ -472,8 +637,23 @@
     canvas.addEventListener('pointercancel',finish);
   }
   function setupEvents(){
+    q('#ml-type').addEventListener('change',e=>{
+      const type=e.target.value;
+      if(type===project.type)return;
+      if(!confirm('선택한 형식에 맞춰 제목·말풍선·하단 문구를 바꿀까요? 사진과 캐릭터는 그대로 보존됩니다.')){e.target.value=project.type||'product';return;}
+      Workflow.chooseTemplate(project,type);
+      if(type==='everyday'||type==='behind')project.spec='';
+      fields();renderPhotoLibrary();changed();
+      status(Workflow.label(type)+' 형식으로 전환했습니다. 사진·캐릭터는 유지됩니다.');
+    });
     for(const actor of ['maruni','ruru']){
-      q('#ml-card-'+actor).addEventListener('click',()=>openPosePicker(actor));
+      q('#ml-card-'+actor).addEventListener('click',()=>{
+        const a=catalog.find(asset=>asset.actor===actor&&asset.status==='ready');
+        if(!current()[actor]&&a)current()[actor]=a.id;
+        selectedActor=actor;fields();changed();
+        status((actor==='maruni'?'마루니':'루루')+'를 사진 위에 표시했습니다. 손가락으로 위치를 옮겨 보세요.');
+      });
+      q('#ml-open-pose-'+actor).addEventListener('click',()=>openPosePicker(actor));
       q('#ml-size-'+actor).addEventListener('input',e=>{
         transform(current(),actor).scale=Number(e.target.value)/100;selectedActor=actor;changed();
       });
@@ -502,16 +682,95 @@
     for(const [selector,key] of sceneFields)q(selector).addEventListener(selector.includes('photo-y')||selector.includes('ml-side')||selector.includes('ml-maruni')||selector.includes('ml-ruru')?'change':'input',e=>{
       current()[key]=key==='focusY'?Number(e.target.value):e.target.value; if(key==='maruni'||key==='ruru'){selectedActor=key;fields();}changed();
     });
-    q('#ml-quick-photo').addEventListener('click',()=>{q('#ml-photo').click();});
-    q('#ml-photo').addEventListener('change',async e=>{
-      try{if(e.target.files&&e.target.files[0]){if(current().photo&&!confirm('현재 컷의 사진을 새 사진으로 교체할까요?'))return;const target=current(),file=addPhotoBlob(e.target.files[0]);await photoImage(file);target.photo=file;target.photoId=makeId();q('#ml-quick-photo').textContent='사진 교체하기';q('#ml-photo-tip').textContent=(active===0?'썸네일':active+'컷')+' · 사진 등록됨';changed();}}
+    q('#ml-quick-photo').addEventListener('click',()=>q('#ml-photo').click());
+    q('#ml-photo').addEventListener('change',async event=>{
+      const files=[...event.target.files||[]];event.target.value='';
+      try{await importPhotos(files,active);}
       catch(err){status(err.message,true);}
     });
-    q('#ml-copy-photo-next').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}const next=(active+1)%COUNT;if(project.scenes[next].photo&&!confirm('다음 컷의 기존 사진을 교체할까요?'))return;project.scenes[next].photo=current().photo;project.scenes[next].photoId=current().photoId;changed();status((next===0?'썸네일':next+'컷')+'에 사진을 복사했습니다.');});
-    q('#ml-copy-photo-all').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}if(!confirm('현재 사진을 썸네일과 본편 4장에 모두 적용할까요? 기존 사진도 바뀝니다.'))return;for(const item of project.scenes){item.photo=current().photo;item.photoId=current().photoId;}changed();status('5장에 같은 사진을 적용했습니다.');});
-    q('#ml-tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-cut]');if(!b)return;active=Number(b.dataset.cut);closePosePicker();selectedActor='';fields();preview();});
+    q('#ml-clipboard').addEventListener('click',async()=>{
+      try{
+        if(!navigator.clipboard?.read)throw Error('이 Safari에서는 버튼을 통한 붙여넣기가 지원되지 않습니다. 사진 앱에서 복사한 뒤 이 페이지에 붙여넣거나 사진 선택을 사용하세요.');
+        const files=[];
+        for(const item of await navigator.clipboard.read()){
+          const type=item.types.find(t=>/^image\/(png|jpeg|webp)$/.test(t));
+          if(type){
+            const blob=await item.getType(type);
+            files.push(new File([blob],'붙여넣은사진-'+(files.length+1)+'.'+type.split('/')[1],{type}));
+          }
+        }
+        if(!files.length)throw Error('복사한 이미지가 없습니다. 사진 앱에서 이미지를 복사해 주세요.');
+        await importPhotos(files,active);
+      }catch(err){status(err.message,true);}
+    });
+    document.addEventListener('paste',event=>{
+      if(!root.open||!initializeStarted)return;
+      const target=event.target;
+      if(target instanceof Element&&target.closest('input,textarea,select,[contenteditable=true]'))return;
+      const files=[...(event.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/'));
+      if(!files.length&&event.clipboardData?.items){
+        for(const item of event.clipboardData.items){
+          if(item.kind==='file'&&item.type.startsWith('image/')){const f=item.getAsFile();if(f)files.push(f);}
+        }
+      }
+      if(!files.length)return;
+      event.preventDefault();
+      importPhotos(files,active).catch(err=>status(err.message,true));
+    });
+    q('#ml-photo-grid').addEventListener('click',event=>{
+      const remove=event.target.closest('button[data-remove-photo-id]');
+      if(remove){removeLibraryPhoto(remove.dataset.removePhotoId);return;}
+      const button=event.target.closest('button[data-photo-id]');
+      if(button)showPhotoAt(button.dataset.photoId);
+    });
+    q('#ml-photo-grid').addEventListener('dragstart',event=>{
+      const button=event.target.closest('button[data-photo-id]');
+      if(!button||!event.dataTransfer)return;
+      event.dataTransfer.effectAllowed='copy';
+      event.dataTransfer.setData('application/x-cheonginmaru-photo-id',button.dataset.photoId);
+      event.dataTransfer.setData('text/plain',button.dataset.photoId);
+    });
+    q('#ml-library-prev').addEventListener('click',()=>{libraryPage--;renderPhotoLibrary();});
+    q('#ml-library-next').addEventListener('click',()=>{libraryPage++;renderPhotoLibrary();});
+    for(const selector of ['#ml-drop-zone','#ml-canvas','#ml-tabs']){
+      const zone=q(selector);
+      zone.addEventListener('dragenter',event=>{event.preventDefault();zone.classList.add('ml-drag-active');});
+      zone.addEventListener('dragover',event=>{event.preventDefault();event.dataTransfer.dropEffect='copy';zone.classList.add('ml-drag-active');});
+      zone.addEventListener('dragleave',event=>{if(!zone.contains(event.relatedTarget))zone.classList.remove('ml-drag-active');});
+      zone.addEventListener('drop',async event=>{
+        event.preventDefault();zone.classList.remove('ml-drag-active');
+        const slotButton=event.target.closest('button[data-cut]');
+        const targetSlot=slotButton?Number(slotButton.dataset.cut):active;
+        const photos=[...(event.dataTransfer?.files||[])].filter(f=>f.type.startsWith('image/')||/\.(png|jpe?g|webp|heic|heif)$/i.test(f.name));
+        try{
+          if(photos.length)await importPhotos(photos,targetSlot);
+          else{
+            const id=event.dataTransfer?.getData('application/x-cheonginmaru-photo-id')||event.dataTransfer?.getData('text/plain');
+            if(id&&photoRows().some(r=>r.id===id))showPhotoAt(id,targetSlot);
+          }
+        }catch(err){status(err.message,true);}
+      });
+    }
+    q('#ml-photo-left').addEventListener('click',()=>changePhotoOrder(-1));
+    q('#ml-photo-right').addEventListener('click',()=>changePhotoOrder(1));
+    q('#ml-scene-up').addEventListener('click',()=>moveFullScene(-1));
+    q('#ml-scene-down').addEventListener('click',()=>moveFullScene(1));
+    q('#ml-copy-photo-next').addEventListener('click',()=>{
+      if(!current().photo){status('현재 컷에 사진을 먼저 넣어 주세요.',true);return;}
+      const next=(active+1)%COUNT;
+      if(project.scenes[next].photo&&!confirm('다음 컷의 사진을 바꿀까요? 기존 사진은 보관함에 남습니다.'))return;
+      Workflow.changePhoto(project.scenes[next],current().photo,current().photoId);
+      active=next;fields();renderPhotoLibrary();changed();status('다음 컷에 사진을 복사했습니다.');
+    });
+    q('#ml-copy-photo-all').addEventListener('click',()=>{
+      if(!current().photo){status('현재 컷에 사진을 먼저 넣어 주세요.',true);return;}
+      if(!confirm('현재 사진을 썸네일과 본편 4컷 모두에 적용할까요?'))return;
+      for(const item of project.scenes)Workflow.changePhoto(item,current().photo,current().photoId);
+      fields();renderPhotoLibrary();changed();status('5장에 같은 사진을 적용했습니다.');
+    });
+    q('#ml-tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-cut]');if(!b)return;active=Number(b.dataset.cut);closePosePicker();selectedActor='';fields();renderPhotoLibrary();preview();});
     q('#ml-save').addEventListener('click',()=>save().catch(()=>{}));
-    q('#ml-new').addEventListener('click',async()=>{try{await save();project=makeProject();persistedPhotos=new Set();active=0;fields();await save();preview();}catch(e){status(e.message,true);}});
+    q('#ml-new').addEventListener('click',async()=>{try{await save();project=makeProject();persistedPhotos=new Set();libraryBlobs=new Map();libraryPage=0;clearGalleryThumbs();active=0;fields();renderPhotoLibrary();await save();preview();}catch(e){status(e.message,true);}});
     q('#ml-open').addEventListener('click',()=>openProject(q('#ml-projects').value).catch(e=>status(e.message,true)));
     q('#ml-export-one').addEventListener('click',()=>withBusy(async()=>{
       const b=await makePng(active),n=active===0?'00_썸네일':String(active).padStart(2,'0')+'_컷';
@@ -537,7 +796,14 @@
       }else download(b,f.name);
     }));
     q('#ml-copy-caption').addEventListener('click',()=>copyText(caption()));
-    q('#ml-copy-comment').addEventListener('click',()=>copyText((project.product||'이 마감재')+'을 어느 공간에 적용해 보고 싶으신가요?'));
+    q('#ml-copy-comment').addEventListener('click',()=>{
+      const kind=Workflow.get(project.type).channel;
+      const msg=kind==='daily'?'오늘 하루 가장 기억에 남은 순간은 무엇인가요?':
+        kind==='work'?'사진 속 현장에서 어떤 부분이 가장 눈에 띄시나요?':
+        kind==='information'?'집에서 가장 궁금했던 관리 방법은 무엇인가요?':
+        (project.product||'이 마감재')+'을 어느 공간에 적용해 보고 싶으신가요?';
+      copyText(msg);
+    });
   }
   async function init(){
     if(initializeStarted)return;
@@ -552,7 +818,7 @@
       const projects=await listProjects();
       if(projects.length){await openProject(projects[0].id);}
       else await save();
-      fields();await refreshProjects();preview();
+      fields();renderPhotoLibrary();await refreshProjects();preview();
       status('마루니·루루 4컷 고정 포맷 준비 완료. 사진과 문구만 바꾸세요.');
     } catch(e){status('편집기를 준비하지 못했습니다: '+e.message,true);}
   }
