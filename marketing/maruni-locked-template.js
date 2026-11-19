@@ -27,6 +27,18 @@
     '<label>현재 장 제목(위치·크기 고정)<textarea id="ml-title" maxlength="44" rows="2"></textarea></label>',
     '<label id="ml-bubble-wrap">현재 장 짧은 말풍선(1개만)<input id="ml-bubble" maxlength="34"></label>',
     '<label>하단 핵심 문구(한 줄)<input id="ml-foot" maxlength="34"></label>',
+    '<div class="ml-actor-selectors"><strong>공식 캐릭터 · 그림을 눌러 선택</strong><p class="ml-note">아이패드에서 이름 대신 그림으로 찾으세요. 현재 장만 바뀝니다.</p>',
+    '<div class="ml-actor-cards"><button type="button" id="ml-card-maruni" class="ml-actor-card"><img id="ml-img-maruni" alt="" loading="lazy"><span id="ml-label-maruni">마루니 · 포즈 선택</span></button>',
+    '<button type="button" id="ml-card-ruru" class="ml-actor-card"><img id="ml-img-ruru" alt="" loading="lazy"><span id="ml-label-ruru">루루 · 포즈 선택</span></button></div>',
+    '<div id="ml-picker" class="ml-picker" hidden><div class="ml-actions"><strong id="ml-picker-name">포즈 선택</strong><button type="button" id="ml-picker-close">닫기</button></div>',
+    '<label>포즈 검색<input id="ml-pose-search" type="search" placeholder="인사 · 줄자 · 설명 · 앉기"></label>',
+    '<div id="ml-pose-grid" class="ml-pose-grid"></div>',
+    '<div class="ml-actions ml-pose-pager"><button type="button" id="ml-pose-prev">이전</button><output id="ml-pose-page">1 / 1</output><button type="button" id="ml-pose-next">다음</button>',
+    '<button type="button" id="ml-pose-hide">이 컷에서 숨기기</button></div></div></div>',
+    '<div class="ml-minirow"><label>마루니 크기<input id="ml-size-maruni" type="range" min="65" max="130" value="100"></label>',
+    '<label>루루 크기<input id="ml-size-ruru" type="range" min="65" max="130" value="100"></label></div>',
+    '<button id="ml-actor-reset" type="button">캐릭터 위치·크기 초기화</button>',
+    '<p class="ml-note">캐릭터를 손가락으로 끌어 이동할 수 있습니다. 제목·로고·말풍선은 고정입니다.</p>',
     '<div class="ml-minirow"><label>마루니 공식 포즈<select id="ml-maruni"><option value="">없음</option></select></label>',
     '<label>루루 공식 포즈<select id="ml-ruru"><option value="">없음</option></select></label></div>',
     '<div class="ml-minirow"><label>캐릭터 배치 방향<select id="ml-side"><option value="right">오른쪽 아래</option><option value="left">왼쪽 아래</option></select></label>',
@@ -53,7 +65,8 @@
   }
   let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false, persistedPhotos=new Set();
   const canvas=q('#ml-canvas'), ctx=canvas.getContext('2d'), imagePromises=new Map(), blobCache=new Map();
-  let paintFrame=0, painting=false;
+  let paintFrame=0, painting=false, pickerActor='', pickerPage=0, selectedActor='', drag=null;
+  let actorBoxes=new Map();
   function status(text, bad=false){q('#ml-status').textContent=text;q('#ml-status').dataset.error=String(bad);}
   function current(){return project.scenes[active];}
   function db(){
@@ -240,11 +253,31 @@
     ctx.beginPath();ctx.moveTo(x+175,y+h);ctx.lineTo(x+211,y+h+34);ctx.lineTo(x+235,y+h);ctx.closePath();ctx.fillStyle='rgba(255,252,246,.96)';ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=3;ctx.stroke();
     textBlock(text,x+w/2,y+43,w-90,43,51,2,ink,'center');
   }
+  function actorBox(scene,index,actor){
+    const left=scene.side==='left',baseY=index===0?865:835;
+    const size=(actor==='maruni'?315:270);
+    const baseX=actor==='maruni'?(left?62:520):(left?365:787);
+    const offsets=scene.actorTransform?.[actor]||{};
+    const scale=Math.max(.65,Math.min(1.3,Number(offsets.scale)||1));
+    const width=size*scale;
+    return {x:Math.max(12,Math.min(W-width-12,baseX+(Number(offsets.dx)||0))),
+            y:Math.max(650,Math.min(1192-width,baseY+(actor==='ruru'?44:0)+(Number(offsets.dy)||0))),
+            w:width,h:width};
+  }
+  function transform(scene,actor){
+    scene.actorTransform=scene.actorTransform||{};
+    scene.actorTransform[actor]=scene.actorTransform[actor]||{dx:0,dy:0,scale:1};
+    return scene.actorTransform[actor];
+  }
   function drawActors(scene,index,images){
-    const left=scene.side==='left', y=index===0?865:835, sizeA=315, sizeB=270;
-    const aX=left?62:520,bX=left?365:787;
-    if(images.maruni)ctx.drawImage(images.maruni,aX,y,sizeA,sizeA);
-    if(images.ruru)ctx.drawImage(images.ruru,bX,y+44,sizeB,sizeB);
+    const boxes=new Map();
+    for(const actor of ['maruni','ruru']){
+      if(!images[actor])continue;
+      const box=actorBox(scene,index,actor);
+      ctx.drawImage(images[actor],box.x,box.y,box.w,box.h);
+      boxes.set(actor,box);
+    }
+    if(canvas.width<1080){actorBoxes=boxes;}  // 고화질 출력에서는 편집 중 hit 영역 변경 금지
   }
   function pillCaption(text,y){
     rounded(55,y,970,98,46,'rgba(255,252,246,.94)','#c8b69b');
@@ -288,6 +321,10 @@
     }
     drawActors(scene,index,{maruni,ruru});
     pillCaption(scene.foot,1204);
+    if(canvas.width<1080&&selectedActor&&actorBoxes.has(selectedActor)){
+      const box=actorBoxes.get(selectedActor);ctx.save();ctx.strokeStyle='rgba(64,94,43,.85)';
+      ctx.lineWidth=3;ctx.setLineDash([10,9]);ctx.strokeRect(box.x-5,box.y-5,box.w+10,box.h+10);ctx.restore();
+    }
     return true;
   }
   function queuePaint(){
@@ -322,6 +359,13 @@
     q('#ml-photo').value='';
     q('#ml-bubble-wrap').classList.toggle('ml-hidden',active===0);
     q('#ml-maruni').value=s.maruni||'';q('#ml-ruru').value=s.ruru||'';
+    for(const actor of ['maruni','ruru']){
+      const asset=catalog.find(a=>a.id===s[actor]);
+      q('#ml-img-'+actor).src=asset?asset.path:'';
+      q('#ml-img-'+actor).alt=asset?asset.label:'표시 안 함';
+      q('#ml-label-'+actor).textContent=(actor==='maruni'?'마루니':'루루')+' · '+(asset?asset.label:'표시 안 함');
+      q('#ml-size-'+actor).value=Math.round(100*(s.actorTransform?.[actor]?.scale||1));
+    }
     q('#ml-tabs').querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-pressed',String(active===i)));
   }
   function filename(s){return String(s||'현장이야기').replace(/[\\/:*?"<>|\u0000-\u001f]/g,'').slice(0,42)||'현장이야기';}
@@ -361,12 +405,94 @@
       for(const asset of catalog.filter(a=>a.actor===actor))sel.add(new Option(asset.label,asset.id));
     }
   }
+  function poseOptions(){
+    const text=q('#ml-pose-search').value.trim().toLowerCase();
+    return catalog.filter(a=>a.actor===pickerActor&&[a.label,...(a.tags||[])].join(' ').toLowerCase().includes(text));
+  }
+  function renderPosePicker(){
+    const list=poseOptions(),pages=Math.max(1,Math.ceil(list.length/6));
+    pickerPage=Math.max(0,Math.min(pickerPage,pages-1));
+    const grid=q('#ml-pose-grid');grid.replaceChildren();
+    for(const asset of list.slice(pickerPage*6,pickerPage*6+6)){
+      const button=document.createElement('button');button.type='button';button.className='ml-pose-choice';
+      button.dataset.pose=asset.id;button.setAttribute('aria-pressed',String(current()[pickerActor]===asset.id));
+      const image=document.createElement('img');image.src=asset.path;image.alt='';image.loading='lazy';image.decoding='async';image.width=104;image.height=104;
+      const label=document.createElement('span');label.textContent=asset.label;
+      button.append(image,label);grid.append(button);
+    }
+    if(!grid.children.length){const msg=document.createElement('p');msg.className='ml-note';msg.textContent='검색된 포즈가 없습니다.';grid.append(msg);}
+    q('#ml-pose-page').textContent=(pickerPage+1)+' / '+pages;
+    q('#ml-pose-prev').disabled=pickerPage===0;
+    q('#ml-pose-next').disabled=pickerPage>=pages-1;
+    q('#ml-picker-name').textContent=pickerActor==='maruni'?'마루니 30종 포즈':'루루 30종 포즈';
+  }
+  function openPosePicker(actor){
+    pickerActor=actor;selectedActor=actor;pickerPage=0;q('#ml-pose-search').value='';
+    q('#ml-picker').hidden=false;renderPosePicker();preview();
+  }
+  function closePosePicker(){q('#ml-picker').hidden=true;pickerActor='';}
+  function listenToCanvasTouch(){
+    const point=e=>{
+      const box=canvas.getBoundingClientRect();
+      return {x:(e.clientX-box.left)*W/box.width,y:(e.clientY-box.top)*H/box.height};
+    };
+    canvas.addEventListener('pointerdown',e=>{
+      if(busy||!current().photo)return;
+      const p=point(e);
+      for(const actor of ['ruru','maruni']){
+        const b=actorBoxes.get(actor);
+        if(b&&p.x>=b.x&&p.x<=b.x+b.w&&p.y>=b.y&&p.y<=b.y+b.h){
+          const t=transform(current(),actor);selectedActor=actor;
+          drag={pointer:e.pointerId,actor,x:p.x,y:p.y,dx:t.dx||0,dy:t.dy||0};
+          if(canvas.setPointerCapture)canvas.setPointerCapture(e.pointerId);
+          preview();e.preventDefault();break;
+        }
+      }
+    });
+    canvas.addEventListener('pointermove',e=>{
+      if(!drag||e.pointerId!==drag.pointer||busy)return;
+      const p=point(e),t=transform(current(),drag.actor);
+      t.dx=Math.max(-900,Math.min(900,drag.dx+p.x-drag.x));
+      t.dy=Math.max(-500,Math.min(500,drag.dy+p.y-drag.y));
+      preview();e.preventDefault();
+    });
+    const finish=e=>{
+      if(!drag||e.pointerId!==drag.pointer)return;
+      drag=null;changed();status('캐릭터 위치를 저장합니다.');
+    };
+    canvas.addEventListener('pointerup',finish);
+    canvas.addEventListener('pointercancel',finish);
+  }
   function setupEvents(){
+    for(const actor of ['maruni','ruru']){
+      q('#ml-card-'+actor).addEventListener('click',()=>openPosePicker(actor));
+      q('#ml-size-'+actor).addEventListener('input',e=>{
+        transform(current(),actor).scale=Number(e.target.value)/100;selectedActor=actor;changed();
+      });
+    }
+    q('#ml-picker-close').addEventListener('click',closePosePicker);
+    q('#ml-pose-prev').addEventListener('click',()=>{pickerPage--;renderPosePicker();});
+    q('#ml-pose-next').addEventListener('click',()=>{pickerPage++;renderPosePicker();});
+    q('#ml-pose-search').addEventListener('input',()=>{pickerPage=0;renderPosePicker();});
+    q('#ml-pose-grid').addEventListener('click',e=>{
+      const button=e.target.closest('button[data-pose]');if(!button||!pickerActor)return;
+      const actor=pickerActor;current()[actor]=button.dataset.pose;
+      selectedActor=actor;q('#ml-'+actor).value=button.dataset.pose;
+      closePosePicker();fields();changed();status((actor==='ruru'?'루루':'마루니')+' 공식 포즈를 선택했습니다.');
+    });
+    q('#ml-pose-hide').addEventListener('click',()=>{
+      if(!pickerActor)return;current()[pickerActor]='';closePosePicker();fields();changed();
+    });
+    q('#ml-actor-reset').addEventListener('click',()=>{
+      if(!confirm('이 컷의 캐릭터 위치와 크기를 기본값으로 돌릴까요?'))return;
+      current().actorTransform={};fields();changed();
+    });
+    listenToCanvasTouch();
     const fixed=[['#ml-name','name'],['#ml-product','product'],['#ml-series','series'],['#ml-field','field'],['#ml-region','region'],['#ml-spec','spec']];
     for(const [selector,key] of fixed)q(selector).addEventListener(selector==='#ml-field'?'change':'input',e=>{project[key]=e.target.value;changed();});
     const sceneFields=[['#ml-title','title'],['#ml-bubble','bubble'],['#ml-foot','foot'],['#ml-maruni','maruni'],['#ml-ruru','ruru'],['#ml-side','side'],['#ml-photo-y','focusY']];
     for(const [selector,key] of sceneFields)q(selector).addEventListener(selector.includes('photo-y')||selector.includes('ml-side')||selector.includes('ml-maruni')||selector.includes('ml-ruru')?'change':'input',e=>{
-      current()[key]=key==='focusY'?Number(e.target.value):e.target.value;changed();
+      current()[key]=key==='focusY'?Number(e.target.value):e.target.value; if(key==='maruni'||key==='ruru'){selectedActor=key;fields();}changed();
     });
     q('#ml-photo').addEventListener('change',async e=>{
       try{if(e.target.files&&e.target.files[0]){if(current().photo&&!confirm('현재 컷의 사진을 새 사진으로 교체할까요?'))return;const file=addPhotoBlob(e.target.files[0]);await photoImage(file);current().photo=file;current().photoId=makeId();changed();}}
@@ -374,7 +500,7 @@
     });
     q('#ml-copy-photo-next').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}const next=(active+1)%COUNT;if(project.scenes[next].photo&&!confirm('다음 컷의 기존 사진을 교체할까요?'))return;project.scenes[next].photo=current().photo;project.scenes[next].photoId=current().photoId;changed();status((next===0?'썸네일':next+'컷')+'에 사진을 복사했습니다.');});
     q('#ml-copy-photo-all').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}if(!confirm('현재 사진을 썸네일과 본편 4장에 모두 적용할까요? 기존 사진도 바뀝니다.'))return;for(const item of project.scenes){item.photo=current().photo;item.photoId=current().photoId;}changed();status('5장에 같은 사진을 적용했습니다.');});
-    q('#ml-tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-cut]');if(!b)return;active=Number(b.dataset.cut);fields();preview();});
+    q('#ml-tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-cut]');if(!b)return;active=Number(b.dataset.cut);closePosePicker();selectedActor='';fields();preview();});
     q('#ml-save').addEventListener('click',()=>save().catch(()=>{}));
     q('#ml-new').addEventListener('click',async()=>{try{await save();project=makeProject();persistedPhotos=new Set();active=0;fields();await save();preview();}catch(e){status(e.message,true);}});
     q('#ml-open').addEventListener('click',()=>openProject(q('#ml-projects').value).catch(e=>status(e.message,true)));
