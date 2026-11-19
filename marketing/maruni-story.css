@@ -16,7 +16,7 @@
 #maruni-story .mr-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;margin-top:18px;align-items:start}
 #maruni-story .mr-stage{min-width:0;position:sticky;top:12px}
 #maruni-story .mr-canvas-wrap{background:#eae8e0;border-radius:12px;display:flex;justify-content:center;padding:12px}
-#maruni-story canvas{width:auto;max-width:100%;height:auto;max-height:55vh;display:block;aspect-ratio:4/5;touch-action:none;user-select:none;border-radius:3px}
+#maruni-story canvas{width:auto;max-width:100%;height:auto;max-height:55vh;display:block;aspect-ratio:4/5;touch-action:pan-y pinch-zoom;user-select:none;border-radius:3px}
 #maruni-story .mr-scenes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:10px}
 #maruni-story .mr-scenes button{padding:5px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;background:#fff}
 #maruni-story .mr-scenes button[aria-pressed=true]{outline:2px solid var(--mr-accent);color:var(--mr-accent);background:#eef3eb}
@@ -44,3 +44,10 @@
 @media(max-width:950px){#maruni-story .mr-grid{grid-template-columns:minmax(0,1fr) 265px}#maruni-story .mr-body{padding:0 12px 14px}}
 @media(max-width:700px){#maruni-story .mr-grid{grid-template-columns:1fr}#maruni-story .mr-stage{position:relative;top:auto}#maruni-story canvas{max-height:55vh}#maruni-story .mr-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#maruni-story .mr-controls fieldset:last-child{grid-column:1/-1}#maruni-story .mr-projectbar select{max-width:100%;flex:1}#maruni-story summary{font-size:16px}#maruni-story .mr-assets img{height:60px}}
 @media(max-width:430px){#maruni-story .mr-controls{grid-template-columns:1fr}#maruni-story .mr-controls fieldset:last-child{grid-column:auto}}
+
+/* 아이패드 스크롤과 캐릭터 이동을 명시적으로 전환합니다. 기본은 스크롤. */
+#maruni-story #mr-canvas[data-touch-edit="true"]{touch-action:none}
+#maruni-story #mr-touch-edit{min-width:190px;white-space:normal;word-break:keep-all}
+#maruni-story #mr-touch-edit[aria-pressed="true"]{background:#365e48;color:#fff;border-color:#365e48}
+#maruni-story #mr-touch-help{flex-basis:100%;font-size:12px;color:#657165;line-height:1.55}
+#maruni-story .mr-canvas-wrap{min-width:0;max-width:100%;overflow:visible;touch-action:pan-y}
