@@ -65,7 +65,7 @@
   }
   let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false, persistedPhotos=new Set();
   const canvas=q('#ml-canvas'), ctx=canvas.getContext('2d'), imagePromises=new Map(), blobCache=new Map();
-  let paintFrame=0, painting=false, pickerActor='', pickerPage=0, selectedActor='', drag=null;
+  let paintFrame=0, painting=false, pickerActor='', pickerPage=0, selectedActor='', drag=null, initializeStarted=false;
   let actorBoxes=new Map();
   function status(text, bad=false){q('#ml-status').textContent=text;q('#ml-status').dataset.error=String(bad);}
   function current(){return project.scenes[active];}
@@ -531,6 +531,8 @@
     q('#ml-copy-comment').addEventListener('click',()=>copyText((project.product||'이 마감재')+'을 어느 공간에 적용해 보고 싶으신가요?'));
   }
   async function init(){
+    if(initializeStarted)return;
+    initializeStarted=true;
     for(let i=0;i<COUNT;i++){
       const b=document.createElement('button');b.type='button';b.dataset.cut=i;
       b.textContent=i===0?'표지':i+'컷';q('#ml-tabs').append(b);
@@ -545,5 +547,6 @@
       status('마루니·루루 4컷 고정 포맷 준비 완료. 사진과 문구만 바꾸세요.');
     } catch(e){status('편집기를 준비하지 못했습니다: '+e.message,true);}
   }
-  init();
+  root.addEventListener('toggle',()=>{if(root.open)init();});
+  if(root.open)init();
 })();
