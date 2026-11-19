@@ -255,7 +255,11 @@
       const cap=document.createElement('span');
       const used=project.scenes.map((scene,i)=>scene.photoId===row.id?(i===0?'표지':i+'컷'):null).filter(Boolean);
       cap.textContent=(row.name||'사진').slice(0,18)+(used.length?' · '+used.join(','):' · 미사용');
-      btn.append(image,cap);host.append(btn);images.push([image,row]);
+      btn.append(image,cap);
+      const item=document.createElement('div');item.className='ml-photo-item';item.append(btn);
+      const remove=document.createElement('button');remove.type='button';remove.className='ml-photo-remove';
+      remove.dataset.removePhotoId=row.id;remove.textContent='보관함에서 제외';remove.title='이 사진을 삭제합니다';
+      item.append(remove);host.append(item);images.push([image,row]);
     }
     if(!rows.length){const p=document.createElement('p');p.className='ml-note';p.textContent='사진을 여러 장 넣으면 여기에 작은 미리보기가 생깁니다.';host.append(p);}
     fillLibraryThumbs(images).catch(e=>status(e.message,true));
@@ -272,6 +276,20 @@
     if(target.photo&&target.photoId!==id&&!confirm((slot===0?'표지':slot+'컷')+'의 사진을 바꿀까요? 기존 사진은 보관함에 남습니다.'))return;
     Workflow.changePhoto(target,blob,id);
     active=slot;fields();renderPhotoLibrary();changed();status((slot===0?'표지':slot+'컷')+'에 사진을 적용했습니다.');
+  }
+  function removeLibraryPhoto(id){
+    const row=photoRows().find(item=>item.id===id);
+    if(!row)return;
+    const uses=project.scenes.map((s,i)=>s.photoId===id?(i===0?'표지':i+'컷'):null).filter(Boolean);
+    const prompt=uses.length?
+      (row.name+' 사진을 보관함과 '+uses.join(', ')+'에서도 제거할까요? 사진 없는 컷은 다시 채울 수 있습니다.'):
+      (row.name+' 사진을 보관함에서 제외할까요?');
+    if(!confirm(prompt))return;
+    for(const s of project.scenes)if(s.photoId===id){s.photo=null;s.photoId=null;}
+    project.library=photoRows().filter(item=>item.id!==id);
+    libraryBlobs.delete(id);libraryThumbs.delete(id);
+    libraryPage=Math.min(libraryPage,Math.ceil(project.library.length/6)-1);
+    fields();renderPhotoLibrary();changed();status('사진을 보관함에서 제외했습니다. 저장된 다른 작업에는 영향이 없습니다.');
   }
   async function importPhotos(files,start=active){
     if(uploadInProgress)return;
@@ -700,6 +718,8 @@
       importPhotos(files,active).catch(err=>status(err.message,true));
     });
     q('#ml-photo-grid').addEventListener('click',event=>{
+      const remove=event.target.closest('button[data-remove-photo-id]');
+      if(remove){removeLibraryPhoto(remove.dataset.removePhotoId);return;}
       const button=event.target.closest('button[data-photo-id]');
       if(button)showPhotoAt(button.dataset.photoId);
     });
