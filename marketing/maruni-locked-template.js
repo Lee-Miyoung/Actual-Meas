@@ -524,14 +524,26 @@
     finally{busy=false;canvas.width=540;canvas.height=675;q('#ml-export-one').disabled=q('#ml-export-all').disabled=q('#ml-share').disabled=false;preview();}
   }
   function caption(){
-    const s=project.scenes;
-    const region=String(project.region||'').trim(), field=String(project.field||'').trim(), product=String(project.product||'').trim(), spec=String(project.spec||'').trim();
-    const brand=product.split(/\s+/)[0]||'', model=product.replace(/\s/g,'');
-    const tags=['#청인마루',brand?'#'+brand:null,model?'#'+model:null,region?'#'+region.replace(/\s/g,''):null,field?'#'+field+'시공':null].filter(Boolean).join(' ');
-    return [s[0].title.replace(/\n/g,' '),'','제품 · '+product,spec?'규격 · '+spec:null,region?'현장 · '+region:null,'',
-      s[1].foot,s[2].foot,s[3].foot,s[4].foot,'',
-      '청인마루는 마루와 벽장재를 전문으로 시공합니다. 자재의 색상과 결, 현장 조건, 마감까지 함께 살펴봅니다.','',
-      '시공 상담 · 전시장 방문 예약','카카오채널 · 청인마루','032-210-6268','cheonginmaru.com','',tags].filter(v=>v!==null).join('\n');
+    const ss=project.scenes;
+    const kind=Workflow.get(project.type).channel;
+    const region=String(project.region||'').trim(),field=String(project.field||'').trim(),topic=String(project.product||'').trim(),spec=String(project.spec||'').trim();
+    const brand=topic.split(/\s+/)[0]||'';
+    const headline=(ss[0].title||'').replace(/\n/g,' ').trim();
+    const highlights=ss.slice(1).map(s=>s.foot).filter(Boolean);
+    if(kind==='daily'){
+      const tags=['#청인마루','#마루니루루',project.type==='behind'?'#현장비하인드':'#소소한일상',region?'#'+region.replace(/\s/g,''):null,'#사는이야기'].filter(Boolean).slice(0,5).join(' ');
+      return [headline,'',topic?('오늘의 이야기 · '+topic):null,region?('지역 · '+region):null,'',...highlights,'',
+      '별것 아닌 하루도 기록해 두면 오래 남더라고요. 마루니·루루와 함께한 오늘의 이야기입니다.','',tags].filter(x=>x!==null).join('\n');
+    }
+    const tags=['#청인마루',brand?'#'+brand.replace(/\s/g,''):null,
+      topic?'#'+topic.replace(/\s/g,''):null,region?'#'+region.replace(/\s/g,''):null,
+      field?'#'+field.replace(/\s/g,'')+'시공':null].filter(Boolean).slice(0,5).join(' ');
+    return [headline,'',
+      kind==='information'?'주제 · '+topic:'제품 / 현장 · '+topic,
+      kind==='product'&&spec?'규격 · '+spec:null,region?'시공 지역 · '+region:null,'',...highlights,'',
+      kind==='information'?'집에서 관리할 때는 자재 종류와 현장 상태도 함께 살펴보세요.':
+        '청인마루는 마루와 벽장재를 전문으로 시공합니다. 자재의 색상과 결, 현장 조건과 마감까지 함께 살펴봅니다.','',
+      '시공 상담 · 전시장 방문 예약','카카오채널 · 청인마루','032-210-6268','cheonginmaru.com','',tags].filter(x=>x!==null).join('\n');
   }
   async function copyText(s){
     try{await navigator.clipboard.writeText(s);status('복사했습니다. 내용을 검수한 뒤 게시해 주세요.');}
@@ -764,7 +776,14 @@
       }else download(b,f.name);
     }));
     q('#ml-copy-caption').addEventListener('click',()=>copyText(caption()));
-    q('#ml-copy-comment').addEventListener('click',()=>copyText((project.product||'이 마감재')+'을 어느 공간에 적용해 보고 싶으신가요?'));
+    q('#ml-copy-comment').addEventListener('click',()=>{
+      const kind=Workflow.get(project.type).channel;
+      const msg=kind==='daily'?'오늘 하루 가장 기억에 남은 순간은 무엇인가요?':
+        kind==='work'?'사진 속 현장에서 어떤 부분이 가장 눈에 띄시나요?':
+        kind==='information'?'집에서 가장 궁금했던 관리 방법은 무엇인가요?':
+        (project.product||'이 마감재')+'을 어느 공간에 적용해 보고 싶으신가요?';
+      copyText(msg);
+    });
   }
   async function init(){
     if(initializeStarted)return;
