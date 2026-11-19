@@ -77,14 +77,23 @@
   function changed() { revision++; project.updatedAt = new Date().toISOString(); clearTimeout(timer); status('변경됨 · 자동 저장 대기'); timer = setTimeout(() => save().catch(() => {}), 550); schedulePaint(); }
   function dispose(m) { if (m.image instanceof HTMLCanvasElement) m.image.width = m.image.height = 1; else m.image.src = ''; if (m.url) URL.revokeObjectURL(m.url); }
   function release() { for (const m of cache.values()) dispose(m); cache.clear(); thumbs.clear(); }
-  async function decode(blob, full = false) {
+  async function decode(blob, full = false, previewLimit = 2048) {
     if (!(blob instanceof Blob) || !['image/png', 'image/jpeg', 'image/webp'].includes(blob.type) || !blob.size || blob.size > 25 * 1024 * 1024) throw Error('PNG·JPEG·WebP 이미지 25MB 이하를 선택하세요. HEIC 사진은 JPEG로 변환해 주세요.');
     const url = URL.createObjectURL(blob), image = new Image();
-    try { await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(Error('이미지를 열 수 없습니다.')); image.src = url; }); if (image.width * image.height > 48000000 || Math.max(image.width, image.height) > 12000) throw Error('4800만 화소·한 변 12000px 이하 사진을 선택하세요.'); if (!full && Math.max(image.width, image.height) > 2048) { const scale = 2048 / Math.max(image.width, image.height), preview = document.createElement('canvas'); preview.width = Math.round(image.width * scale); preview.height = Math.round(image.height * scale); preview.getContext('2d').drawImage(image, 0, 0, preview.width, preview.height); image.src = ''; URL.revokeObjectURL(url); return { image: preview, url: null }; } return { image, url }; }
+    try { await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(Error('이미지를 열 수 없습니다.')); image.src = url; }); if (image.width * image.height > 48000000 || Math.max(image.width, image.height) > 12000) throw Error('4800만 화소·한 변 12000px 이하 사진을 선택하세요.'); if (!full && Math.max(image.width, image.height) > previewLimit) { const scale = previewLimit / Math.max(image.width, image.height), preview = document.createElement('canvas'); preview.width = Math.round(image.width * scale); preview.height = Math.round(image.height * scale); preview.getContext('2d').drawImage(image, 0, 0, preview.width, preview.height); image.src = ''; URL.revokeObjectURL(url); return { image: preview, url: null }; } return { image, url }; }
     catch (e) { image.src = ''; URL.revokeObjectURL(url); throw e; }
   }
-  function cacheImage(mid, decoded) { cache.set(mid, decoded); while (cache.size > 4) { const oldest = cache.keys().next().value; dispose(cache.get(oldest)); cache.delete(oldest); } }
-  async function image(mid) { if (cache.has(mid)) { const hit = cache.get(mid); cache.delete(mid); cache.set(mid, hit); return hit.image; } const m = media.get(mid); if (!m) throw Error('원본 이미지가 없습니다. 프로젝트를 다시 불러와 주세요.'); const decoded = await decode(m.blob); m.dimensions = { width: decoded.image.width, height: decoded.image.height }; cacheImage(mid, decoded); return decoded.image; }
+  function cacheImage(mid, decoded) {
+    cache.set(mid, decoded);
+    // 같은 장면의 캐릭터 5~6개를 고를 때 캐시 4개가 계속 지워져 매 프레임 다시 디코딩되는 현상 방지.
+    const important=new Set(scene().layers.filter(l=>l.type==='actor').map(l=>l.mediaId));
+    if(scene().photoId)important.add(scene().photoId);
+    while(cache.size>8){
+      const key=[...cache.keys()].find(id=>!important.has(id))||cache.keys().next().value;
+      dispose(cache.get(key));cache.delete(key);
+    }
+  }
+  async function image(mid) { if (cache.has(mid)) { const hit = cache.get(mid); cache.delete(mid); cache.set(mid, hit); return hit.image; } const m = media.get(mid); if (!m) throw Error('원본 이미지가 없습니다. 프로젝트를 다시 불러와 주세요.'); const actorPreview=scene().layers.some(l=>l.type==='actor'&&l.mediaId===mid); const decoded = await decode(m.blob,false,actorPreview?900:2048); m.dimensions = { width: decoded.image.width, height: decoded.image.height }; cacheImage(mid, decoded); return decoded.image; }
   async function addMedia(blob, name) {
     const total = [...media.values()].reduce((n, m) => n + m.blob.size, 0); if (total + blob.size > 240 * 1024 * 1024) throw Error('프로젝트 이미지 합계는 240MB까지입니다. 사진 용량을 줄여 주세요.');
     const decoded = await decode(blob), mid = C.id(); media.set(mid, { id: mid, name: name.slice(0, 250), blob, dimensions: { width: decoded.image.width, height: decoded.image.height } }); cacheImage(mid, decoded); return mid;
