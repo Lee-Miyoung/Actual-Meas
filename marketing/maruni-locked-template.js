@@ -361,7 +361,7 @@
     q('#ml-maruni').value=s.maruni||'';q('#ml-ruru').value=s.ruru||'';
     for(const actor of ['maruni','ruru']){
       const asset=catalog.find(a=>a.id===s[actor]);
-      q('#ml-img-'+actor).src=asset?asset.path:'';
+      if(asset)q('#ml-img-'+actor).src=asset.path;else q('#ml-img-'+actor).removeAttribute('src');
       q('#ml-img-'+actor).alt=asset?asset.label:'표시 안 함';
       q('#ml-label-'+actor).textContent=(actor==='maruni'?'마루니':'루루')+' · '+(asset?asset.label:'표시 안 함');
       q('#ml-size-'+actor).value=Math.round(100*(s.actorTransform?.[actor]?.scale||1));
@@ -495,7 +495,7 @@
       current()[key]=key==='focusY'?Number(e.target.value):e.target.value; if(key==='maruni'||key==='ruru'){selectedActor=key;fields();}changed();
     });
     q('#ml-photo').addEventListener('change',async e=>{
-      try{if(e.target.files&&e.target.files[0]){if(current().photo&&!confirm('현재 컷의 사진을 새 사진으로 교체할까요?'))return;const file=addPhotoBlob(e.target.files[0]);await photoImage(file);current().photo=file;current().photoId=makeId();changed();}}
+      try{if(e.target.files&&e.target.files[0]){if(current().photo&&!confirm('현재 컷의 사진을 새 사진으로 교체할까요?'))return;const target=current(),file=addPhotoBlob(e.target.files[0]);await photoImage(file);target.photo=file;target.photoId=makeId();changed();}}
       catch(err){status(err.message,true);}
     });
     q('#ml-copy-photo-next').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}const next=(active+1)%COUNT;if(project.scenes[next].photo&&!confirm('다음 컷의 기존 사진을 교체할까요?'))return;project.scenes[next].photo=current().photo;project.scenes[next].photoId=current().photoId;changed();status((next===0?'썸네일':next+'컷')+'에 사진을 복사했습니다.');});
