@@ -33,3 +33,29 @@ test('기존 견적·마케팅 DB와 데이터 분리, 공식 캐릭터 원본�
   assert.match(js,/fflate\.zip/);
   assert.match(js,/ml-copy-photo-all/);
 });
+
+const story = fs.readFileSync(path.join(root, 'maruni-story.js'),'utf8');
+test('아이패드 속도: 미리보기만 절반 크기, 출력은 원래 1080×1350',()=>{
+  assert.match(js, /<canvas id="ml-canvas" width="540" height="675"/);
+  assert.match(js, /canvas\.width=W;canvas\.height=H;await draw\(i\)/);
+  assert.match(js, /2048\/Math\.max\(im\.width,im\.height\)/);
+  assert.match(js, /while\(blobCache\.size>2\)/);
+  assert.match(js, /requestAnimationFrame/);
+});
+test('기존 작업을 보존하면서 큰 사진 파일은 별도 저장',()=>{
+  assert.match(js, /indexedDB\.open\(DB_NAME,2\)/);
+  assert.match(js, /objectStoreNames\.contains\('media'\)/);
+  assert.match(js, /delete slim\.photo/);
+  assert.match(js, /m\.put\(\{id,blob\}\)/);
+  assert.match(js, /files\.get\(scene\.photoId\)/);
+  assert.match(js, /persistedPhotos=new Set\(files\.keys\(\)\)/);
+});
+test('아이패드 공식 포즈 목록은 6개씩 로드, 2개 편집기 모두 지연 시작',()=>{
+  assert.match(js, /list\.slice\(pickerPage\*6,pickerPage\*6\+6\)/);
+  assert.match(js, /im\.loading = 'lazy'/);
+  assert.match(js, /canvas\.addEventListener\('pointerdown'/);
+  assert.match(js, /root\.addEventListener\('toggle'/);
+  assert.match(story, /matching\.slice\(assetPage\*6,assetPage\*6\+6\)/);
+  assert.match(story, /root\.addEventListener\('toggle'/);
+  assert.doesNotThrow(()=>new Function(story));
+});
