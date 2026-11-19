@@ -5,8 +5,10 @@
     run.disabled = true; const logs = []; let testId, api, d;
     const check = (ok, msg) => { if (!ok) throw Error(msg); logs.push('PASS · ' + msg); out.textContent = logs.join('\n'); };
     try {
-      d = frame.contentDocument; await wait(() => /최근 프로젝트|현장 사진을 넣고/.test(d.getElementById('mr-status')?.textContent || ''));
-      const w = frame.contentWindow, C = w.MaruniStoryCore; api = w.MaruniStoryStore; const root = d.getElementById('maruni-story'), q = id => d.getElementById(id), click = id => q(id).click(); root.open = true;
+      d = frame.contentDocument;
+      const root = d.getElementById('maruni-story'); root.open = true;
+      await wait(() => /최근 프로젝트|현장 사진을 넣고/.test(d.getElementById('mr-status')?.textContent || ''));
+      const w = frame.contentWindow, C = w.MaruniStoryCore; api = w.MaruniStoryStore; const q = id => d.getElementById(id), click = id => q(id).click();
       const idle = () => wait(() => !root.hasAttribute('aria-busy'));
       click('mr-new'); await idle(); const name = 'UI 자동검증 ' + Date.now(); q('mr-name').value = name; q('mr-name').dispatchEvent(new w.Event('input', { bubbles: true })); click('mr-save'); await idle();
       let p = (await api.list()).find(p => p.name === name); check(!!p, '새 프로젝트 생성·이름 저장'); testId = p.id;
@@ -20,6 +22,13 @@
       const ptr = (type, id, x, y) => { const r = canvas.getBoundingClientRect(); canvas.dispatchEvent(new w.PointerEvent(type, { pointerId: id, pointerType: 'touch', clientX: r.left + x / 1080 * r.width, clientY: r.top + y / 1350 * r.height, bubbles: true })); };
       const settled = () => new Promise(r => w.requestAnimationFrame(() => w.requestAnimationFrame(() => setTimeout(r, 100))));
       await settled(); const b = C.actorBox(a), x = b.x + b.w * .4, y = b.y + b.h * .45;
+      check(q('mr-touch-edit').getAttribute('aria-pressed') === 'false', '아이패드 기본값은 세로 스크롤 모드');
+      const rect = canvas.getBoundingClientRect();
+      const freeScrollPointer = new w.PointerEvent('pointerdown', {pointerId: 20, pointerType:'touch', bubbles:true, cancelable:true, clientX:rect.left+x/1080*rect.width,clientY:rect.top+y/1350*rect.height});
+      canvas.dispatchEvent(freeScrollPointer);
+      check(!freeScrollPointer.defaultPrevented, '기본 스크롤 모드에서는 터치 시작을 막지 않음');
+      click('mr-touch-edit');
+      check(q('mr-touch-edit').getAttribute('aria-pressed') === 'true', '캐릭터 이동 모드를 명시적으로 켤 수 있음');
       ptr('pointerdown', 1, x, y); ptr('pointerup', 1, x, y); click('mr-save'); await idle(); let next = (await api.load(testId)).project.scenes[0].layers.find(l => l.id === a.id); check(Math.abs(next.x - a.x) < .00001 && Math.abs(next.y - a.y) < .00001, '누르는 순간 캐릭터 위치가 튀지 않음');
       await settled(); ptr('pointerdown', 1, x, y); ptr('pointermove', 1, x - 108, y - 100); ptr('pointerup', 1, x - 108, y - 100); click('mr-save'); await idle(); next = (await api.load(testId)).project.scenes[0].layers.find(l => l.id === a.id); check(Math.abs(next.x - (a.x - .1)) < .00001, '손가락 이동량과 캐릭터 이동량 일치'); a = next;
       await settled(); const b2 = C.actorBox(a), cx = b2.x + b2.w / 2, cy = b2.y + b2.h / 2; ptr('pointerdown', 2, cx, cy); ptr('pointerdown', 3, cx + 80, cy); ptr('pointermove', 3, cx + 120, cy); ptr('pointercancel', 2, cx, cy); ptr('pointermove', 3, cx + 190, cy); click('mr-save'); await idle(); next = (await api.load(testId)).project.scenes[0].layers.find(l => l.id === a.id); check(Math.abs(next.width - a.width * 1.5) < .0001, '두 손가락 확대·취소 후 이동 중단');
