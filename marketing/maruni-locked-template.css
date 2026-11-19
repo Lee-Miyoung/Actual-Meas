@@ -29,3 +29,37 @@
 #maruni-locked-template .ml-hidden{display:none!important}
 @media(max-width:760px){#maruni-locked-template .ml-layout{grid-template-columns:1fr}#maruni-locked-template .ml-body{padding:0 12px 15px}#maruni-locked-template .ml-stage canvas{max-height:58vh;width:auto;max-width:100%}#maruni-locked-template .ml-projectbar input{min-width:120px;flex-basis:100%}#maruni-locked-template .ml-controls{grid-template-columns:1fr}#maruni-locked-template .ml-minirow{grid-template-columns:1fr 1fr}}
 @media(max-width:380px){#maruni-locked-template .ml-minirow{grid-template-columns:1fr}}
+
+/* iPad 터치 선택: 원본 캐릭터는 6개씩만 표시, 선택창의 그림과 이름을 함께 탭 */
+#maruni-locked-template .ml-actor-selectors{border-top:1px solid #deded4;padding:12px 0 4px}
+#maruni-locked-template .ml-actor-selectors strong{font-size:14px;color:#324d2d}
+#maruni-locked-template .ml-actor-selectors .ml-note{margin:5px 0 8px}
+#maruni-locked-template .ml-actor-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:10px}
+#maruni-locked-template button.ml-actor-card{display:flex;min-height:133px;flex-direction:column;align-items:center;gap:6px;justify-content:center;padding:7px;line-height:1.4;text-align:center;overflow:hidden;background:#f8f7f3}
+#maruni-locked-template .ml-actor-card img{display:block;height:92px;max-width:100%;object-fit:contain}
+#maruni-locked-template .ml-actor-card span{font-size:11px;font-weight:700;word-break:keep-all}
+#maruni-locked-template .ml-picker{margin:8px 0 15px;padding:12px;border:1px solid #bac8ac;border-radius:12px;background:#f7f9f3}
+#maruni-locked-template .ml-picker[hidden]{display:none!important}
+#maruni-locked-template .ml-pose-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:8px 0}
+#maruni-locked-template button.ml-pose-choice{display:flex;flex-direction:column;justify-content:start;align-items:center;gap:4px;padding:6px;min-height:129px;border-radius:9px;background:#fff;overflow:hidden}
+#maruni-locked-template .ml-pose-choice img{height:84px;width:100%;object-fit:contain}
+#maruni-locked-template .ml-pose-choice span{font-size:11px;line-height:1.4;word-break:keep-all}
+#maruni-locked-template .ml-pose-choice[aria-pressed=true]{background:#dce7d4;border:2px solid #47633f}
+#maruni-locked-template .ml-pose-pager{justify-content:space-between}
+#maruni-locked-template .ml-pose-pager output{font-size:13px;color:#445939}
+#maruni-locked-template #ml-canvas{touch-action:none;user-select:none;-webkit-user-select:none}
+#maruni-locked-template .ml-stage{position:sticky;top:12px;align-self:start}
+@media(max-width:1080px) and (min-width:691px){
+  #maruni-locked-template .ml-layout{grid-template-columns:minmax(275px,.9fr) minmax(325px,1.1fr);gap:14px}
+  #maruni-locked-template .ml-body{padding:0 12px 15px}
+  #maruni-locked-template .ml-stage canvas{max-height:58vh;width:auto;max-width:100%}
+  #maruni-locked-template .ml-pose-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:690px){
+  #maruni-locked-template .ml-layout{grid-template-columns:1fr}
+  #maruni-locked-template .ml-stage{position:static}
+  #maruni-locked-template .ml-stage canvas{max-height:48vh;width:auto;max-width:100%}
+  #maruni-locked-template .ml-pose-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #maruni-locked-template .ml-actor-card img{height:80px}
+  #maruni-locked-template button.ml-pose-choice{min-height:115px}
+}
