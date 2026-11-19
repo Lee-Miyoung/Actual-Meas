@@ -47,7 +47,7 @@
 #maruni-locked-template .ml-pose-choice[aria-pressed=true]{background:#dce7d4;border:2px solid #47633f}
 #maruni-locked-template .ml-pose-pager{justify-content:space-between}
 #maruni-locked-template .ml-pose-pager output{font-size:13px;color:#445939}
-#maruni-locked-template #ml-canvas{touch-action:none;user-select:none;-webkit-user-select:none}
+#maruni-locked-template #ml-canvas{touch-action:pan-y pinch-zoom;user-select:none;-webkit-user-select:none}
 #maruni-locked-template .ml-stage{position:sticky;top:12px;align-self:start}
 @media(max-width:1080px) and (min-width:691px){
   #maruni-locked-template .ml-layout{grid-template-columns:minmax(275px,.9fr) minmax(325px,1.1fr);gap:14px}
@@ -237,3 +237,9 @@
   font-size:10px;line-height:1.4;min-height:28px;padding:3px 4px;
   color:#786f61;border:0;background:transparent;text-decoration:underline;
 }
+
+/* 아이패드에서 사진 위를 스크롤 가능: 선택한 경우에만 캐릭터 터치 이동 */
+#maruni-locked-template #ml-canvas[data-touch-edit="true"]{touch-action:none}
+#maruni-locked-template #ml-touch-edit{white-space:normal;word-break:keep-all}
+#maruni-locked-template #ml-touch-edit[aria-pressed="true"]{background:#365231;color:#fff;border-color:#365231}
+#maruni-locked-template .ml-quick-upload small{flex-basis:100%}
