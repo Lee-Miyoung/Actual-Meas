@@ -33,7 +33,7 @@
           <div class="mr-toolbar"><button id="mr-tab-maruni" type="button" aria-pressed="true">마루니</button><button id="mr-tab-ruru" type="button" aria-pressed="false">루루</button></div>
           <label>포즈 찾기<input id="mr-search" type="search" placeholder="인사, 설명, 자재…"></label>
           <div class="mr-toolbar"><button id="mr-manage-poses" type="button" aria-pressed="false">목록 관리</button></div>
-          <p id="mr-asset-count" class="mr-note"></p><div id="mr-assets" class="mr-assets"></div>
+          <p id="mr-asset-count" class="mr-note"></p><div id="mr-assets" class="mr-assets"></div><div class="mr-toolbar"><button id="mr-asset-prev" type="button">이전 6개</button><span id="mr-asset-page" class="mr-note">1 / 1</span><button id="mr-asset-next" type="button">다음 6개</button></div>
           <label>보유한 원본 투명 PNG 추가<input id="mr-character" type="file" accept="image/png"></label>
         </fieldset>
         <fieldset><legend>03 · 캐릭터와 말풍선</legend>
@@ -56,7 +56,7 @@
   const cache = new Map(), thumbs = new Map(), resultURLs = [];
   let boxes = new Map();
   const hiddenPosePrefix = 'cheonginmaru-maruni-story:hidden-pose:';
-  let managingPoses = false;
+  let managingPoses = false, assetPage = 0, initStarted = false;
   function isPoseHidden(id) {
     try { return localStorage.getItem(hiddenPosePrefix + id) === '1'; }
     catch { return false; }
@@ -153,7 +153,13 @@
       ? `등록 ${available.length}종 · 이 기기에서 숨김 ${hiddenCount}종`
       : `선택 가능 ${available.length - hiddenCount}종 · 숨김 ${hiddenCount}종`;
     const host = $('#mr-assets'); host.replaceChildren();
-    for (const a of all.filter(a => (a.label + ' ' + a.tags.join(' ')).includes(q))) {
+    const matching = all.filter(a => (a.label + ' ' + a.tags.join(' ')).includes(q) && (managingPoses || !isPoseHidden(a.id)) );
+    const totalPages = Math.max(1, Math.ceil(matching.length / 6));
+    assetPage = Math.max(0, Math.min(assetPage, totalPages-1));
+    $('#mr-asset-page').textContent = (assetPage+1) + ' / ' + totalPages;
+    $('#mr-asset-prev').disabled = assetPage === 0;
+    $('#mr-asset-next').disabled = assetPage >= totalPages-1;
+    for (const a of matching.slice(assetPage*6,assetPage*6+6)) {
       if (a.status !== 'ready') { const b = el('button', a.label + ' · 확인 필요'); b.type = 'button'; b.disabled = true; host.append(b); continue; }
       const hidden = isPoseHidden(a.id);
       if (hidden && !managingPoses) continue;
@@ -200,10 +206,12 @@
     if (!transparent) throw Error('투명 배경이 없는 PNG입니다. 공식 원본을 선택해 주세요.');
     remember(); addActor(mid, actorTab, 'user-original', true); changed(); render();
   });
-  for (const actor of ['maruni', 'ruru']) $('#mr-tab-' + actor).onclick = () => { if (busy) return; actorTab = actor; assets(); };
-  $('#mr-search').oninput = assets;
+  for (const actor of ['maruni', 'ruru']) $('#mr-tab-' + actor).onclick = () => { if (busy) return; actorTab = actor; assetPage=0; assets(); };
+  $('#mr-search').oninput = () => {assetPage=0;assets();};
+  $('#mr-asset-prev').onclick = () => {assetPage--;assets();};
+  $('#mr-asset-next').onclick = () => {assetPage++;assets();};
   $('#mr-manage-poses').onclick = () => {
-    managingPoses = !managingPoses;
+    managingPoses = !managingPoses;assetPage=0;
     $('#mr-manage-poses').setAttribute('aria-pressed', String(managingPoses));
     $('#mr-manage-poses').textContent = managingPoses ? '관리 마치기' : '목록 관리';
     assets();
@@ -298,6 +306,7 @@
     await flush(); await switchProject(next.project, next.media, true); status('별도 프로젝트로 복원했습니다.');
   });
   async function init() {
+    if(initStarted)return;initStarted=true;
     try {
       const response = await fetch('assets/characters/manifest.json?v=20261118-poses', { cache: 'no-cache' }); if (!response.ok) throw Error('공식 캐릭터 목록을 불러오지 못했습니다.'); const data = await response.json(); manifest = data.assets; assets();
       const list = await S.list(); ready = true;
@@ -306,5 +315,6 @@
       await refreshProjects(); status(list.length ? '최근 프로젝트를 불러왔습니다.' : '현장 사진을 넣고 공식 캐릭터를 골라 주세요.');
     } catch (e) { ready = true; render(); status(e.message + ' · 새 작업은 편집 프로젝트 ZIP으로 백업할 수 있습니다.', true); }
   }
-  init();
+  root.addEventListener('toggle', () => {if(root.open)init();});
+  if(root.open)init();
 })();
