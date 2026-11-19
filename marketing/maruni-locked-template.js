@@ -3,7 +3,7 @@
   'use strict';
   const root = document.getElementById('maruni-locked-template');
   if (!root) return;
-  const W = 1080, H = 1350, COUNT = 5, DB_NAME = 'cheonginmaru-maruni-locked-v1';
+  const W = 1080, H = 1350, COUNT = 5, DB_NAME = 'cheonginmaru-maruni-locked-v1', Workflow=window.MaruniLockedWorkflow;
   const q = s => root.querySelector(s);
   const $ = q('.ml-body');
   $.innerHTML = [
@@ -12,18 +12,29 @@
     '<select id="ml-projects" aria-label="저장한 고정 템플릿"><option value="">저장한 작업 선택</option></select><button id="ml-open" type="button">불러오기</button></div>',
     '<p id="ml-status" role="status" aria-live="polite"></p>',
     '<div class="ml-layout"><div class="ml-stage">',
-    '<div class="ml-quick-upload"><button id="ml-quick-photo" type="button">＋ 현재 컷 사진 선택</button><small id="ml-photo-tip">사진은 아래에서 선택하거나 이 버튼을 눌러 추가하세요.</small></div>',
+    '<div class="ml-quick-upload"><button id="ml-quick-photo" type="button">＋ 사진 여러 장 선택</button><small id="ml-photo-tip">지금 컷부터 차례대로 배치 · 나머지는 사진 보관함</small></div>',
     '<canvas id="ml-canvas" width="540" height="675" aria-label="고정 포맷 4대5 이미지 미리보기"></canvas>',
     '<div id="ml-tabs" class="ml-tabs" aria-label="썸네일 및 4컷 선택"></div>',
+    '<div class="ml-actions ml-photo-order"><button id="ml-photo-left" type="button">← 사진 이전 컷과 교환</button>',
+    '<button id="ml-photo-right" type="button">사진 다음 컷과 교환 →</button>',
+    '<button id="ml-scene-up" type="button">본편 순서 앞으로</button><button id="ml-scene-down" type="button">본편 순서 뒤로</button></div>',
     '<div class="ml-actions"><button id="ml-export-one" type="button">현재 장 PNG 저장</button><button id="ml-export-all" class="ml-primary" type="button">썸네일+4컷 ZIP 저장</button>',
     '<button id="ml-share" type="button">현재 장 공유(아이폰)</button></div>',
     '<p class="ml-note">모든 출력 1080×1350px · 로고는 표지만 · 글씨·말풍선·여백은 고정 · 사진은 기기 안에서만 처리합니다. 사진 원본 색상·결 보정 없음.</p>',
     '</div><div class="ml-controls">',
-    '<label>제품 / 현장 제품명<input id="ml-product" maxlength="65" placeholder="예: 동화 시그니월 슬레이트모티프"></label>',
+    '<div class="ml-story-type"><label>콘텐츠 형식 선택<select id="ml-type"><option value="product">제품 소개</option><option value="episode">시공 에피소드</option><option value="process">시공 과정·전후</option><option value="tips">생활·관리 정보</option><option value="everyday">그냥 사는 이야기</option><option value="behind">현장 밖 비하인드</option></select></label><p id="ml-type-tip" class="ml-note">기존 사진과 캐릭터는 유지하고 제목·대사만 형식에 맞게 바꿉니다.</p></div>',
+    '<label id="ml-topic-label"><span id="ml-topic-name">제품 / 현장 제품명</span><input id="ml-product" maxlength="65" placeholder="예: 동화 시그니월 슬레이트모티프"></label>',
     '<label>공통 시리즈 이름<input id="ml-series" maxlength="26" value="마루니·루루 제품 이야기"></label>',
     '<div class="ml-minirow"><label>시공 분야<select id="ml-field"><option>벽장재</option><option>마루</option><option>기타</option></select></label><label>시공 지역<input id="ml-region" maxlength="45" placeholder="예: 인천 송도"></label></div>',
     '<label>제품 규격(확인된 경우만)<input id="ml-spec" maxlength="65" placeholder="예: 1010 × 2460 × 9T"></label>',
-    '<label>현재 장 현장 사진(JPG·PNG·WebP)<input id="ml-photo" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif"></label>',
+    '<label>사진 1~20장 한번에 넣기(JPG·PNG·WebP)<input id="ml-photo" type="file" multiple accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif"></label>',
+    '<div class="ml-actions"><button type="button" id="ml-clipboard">복사한 사진 붙여넣기</button><small class="ml-note">아이패드 사진 앱·파일 앱에서 끌어다 놓거나, 복사 후 붙여넣기도 가능</small></div>',
+    '<div id="ml-drop-zone" class="ml-drop-zone" tabindex="0" role="region" aria-label="사진 끌어놓기 영역">여기에 사진을 끌어다 놓으세요 · 여러 장 가능</div>',
+    '<section class="ml-photo-library" aria-label="이 작업에서 사용할 사진 보관함">',
+    '<div class="ml-photo-library-head"><strong>사진 보관함</strong><span id="ml-library-count">0장</span></div>',
+    '<p class="ml-note">사진을 탭하면 현재 컷에 적용됩니다. 컴퓨터에서는 컷 번호나 미리보기로 끌어 놓을 수 있어요.</p>',
+    '<div id="ml-photo-grid" class="ml-photo-grid"></div>',
+    '<div class="ml-actions ml-gallery-pager"><button id="ml-library-prev" type="button">이전 사진</button><output id="ml-library-page">1 / 1</output><button id="ml-library-next" type="button">다음 사진</button></div></section>',
     '<div class="ml-actions"><button id="ml-copy-photo-next" type="button">현재 사진을 다음 컷에 복사</button><button id="ml-copy-photo-all" type="button">현재 사진을 5장에 사용</button></div>',
     '<label>현재 장 제목(위치·크기 고정)<textarea id="ml-title" maxlength="44" rows="2"></textarea></label>',
     '<label id="ml-bubble-wrap">현재 장 짧은 말풍선(1개만)<input id="ml-bubble" maxlength="34"></label>',
@@ -61,13 +72,13 @@
   const clone = x => JSON.parse(JSON.stringify(x));
   const makeId = () => (crypto.randomUUID ? crypto.randomUUID() : 'p'+Date.now()+'x'+Math.random().toString(16).slice(2));
   function makeProject() {
-    return {schema:'cheonginmaru-maruni-locked-v1',id:makeId(),name:'새 마루니·루루 시리즈',series:'마루니·루루 제품 이야기',product:'동화 시그니월 슬레이트모티프',field:'벽장재',region:'',spec:'',
-      updatedAt:Date.now(),scenes:sceneDefaults.map(s => Object.assign({},s,{photo:null,focusY:50}))};
+    return {schema:'cheonginmaru-maruni-locked-v1',id:makeId(),name:'새 마루니·루루 시리즈',type:'product',series:'마루니·루루 제품 이야기',product:'동화 시그니월 슬레이트모티프',field:'벽장재',region:'',spec:'',library:[],
+      updatedAt:Date.now(),scenes:Workflow.scenesFor('product').map(s => Object.assign({},s,{photo:null,photoId:null,focusY:50}))};
   }
   let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false, persistedPhotos=new Set();
   const canvas=q('#ml-canvas'), ctx=canvas.getContext('2d'), imagePromises=new Map(), blobCache=new Map();
   let paintFrame=0, painting=false, pickerActor='', pickerPage=0, selectedActor='', drag=null, initializeStarted=false;
-  let actorBoxes=new Map();
+  let actorBoxes=new Map(), libraryBlobs=new Map(),libraryPage=0, libraryThumbs=new Map(), uploadInProgress=false;
   function status(text, bad=false){q('#ml-status').textContent=text;q('#ml-status').dataset.error=String(bad);}
   function current(){return project.scenes[active];}
   function db(){
