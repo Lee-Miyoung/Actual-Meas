@@ -230,3 +230,10 @@
  #maruni-locked-template .ml-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  #maruni-locked-template .ml-photo-order button{font-size:11px}
 }
+
+#maruni-locked-template .ml-photo-item{min-width:0;display:flex;flex-direction:column;gap:3px}
+#maruni-locked-template .ml-photo-item>.ml-photo-option{width:100%;flex:1}
+#maruni-locked-template button.ml-photo-remove{
+  font-size:10px;line-height:1.4;min-height:28px;padding:3px 4px;
+  color:#786f61;border:0;background:transparent;text-decoration:underline;
+}
