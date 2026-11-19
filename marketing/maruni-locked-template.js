@@ -212,6 +212,108 @@
     if(!file||file.size>25*1024*1024||file.size===0||(!/^image\/(png|jpeg|webp|heic|heif)$/.test(file.type)&&!/\.(png|jpe?g|webp|heic|heif)$/i.test(file.name)))throw Error('25MB 이하의 JPG·PNG·WebP 사진을 선택해 주세요.');
     return file;
   }
+  function photoRows(){return Array.isArray(project.library)?project.library:[];}
+  async function libraryThumb(row){
+    if(libraryThumbs.has(row.id))return libraryThumbs.get(row.id);
+    const blob=libraryBlobs.get(row.id);
+    if(!blob)return null;
+    const image=await photoImage(blob);
+    const c=document.createElement('canvas');c.width=150;c.height=108;
+    const ratio=Math.max(c.width/image.width,c.height/image.height);
+    c.getContext('2d',{alpha:false}).drawImage(image,(c.width-image.width*ratio)/2,(c.height-image.height*ratio)/2,image.width*ratio,image.height*ratio);
+    const url=c.toDataURL('image/jpeg',.7);c.width=c.height=1;
+    libraryThumbs.set(row.id,url);
+    return url;
+  }
+  async function fillLibraryThumbs(nodes){
+    for(const [image,row] of nodes){
+      if(!image.isConnected)return;
+      try{
+        const data=await libraryThumb(row);
+        if(image.isConnected&&data)image.src=data;
+      }catch(e){if(image.isConnected)image.alt='사진 미리보기를 열 수 없음';}
+      await new Promise(resolve=>setTimeout(resolve,0));
+    }
+  }
+  function renderPhotoLibrary(){
+    const rows=photoRows(),numPages=Math.max(1,Math.ceil(rows.length/6));
+    libraryPage=Math.max(0,Math.min(libraryPage,numPages-1));
+    q('#ml-library-count').textContent=rows.length+' / 20장';
+    q('#ml-library-page').textContent=(libraryPage+1)+' / '+numPages;
+    q('#ml-library-prev').disabled=libraryPage===0;
+    q('#ml-library-next').disabled=libraryPage>=numPages-1;
+    const host=q('#ml-photo-grid');host.replaceChildren();
+    const images=[];
+    for(const row of rows.slice(libraryPage*6,libraryPage*6+6)){
+      const btn=document.createElement('button');btn.type='button';btn.draggable=true;
+      btn.className='ml-photo-option';btn.dataset.photoId=row.id;
+      const selected=project.scenes.some((scene,i)=>i===active&&scene.photoId===row.id);
+      btn.setAttribute('aria-pressed',String(selected));
+      btn.title=(row.name||'사진')+' · 탭하면 현재 컷에 적용';
+      const image=document.createElement('img');image.alt='';image.loading='lazy';image.decoding='async';
+      const cap=document.createElement('span');
+      const used=project.scenes.map((scene,i)=>scene.photoId===row.id?(i===0?'표지':i+'컷'):null).filter(Boolean);
+      cap.textContent=(row.name||'사진').slice(0,18)+(used.length?' · '+used.join(','):' · 미사용');
+      btn.append(image,cap);host.append(btn);images.push([image,row]);
+    }
+    if(!rows.length){const p=document.createElement('p');p.className='ml-note';p.textContent='사진을 여러 장 넣으면 여기에 작은 미리보기가 생깁니다.';host.append(p);}
+    fillLibraryThumbs(images).catch(e=>status(e.message,true));
+    q('#ml-photo-left').disabled=active===0;
+    q('#ml-photo-right').disabled=active===COUNT-1;
+    q('#ml-scene-up').disabled=active<=1;
+    q('#ml-scene-down').disabled=active===0||active===COUNT-1;
+  }
+  function showPhotoAt(id,slot=active){
+    const row=photoRows().find(row=>row.id===id),blob=libraryBlobs.get(id);
+    if(!row||!(blob instanceof Blob)){status('보관함에서 사진을 찾을 수 없습니다.',true);return;}
+    const target=project.scenes[slot];
+    if(target.photoId===id){active=slot;fields();preview();status('이미 이 컷에 들어 있는 사진입니다.');return;}
+    if(target.photo&&target.photoId!==id&&!confirm((slot===0?'표지':slot+'컷')+'의 사진을 바꿀까요? 기존 사진은 보관함에 남습니다.'))return;
+    Workflow.changePhoto(target,blob,id);
+    active=slot;fields();renderPhotoLibrary();changed();status((slot===0?'표지':slot+'컷')+'에 사진을 적용했습니다.');
+  }
+  async function importPhotos(files,start=active){
+    if(uploadInProgress)return;
+    const incoming=[...files].filter(Boolean);
+    if(!incoming.length)return;
+    if(photoRows().length+incoming.length>20)throw Error('사진은 작업당 20장까지 보관할 수 있어요. 이번에는 '+(20-photoRows().length)+'장까지 선택해 주세요.');
+    let total=[...libraryBlobs.values()].reduce((n,b)=>n+b.size,0);
+    for(const file of incoming){addPhotoBlob(file);total+=file.size;}
+    if(total>240*1024*1024)throw Error('이 작업의 사진 합계는 240MB까지입니다. 사진 크기를 줄이거나 나누어 등록해 주세요.');
+    const slots=Workflow.batchTargets(start,incoming.length);
+    const replacing=slots.some(i=>Boolean(project.scenes[i].photo));
+    if(replacing&&!confirm('현재 컷부터 '+slots.length+'장에 사진을 배치합니다. 기존 컷 사진은 보관함에 남겨 둘까요?'))return;
+    uploadInProgress=true;
+    try{
+      const valid=[];
+      // Safari 메모리 급증 방지: 각 파일을 순서대로 확인한다.
+      for(let i=0;i<incoming.length;i++){
+        const file=incoming[i];
+        status('사진 '+(i+1)+' / '+incoming.length+' 불러오는 중…');
+        try{await photoImage(file);valid.push({id:makeId(),name:file.name||'붙여넣은 사진',blob:file,addedAt:Date.now()});}
+        catch(e){throw Error((file.name||'사진')+'을 열 수 없습니다: '+e.message);}
+        await new Promise(resolve=>setTimeout(resolve,0));
+      }
+      project.library=photoRows().concat(valid.map(({id,name,addedAt})=>({id,name,addedAt})));
+      for(const file of valid)libraryBlobs.set(file.id,file.blob);
+      for(let i=0;i<Math.min(valid.length,slots.length);i++)Workflow.changePhoto(project.scenes[slots[i]],valid[i].blob,valid[i].id);
+      libraryPage=Math.floor((project.library.length-1)/6);
+      fields();renderPhotoLibrary();changed();
+      status(valid.length+'장 등록 완료 · '+Math.min(valid.length,slots.length)+'장은 컷에 배치했고 나머지는 보관함에서 골라 사용할 수 있어요.');
+    }finally{uploadInProgress=false;}
+  }
+  function changePhotoOrder(direction){
+    const other=active+direction;
+    if(other<0||other>=COUNT)return;
+    Workflow.swapPhotos(project.scenes,active,other);
+    active=other;fields();renderPhotoLibrary();changed();status('두 컷의 사진을 교환했습니다. 제목과 캐릭터는 그대로입니다.');
+  }
+  function moveFullScene(direction){
+    const other=active+direction;
+    if(active===0||other<=0||other>=COUNT)return;
+    Workflow.moveStoryScene(project.scenes,active,other);
+    active=other;fields();renderPhotoLibrary();changed();status('사진·제목·대사를 함께 옮겼습니다. 표지는 그대로입니다.');
+  }
   function assetImage(src){
     if(imagePromises.has(src)){
       const value=imagePromises.get(src);imagePromises.delete(src);imagePromises.set(src,value);return value;
@@ -381,6 +483,10 @@
   function preview(){drawToken++;queuePaint();}
   function fields(){
     q('#ml-name').value=project.name;
+    q('#ml-type').value=project.type||'product';
+    const daily=Workflow.get(project.type).channel==='daily';
+    q('#ml-topic-name').textContent=daily?'일상 이야기 주제':'제품명 / 현장·이야기 주제';
+    q('#ml-type-tip').textContent=Workflow.label(project.type)+' · 실제 사진과 공식 캐릭터를 유지하는 고정 양식';
     q('#ml-product').value=project.product;
     q('#ml-series').value=project.series;
     q('#ml-field').value=project.field||'벽장재';
@@ -537,9 +643,9 @@
     });
     q('#ml-copy-photo-next').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}const next=(active+1)%COUNT;if(project.scenes[next].photo&&!confirm('다음 컷의 기존 사진을 교체할까요?'))return;project.scenes[next].photo=current().photo;project.scenes[next].photoId=current().photoId;changed();status((next===0?'썸네일':next+'컷')+'에 사진을 복사했습니다.');});
     q('#ml-copy-photo-all').addEventListener('click',()=>{if(!current().photo){status('현재 사진을 먼저 추가해 주세요.',true);return;}if(!confirm('현재 사진을 썸네일과 본편 4장에 모두 적용할까요? 기존 사진도 바뀝니다.'))return;for(const item of project.scenes){item.photo=current().photo;item.photoId=current().photoId;}changed();status('5장에 같은 사진을 적용했습니다.');});
-    q('#ml-tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-cut]');if(!b)return;active=Number(b.dataset.cut);closePosePicker();selectedActor='';fields();preview();});
+    q('#ml-tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-cut]');if(!b)return;active=Number(b.dataset.cut);closePosePicker();selectedActor='';fields();renderPhotoLibrary();preview();});
     q('#ml-save').addEventListener('click',()=>save().catch(()=>{}));
-    q('#ml-new').addEventListener('click',async()=>{try{await save();project=makeProject();persistedPhotos=new Set();active=0;fields();await save();preview();}catch(e){status(e.message,true);}});
+    q('#ml-new').addEventListener('click',async()=>{try{await save();project=makeProject();persistedPhotos=new Set();libraryBlobs=new Map();libraryPage=0;clearGalleryThumbs();active=0;fields();renderPhotoLibrary();await save();preview();}catch(e){status(e.message,true);}});
     q('#ml-open').addEventListener('click',()=>openProject(q('#ml-projects').value).catch(e=>status(e.message,true)));
     q('#ml-export-one').addEventListener('click',()=>withBusy(async()=>{
       const b=await makePng(active),n=active===0?'00_썸네일':String(active).padStart(2,'0')+'_컷';
@@ -580,7 +686,7 @@
       const projects=await listProjects();
       if(projects.length){await openProject(projects[0].id);}
       else await save();
-      fields();await refreshProjects();preview();
+      fields();renderPhotoLibrary();await refreshProjects();preview();
       status('마루니·루루 4컷 고정 포맷 준비 완료. 사진과 문구만 바꾸세요.');
     } catch(e){status('편집기를 준비하지 못했습니다: '+e.message,true);}
   }
