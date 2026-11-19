@@ -33,7 +33,7 @@
         <fieldset><legend>02 · 공식 캐릭터</legend>
           <div class="mr-toolbar"><button id="mr-tab-maruni" type="button" aria-pressed="true">마루니</button><button id="mr-tab-ruru" type="button" aria-pressed="false">루루</button></div>
           <label>포즈 찾기<input id="mr-search" type="search" placeholder="인사, 설명, 자재…"></label>
-          <div class="mr-toolbar"><button id="mr-manage-poses" type="button" aria-pressed="false">목록 관리</button></div>
+          <div class="mr-toolbar"><button id="mr-manage-poses" type="button" aria-pressed="false">목록 관리</button><button id="mr-add-another" type="button" aria-pressed="false">같은 캐릭터 추가</button><button id="mr-clean-duplicates" type="button">겹친 캐릭터 정리</button></div><p class="mr-note">포즈를 다시 탭하면 기존 캐릭터의 그림이 바뀝니다. 별도 인물이 필요할 때만 '같은 캐릭터 추가'를 켜세요.</p>
           <p id="mr-asset-count" class="mr-note"></p><div id="mr-assets" class="mr-assets"></div><div class="mr-toolbar"><button id="mr-asset-prev" type="button">이전 6개</button><span id="mr-asset-page" class="mr-note">1 / 1</span><button id="mr-asset-next" type="button">다음 6개</button></div>
           <label>보유한 원본 투명 PNG 추가<input id="mr-character" type="file" accept="image/png"></label>
         </fieldset>
@@ -57,7 +57,7 @@
   const cache = new Map(), thumbs = new Map(), resultURLs = [];
   let boxes = new Map();
   const hiddenPosePrefix = 'cheonginmaru-maruni-story:hidden-pose:';
-  let managingPoses = false, assetPage = 0, initStarted = false;
+  let managingPoses = false, assetPage = 0, initStarted = false, addAnotherActor = false;
   function isPoseHidden(id) {
     try { return localStorage.getItem(hiddenPosePrefix + id) === '1'; }
     catch { return false; }
@@ -172,11 +172,28 @@
         continue;
       }
       b.append(im, el('span', a.label)); b.onclick = () => run(async () => {
-        if (scene().layers.length >= 12) throw Error('한 컷에는 캐릭터·말풍선을 합해 12개까지 넣을 수 있습니다.');
-        const resp = await fetch(a.path); if (!resp.ok) throw Error('캐릭터 원본을 불러오지 못했습니다.'); const blob = await resp.blob();
+        if (!scene().photoId) throw Error('현장 사진을 먼저 선택해 주세요. 사진 위에 캐릭터를 배치합니다.');
+        const currentLayer=layer();
+        const existing=addAnotherActor?null:
+          (currentLayer?.type==='actor'&&currentLayer.actor===a.actor?currentLayer:
+            [...scene().layers].reverse().find(l=>l.type==='actor'&&l.actor===a.actor));
+        if (!existing && scene().layers.length >= 12) throw Error('한 컷에는 캐릭터·말풍선을 합해 12개까지 넣을 수 있습니다.');
+        const resp = await fetch(a.path); if (!resp.ok) throw Error('캐릭터 원본을 불러오지 못했습니다.');
+        const blob = await resp.blob();
         const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()))].map(n => n.toString(16).padStart(2, '0')).join('');
         if (hash !== a.sha256) throw Error('캐릭터 원본 버전이 다릅니다. 새로고침 후 다시 선택하세요.');
-        const mid = await addMedia(blob, a.label + '.png'); remember(); addActor(mid, a.actor, a.id, a.allowFlip); changed(); render();
+        const mid=await addMedia(blob,a.label+'.png');
+        remember();
+        if(existing){
+          const next=cache.get(mid).image;
+          existing.mediaId=mid; existing.assetId=a.id; existing.assetVersion=1;
+          existing.aspect=next.width/next.height; existing.allowFlip=a.allowFlip; existing.flipped=false;
+          selected=existing.id;photoMode=false;
+        }else addActor(mid,a.actor,a.id,a.allowFlip);
+        addAnotherActor=false;
+        $('#mr-add-another').setAttribute('aria-pressed','false');
+        changed();render();
+        status(existing?'기존 '+(a.actor==='maruni'?'마루니':'루루')+' 포즈를 바꿨습니다.':'캐릭터를 사진에 추가했습니다.');
       }); host.append(b);
     }
     if (!host.children.length) host.append(el('p', '일치하는 등록 원본이 없습니다.'));
@@ -212,6 +229,27 @@
   $('#mr-search').oninput = () => {assetPage=0;assets();};
   $('#mr-asset-prev').onclick = () => {assetPage--;assets();};
   $('#mr-asset-next').onclick = () => {assetPage++;assets();};
+  $('#mr-add-another').onclick=()=>{
+    addAnotherActor=!addAnotherActor;
+    $('#mr-add-another').setAttribute('aria-pressed',String(addAnotherActor));
+    status(addAnotherActor?'다음 포즈 선택은 새로운 캐릭터를 한 명 더 추가합니다.':'같은 캐릭터는 기존 것을 교체합니다.');
+  };
+  $('#mr-clean-duplicates').onclick=()=>{
+    if(busy)return;
+    const actors=scene().layers.filter(l=>l.type==='actor'),keep=new Map();
+    actors.forEach(l=>keep.set(l.actor,l));
+    if(layer()?.type==='actor')keep.set(layer().actor,layer());
+    const extras=actors.filter(l=>keep.get(l.actor)!==l);
+    if(!extras.length){status('겹쳐진 같은 종류의 캐릭터가 없습니다.');return;}
+    if(!confirm('이 컷에서 마루니·루루 각각 한 명만 남기고 '+extras.length+'개 중복 캐릭터를 정리할까요? 취소·되돌리기가 가능합니다.'))return;
+    remember();
+    const oldActors=new Map(actors.map(l=>[l.id,l.actor])),removed=new Set(extras.map(l=>l.id));
+    scene().layers=scene().layers.filter(l=>!removed.has(l.id));
+    for(const l of scene().layers){
+      if(l.type==='bubble'&&removed.has(l.speakerId))l.speakerId=keep.get(oldActors.get(l.speakerId))?.id||null;
+    }
+    selected=null;changed();render();status('이 컷의 중복 캐릭터를 정리했습니다. 필요하면 되돌릴 수 있습니다.');
+  };
   $('#mr-manage-poses').onclick = () => {
     managingPoses = !managingPoses;assetPage=0;
     $('#mr-manage-poses').setAttribute('aria-pressed', String(managingPoses));
