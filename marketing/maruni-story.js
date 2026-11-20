@@ -132,6 +132,7 @@
   }
   function controls() {
     const l = layer(), bubble = l?.type === 'bubble';
+    previewTools.show(l?.type === 'actor' ? Math.round(l.width * 100) : null);
     const holder = $('#mr-layers'); holder.replaceChildren();
     for (const [i, item] of scene().layers.entries()) { const b = el('button', item.type === 'actor' ? (item.actor === 'maruni' ? '마루니' : '루루') : '말풍선 ' + (i + 1)); b.type = 'button'; b.setAttribute('aria-pressed', String(selected === item.id)); b.onclick = () => { if (busy) return; selected = item.id; photoMode = false; controls(); schedulePaint(); }; holder.append(b); }
     $('#mr-size').disabled = !l; $('#mr-size').value = Math.round((l?.width || .3) * 100);
@@ -227,6 +228,7 @@
   $('#mr-quick-photo').onclick = () => { if(!busy)$('#mr-photo').click(); };
   $('#mr-photo').onchange = e => run(async () => {
     const files = [...e.target.files]; e.target.value = ''; if (!files.length) return; if (files.length > 6) throw Error('사진은 한 번에 6장까지 선택하세요.');
+    touchEdit = false; updateTouchEdit();
     const targets = files.map((_, i) => (active + i) % 6);
     if (targets.some(i => project.scenes[i].photoId) && !confirm('선택한 컷의 사진을 바꿀까요? 캐릭터와 말풍선은 유지합니다.')) return;
     const staged = [];
@@ -305,6 +307,26 @@
   // Pointer capture, fixed drag offset, separate pinch targets and cancellation.
   const canvas = $('#mr-canvas'), points = new Map(); let gesture = null;
   const point = e => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * R.W, y: (e.clientY - r.top) / r.height * R.H }; };
+  const previewTools = window.maruniCanvasTools(canvas, {
+    anchor: canvas.parentElement, min: 8, max: 90,
+    pick(e) {
+      if (busy || photoMode) return;
+      const p = point(e);
+      const hit = [...scene().layers].reverse().find(l => {
+        const b = boxes.get(l.id);
+        return b && p.x >= b.x && p.x <= b.x+b.w && p.y >= b.y && p.y <= b.y+b.h;
+      });
+      selected = hit?.id || null;
+      controls(); schedulePaint();
+    },
+    resize(value, type) {
+      if (busy || layer()?.type !== 'actor') return;
+      const slider = $('#mr-size');
+      slider.value = value;
+      slider.dispatchEvent(new Event(type));
+    },
+    remove() { if (layer()?.type === 'actor') $('#mr-delete').click(); }
+  });
   const distance = () => { const [a, b] = [...points.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
   function cancelGesture() { for (const pid of points.keys()) { try { canvas.releasePointerCapture(pid); } catch {} } points.clear(); gesture = null; }
   function updateTouchEdit(){
@@ -353,7 +375,11 @@
     if (points.size === 1 && gesture) { const p = [...points.values()][0]; gesture.start = p; gesture.x = gesture.target.x; gesture.y = gesture.target.y; delete gesture.pinch; }
     else if (!points.size) gesture = null;
   }
-  canvas.addEventListener('pointerup', endPointer); canvas.addEventListener('pointercancel', () => cancelGesture()); canvas.addEventListener('lostpointercapture', endPointer);
+  canvas.addEventListener('pointerup', e => {
+    const remove = points.size === 1 && points.has(e.pointerId) && gesture?.target.type === 'actor' && previewTools.overTrash(e);
+    endPointer(e);
+    if (remove) $('#mr-delete').click();
+  }); canvas.addEventListener('pointercancel', () => cancelGesture()); canvas.addEventListener('lostpointercapture', endPointer);
   root.addEventListener('toggle', () => { if (!root.open) { cancelGesture(); touchEdit=false;updateTouchEdit(); } else schedulePaint(); }); window.addEventListener('blur', cancelGesture);
   document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelGesture(); if (ready) save().catch(() => {}); } }); window.addEventListener('pagehide', () => { if (ready) save().catch(() => {}); });
   function clearResults() { for (const url of resultURLs) URL.revokeObjectURL(url); resultURLs.length = 0; $('#mr-results').replaceChildren(); $('#mr-result-actions').replaceChildren(); }

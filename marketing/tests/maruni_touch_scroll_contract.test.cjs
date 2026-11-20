@@ -41,7 +41,7 @@ test('기존 4컷 포맷과 공식 에셋 사용 규칙 유지',()=>{
   assert.equal(five.split('brand/logo-black.svg').length,2);
   assert.match(six,/SHA-256/);
   assert.match(five,/a\.status==='ready'/);
-  assert.match(html,/maruni-story\.css\?v=ipad-touch-20261119/);
+  assert.match(html,/maruni-story\.css\?v=ipad-touch-20261120/);
 });
 test('변경 후 두 편집기 JS는 문법상 유효',()=>{
   assert.doesNotThrow(()=>new Function(six));

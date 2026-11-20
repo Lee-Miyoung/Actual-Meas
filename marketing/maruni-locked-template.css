@@ -243,3 +243,14 @@
 #maruni-locked-template #ml-touch-edit{white-space:normal;word-break:keep-all}
 #maruni-locked-template #ml-touch-edit[aria-pressed="true"]{background:#365231;color:#fff;border-color:#365231}
 #maruni-locked-template .ml-quick-upload small{flex-basis:100%}
+
+.maruni-canvas-tools{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:6px}
+.maruni-canvas-tools[hidden]{display:none!important}
+.maruni-canvas-tools label{display:flex;align-items:center;gap:6px}
+.maruni-canvas-tools input[type=range]{width:110px;min-height:44px}
+.maruni-canvas-tools button{min-height:44px;color:#8c3026}
+@media(pointer:coarse){
+  html:has(#studio:not([hidden]) details:is(#maruni-story,#maruni-locked-template)[open]){
+    overflow-y:auto!important;height:auto!important;
+  }
+}

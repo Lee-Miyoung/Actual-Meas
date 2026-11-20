@@ -79,6 +79,7 @@
   let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false, persistedPhotos=new Set();
   const canvas=q('#ml-canvas'), ctx=canvas.getContext('2d'), imagePromises=new Map(), blobCache=new Map();
   let paintFrame=0, painting=false, pickerActor='', pickerPage=0, selectedActor='', drag=null, initializeStarted=false, touchEdit=false;
+  let previewTools;
   let actorBoxes=new Map(), libraryBlobs=new Map(),libraryPage=0, libraryThumbs=new Map(), uploadInProgress=false;
   function status(text, bad=false){q('#ml-status').textContent=text;q('#ml-status').dataset.error=String(bad);}
   function current(){return project.scenes[active];}
@@ -302,6 +303,7 @@
     const slots=Workflow.batchTargets(start,incoming.length);
     const replacing=slots.some(i=>Boolean(project.scenes[i].photo));
     if(replacing&&!confirm('현재 컷부터 '+slots.length+'장에 사진을 배치합니다. 기존 컷 사진은 보관함에 남겨 둘까요?'))return;
+    drag=null;touchEdit=false;updateTouchEdit();
     uploadInProgress=true;
     try{
       const valid=[];
@@ -512,6 +514,7 @@
     q('#ml-region').value=project.region||'';
     q('#ml-spec').value=project.spec||'';
     const s=current();
+    previewTools?.show(s.photo && s[selectedActor] ? Math.round((s.actorTransform?.[selectedActor]?.scale || 1)*100) : null);
     q('#ml-title').value=s.title;q('#ml-bubble').value=s.bubble;
     q('#ml-foot').value=s.foot;q('#ml-side').value=s.side;
     q('#ml-photo-y').value=s.focusY===undefined?50:s.focusY;
@@ -615,6 +618,28 @@
       const box=canvas.getBoundingClientRect();
       return {x:(e.clientX-box.left)*W/box.width,y:(e.clientY-box.top)*H/box.height};
     };
+    const tools = window.maruniCanvasTools(canvas, {
+      anchor:canvas, min:65, max:130,
+      pick(e){
+        if(busy || !current().photo)return;
+        const p=point(e);
+        selectedActor=['ruru','maruni'].find(actor=>{
+          const b=actorBoxes.get(actor);
+          return current()[actor] && b && p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h;
+        }) || '';
+        fields();preview();
+      },
+      resize(value){
+        if(busy || !current()[selectedActor])return;
+        transform(current(),selectedActor).scale=value/100;
+        q('#ml-size-'+selectedActor).value=value;changed();
+      },
+      remove(){
+        if(busy || !current()[selectedActor])return;
+        current()[selectedActor]='';selectedActor='';fields();changed();
+      }
+    });
+    previewTools=tools;
     canvas.addEventListener('pointerdown',e=>{
       if(busy||!current().photo)return;
       if(e.pointerType==='touch'&&!touchEdit)return; // 빈 사진 위에서도 아이패드 기본 스크롤 유지
@@ -623,6 +648,7 @@
         const b=actorBoxes.get(actor);
         if(b&&p.x>=b.x&&p.x<=b.x+b.w&&p.y>=b.y&&p.y<=b.y+b.h){
           const t=transform(current(),actor);selectedActor=actor;
+          tools.show(Math.round(t.scale*100));
           drag={pointer:e.pointerId,actor,x:p.x,y:p.y,dx:t.dx||0,dy:t.dy||0};
           if(canvas.setPointerCapture)canvas.setPointerCapture(e.pointerId);
           preview();e.preventDefault();break;
@@ -638,7 +664,9 @@
     });
     const finish=e=>{
       if(!drag||e.pointerId!==drag.pointer)return;
-      drag=null;changed();status('캐릭터 위치를 저장합니다.');
+      drag=null;
+      if(e.type==='pointerup' && tools.overTrash(e)){tools.remove();return;}
+      changed();status('캐릭터 위치를 저장합니다.');
     };
     canvas.addEventListener('pointerup',finish);
     canvas.addEventListener('pointercancel',finish);
