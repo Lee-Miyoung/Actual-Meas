@@ -23,7 +23,7 @@
     '<button id="ml-share" type="button">현재 장 공유(아이폰)</button></div>',
     '<p class="ml-note">모든 출력 1080×1350px · 로고는 표지만 · 글씨·말풍선·여백은 고정 · 사진은 기기 안에서만 처리합니다. 사진 원본 색상·결 보정 없음.</p>',
     '</div><div class="ml-controls">',
-    '<div class="ml-story-type"><label>콘텐츠 형식 선택<select id="ml-type"><option value="product">제품 소개</option><option value="episode">시공 에피소드</option><option value="process">시공 과정·전후</option><option value="tips">생활·관리 정보</option><option value="everyday">그냥 사는 이야기</option><option value="behind">현장 밖 비하인드</option></select></label><p id="ml-type-tip" class="ml-note">기존 사진과 캐릭터는 유지하고 제목·대사만 형식에 맞게 바꿉니다.</p></div>',
+    '<details class="ml-story-type"><summary>상황 바꾸기</summary><label>콘텐츠 형식 선택<select id="ml-type"><option value="product">제품 소개</option><option value="episode">시공 에피소드</option><option value="process">시공 과정·전후</option><option value="tips">생활·관리 정보</option><option value="everyday">그냥 사는 이야기</option><option value="behind">현장 밖 비하인드</option></select></label><p id="ml-type-tip" class="ml-note">기존 사진과 캐릭터는 유지하고 제목·대사만 형식에 맞게 바꿉니다.</p></details>',
     '<label id="ml-topic-label"><span id="ml-topic-name">제품 / 현장 제품명</span><input id="ml-product" maxlength="65" placeholder="예: 동화 시그니월 슬레이트모티프"></label>',
     '<label>공통 시리즈 이름<input id="ml-series" maxlength="26" value="마루니·루루 제품 이야기"></label>',
     '<div class="ml-minirow"><label>시공 분야<select id="ml-field"><option>벽장재</option><option>마루</option><option>기타</option></select></label><label>시공 지역<input id="ml-region" maxlength="45" placeholder="예: 인천 송도"></label></div>',

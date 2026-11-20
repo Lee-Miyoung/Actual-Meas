@@ -1,0 +1,19 @@
+#maruni-hub{margin:12px 0;padding:12px;background:white;border:1px solid #d5d9cf;border-radius:12px}
+#maruni-hub summary{cursor:pointer;font-weight:650;padding:10px}
+#maruni-hub .mh-nav{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+#maruni-hub button[aria-pressed=true]{background:#405e2b;color:white}
+#maruni-hub>#maruni-locked-template>summary,#maruni-hub>#maruni-story>summary{display:none}
+#maruni-hub [hidden]{display:none!important}
+#mh-single{padding:8px}#mh-single button,#mh-single select,.mh-nav button{min-height:42px}
+#mh-stage{position:relative;width:fit-content;max-width:100%;margin:12px auto}
+#mh-base{display:block;max-width:100%;max-height:55vh;width:auto;height:auto}
+#mh-actors{position:absolute;inset:0;pointer-events:none}
+.mh-actor{position:absolute;touch-action:none;pointer-events:auto;user-select:none}
+.mh-actor>img{display:block;width:100%;height:auto;pointer-events:none}
+.mh-actor.active{outline:2px dashed #405e2b}
+#mh-single .mh-actor button{position:absolute;z-index:1;right:0;width:34px;height:34px;min-height:34px;border-radius:50%;padding:0;background:white;color:#402a21;touch-action:none}
+.mh-actor .erase{top:0}.mh-actor .size{bottom:0}
+#maruni-hub:not([open])>#mh-single{display:none}
+@media(max-width:1366px){body.simple-marketing-mode:has(#maruni-hub[open]),body.simple-marketing-mode:has(#maruni-hub[open]) main,body.simple-marketing-mode:has(#maruni-hub[open]) #studio{height:auto!important;overflow:visible!important}}
+
+#mh-choices{display:flex;flex-wrap:wrap;gap:6px}.ml-story-type button{margin:3px}.ml-story-type label:has(#ml-type){display:none}

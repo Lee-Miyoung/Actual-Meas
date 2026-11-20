@@ -1,0 +1,144 @@
+(() => {
+  const hub=$('maruni-hub'), fixed=$('maruni-locked-template'), free=$('maruni-story');
+  const base=$('mh-base'), stage=$('mh-stage'), holder=$('mh-actors'), photos=$('mh-photo');
+  let mode='single', photo=null, layers=[], chosen=null, applying=false, catalog;
+  const drafts=new WeakMap();
+  const note=text=>{$('mh-status').textContent=text;};
+  function switchMode(key){
+    mode=key;
+    $('mh-situations').hidden=key==='locked';
+    $('mh-single').hidden=key!=='single';
+    for(const [name,panel] of [['locked',fixed],['free',free]]){
+      panel.hidden=key!==name;panel.open=hub.open&&key===name;
+    }
+    hub.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===key)));
+    if(key==='single'&&hub.open)refreshPhotos();
+  }
+  function refreshPhotos(prefer){
+    if(applying)return;
+    photos.replaceChildren(...state.photos.map((p,i)=>new Option((i+1)+' · '+p.name,p.id)));
+    const next=state.photos.find(p=>p.id===prefer)||state.photos.find(p=>p===photo)||state.photos[selected]||state.photos[0];
+    photo=next;chosen=null;layers=[];
+    $('mh-apply').disabled=$('mh-add').disabled=!next;stage.hidden=!next;
+    if(next){
+      photos.value=next.id;
+      layers=drafts.get(next)||structuredClone(next.characterEdit?.layers||[]);
+      drafts.set(next,layers);base.src=next.characterEdit?.source||next.src;
+    }else base.removeAttribute('src');
+    render();note(next?'':'현장 사진을 먼저 불러오세요.');
+  }
+  function render(){
+    holder.replaceChildren();
+    for(const item of layers){
+      const box=document.createElement('div'), im=new Image();
+      im.src=item.path;im.alt=item.name;im.draggable=false;box.append(im);
+      box.className='mh-actor'+(item===chosen?' active':'');
+      const place=()=>Object.assign(box.style,{left:item.x*100+'%',top:item.y*100+'%',width:item.w*100+'%'});
+      place();holder.append(box);
+      const del=document.createElement('button'),size=document.createElement('button');
+      del.type=size.type='button';del.textContent='×';size.textContent='↘';
+      del.className='erase';size.className='size';del.ariaLabel='이 사진에서 삭제';size.ariaLabel='크기 조절';
+      box.append(del,size);del.hidden=size.hidden=item!==chosen;
+      del.onclick=()=>{if(applying)return;layers.splice(layers.indexOf(item),1);chosen=null;render();};
+      box.onpointerdown=e=>{
+        if(applying||e.target===del||e.button!==0)return;
+        e.preventDefault();chosen=item;
+        for(const other of holder.children){
+          other.classList.toggle('active',other===box);
+          other.querySelectorAll('button').forEach(b=>b.hidden=other!==box);
+        }
+        const r=stage.getBoundingClientRect(),sx=e.clientX,sy=e.clientY,start={...item},id=e.pointerId;
+        box.setPointerCapture(id);
+        box.onpointermove=ev=>{
+          if(ev.pointerId!==id)return;
+          const dx=(ev.clientX-sx)/r.width,dy=(ev.clientY-sy)/r.height;
+          const aspect=(im.naturalHeight||1)/(im.naturalWidth||1)*r.width/r.height;
+          if(e.target===size)item.w=Math.max(.04,Math.min(.95,1/aspect,start.w+(dx+dy/aspect)/2));
+          item.x=Math.max(0,Math.min(1-item.w,start.x+(e.target===size?0:dx)));
+          item.y=Math.max(0,Math.min(1-item.w*aspect,start.y+(e.target===size?0:dy)));place();
+        };
+        box.onpointerup=box.onpointercancel=box.onlostpointercapture=()=>{box.onpointermove=null;};
+      };
+    }
+  }
+  async function poses(){
+    try{
+      catalog??=fetch('assets/characters/manifest.json').then(r=>{if(!r.ok)throw Error();return r.json();});
+      const data=await catalog;
+      $('mh-pose').replaceChildren(...data.assets.filter(a=>a.actor===$('mh-character').value&&a.status==='ready').map(a=>new Option(a.label,a.path)));
+    }catch{catalog=null;note('포즈를 불러오지 못했습니다. 목록을 다시 열어 주세요.');}
+  }
+  $('mh-poses').ontoggle=()=>{if($('mh-poses').open)poses();};
+  $('mh-character').onchange=poses;
+  $('mh-add').onclick=async()=>{
+    const opt=$('mh-pose').selectedOptions[0],target=photo;if(!target||!opt||applying)return;
+    try{
+      const img=await loadImage(opt.value);if(target!==photo||applying)return;
+      const ratio=base.naturalWidth/base.naturalHeight;if(!ratio)return;
+      const w=Math.min(.25,.45/ratio*img.width/img.height);
+      chosen={path:opt.value,name:opt.textContent,x:.35,y:.35,w};layers.push(chosen);render();
+    }catch{note('선택한 포즈를 열 수 없습니다.');}
+  };
+  $('mh-apply').onclick=async()=>{
+    if(!photo||applying)return;
+    applying=true;const p=photo,source=p.characterEdit?.source||p.src,list=structuredClone(layers);
+    try{
+      let output=source;
+      if(list.length){
+        const im=await loadImage(source),c=document.createElement('canvas');
+        c.width=im.width;c.height=im.height;const ctx=c.getContext('2d');ctx.drawImage(im,0,0);
+        for(const item of list){const actor=await loadImage(item.path),w=c.width*item.w;ctx.drawImage(actor,item.x*c.width,item.y*c.height,w,w*actor.height/actor.width);}
+        output=c.toDataURL('image/png');if(output==='data:,')throw Error('사진 크기를 처리할 수 없습니다.');c.width=c.height=1;
+      }
+      if(!state.photos.includes(p))return;
+      p.src=output;if(list.length)p.characterEdit={source,layers:list};else delete p.characterEdit;
+      images.delete(p.id);delete p.thumbnail;await photoImage(p);
+      selected=state.photos.indexOf(p);thumbnails();invalidate();await preview();await renderProductionWorkspace();
+      await flushPendingSave();note($('save-status').textContent);
+    }catch(e){note(e.message||'사진에 적용하지 못했습니다.');}finally{applying=false;}
+  };
+  photos.onchange=()=>refreshPhotos(photos.value);
+  $('mh-upload').onclick=()=>$('photos').click();
+  new MutationObserver(()=>{if(hub.open&&mode==='single'&&(photos.length!==state.photos.length||!state.photos.includes(photo)))refreshPhotos();}).observe($('thumbnails'),{childList:true});
+  hub.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
+  hub.ontoggle=()=>switchMode(mode);
+  for(const [name,panel] of [['locked',fixed],['free',free]])panel.addEventListener('toggle',()=>{
+    if(panel.open&&(!hub.open||mode!==name)){hub.open=true;switchMode(name);}
+  });
+  const prompts={
+    product:'어떤 제품을 골랐나요? 색과 결이 잘 보이는 사진을 골라 보세요.',
+    episode:'현장에서 기억에 남는 순간을 골라 보세요.',
+    process:'시공 전과 후의 차이가 보이는 사진을 골라 보세요.',
+    tips:'관리 방법을 설명할 부분에 캐릭터를 놓아 보세요.',
+    everyday:'오늘 있었던 일에 어울리는 표정이나 포즈를 골라 보세요.',
+    behind:'작업을 준비하거나 마무리하는 순간을 골라 보세요.'
+  };
+  const phrases={
+    product:['빛을 받으니 결이 잘 보여요.','이 색으로 골랐어요.'],episode:['여기서 잠깐 멈췄어요.','이렇게 맞췄어요.'],
+    process:['시공 전 모습이에요.','같은 자리에서 다시 봤어요.'],tips:['이 부분을 살펴보세요.','물기는 바로 닦아 주세요.'],
+    everyday:['오늘은 여기 왔어요.','잠깐 쉬어 갈까요?'],behind:['오늘 쓸 자재예요.','마지막으로 확인해요.']
+  };
+  const select=$('ml-type');
+  for(const option of select.options){
+    const button=document.createElement('button');button.type='button';button.textContent=option.text;
+    button.onclick=()=>{
+      for(const b of $('mh-choices').children)b.setAttribute('aria-pressed',String(b===button));
+      $('mh-prompt').textContent=prompts[option.value];
+      free.querySelectorAll('[data-mr-phrase]').forEach((b,i)=>{b.textContent=b.dataset.mrPhrase=phrases[option.value][i];});
+    };
+    $('mh-choices').append(button);
+    const preset=button.cloneNode(true);
+    preset.onclick=()=>{if(select.value!==option.value){select.value=option.value;select.dispatchEvent(new Event('change'));}};
+    select.closest('details').append(preset);
+  }
+  function entry(anchor,production){
+    if(!anchor)return;
+    const b=document.createElement('button');b.type='button';b.textContent='사진에 마루니·루루 넣기';
+    b.onclick=()=>{hub.open=true;switchMode('single');refreshPhotos((production?state.signatureSequence?.[state.productionView?.slide||0]?.photoIds?.[0]:null)||state.photos[selected]?.id);hub.scrollIntoView({block:'start'});};
+    anchor.append(b);
+  }
+  entry($('export-photo').parentElement,false);
+  const attach=()=>{const slot=document.querySelector('.simple-photo-card');if(slot&&!slot.querySelector('[data-character-entry]')){entry(slot,true);slot.lastElementChild.dataset.characterEntry='true';}};
+  attach();const observer=new MutationObserver(()=>{attach();if(document.querySelector('[data-character-entry]'))observer.disconnect();});observer.observe($('studio'),{childList:true,subtree:true});
+  switchMode('single');
+})();
