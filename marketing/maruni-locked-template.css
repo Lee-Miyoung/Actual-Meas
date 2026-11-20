@@ -254,3 +254,12 @@
     overflow-y:auto!important;height:auto!important;
   }
 }
+
+.maruni-selection{position:absolute;box-sizing:border-box;z-index:3;border:2px dashed #405e2b;touch-action:none;cursor:move;user-select:none}
+.maruni-selection[hidden]{display:none!important}
+#studio .maruni-selection button{position:absolute;width:36px;height:36px;min-height:36px;min-width:36px;padding:0;border-radius:50%;background:#fff;color:#333;border:1px solid #665;line-height:1;font-size:24px;touch-action:none}
+#studio .maruni-selection button:first-child{right:-6px;top:-8px;color:#992b21}
+#studio .maruni-selection button:last-child{right:-6px;bottom:-9px;cursor:nwse-resize}
+#studio .maruni-selection:has(button){min-height:1px}
+#studio .maruni-selection button:first-child{top:auto;bottom:100%;right:0}
+#studio .maruni-selection button:last-child{top:100%;bottom:auto;right:0}

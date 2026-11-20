@@ -72,7 +72,7 @@ test('아이패드에서 사진 업로드 중 전체 페이지와 하단 컨트�
   assert.match(js, /document\.body\.classList\.toggle\('maruni-editor-scrolling',expanded\)/);
   assert.match(story, /id="mr-quick-photo"/);
   assert.match(story, /\$\('#mr-quick-photo'\)\.onclick/);
-  assert.match(html, /maruni-locked-template\.css\?v=ipad-touch-20261120/);
+  assert.match(html, /maruni-locked-template\.css\?v=photo-handles-20261121/);
 });
 
 test('콘텐츠 형식 6종과 사진 한꺼번에 선택·드롭·붙여넣기·컷 순서 기능 연결',()=>{

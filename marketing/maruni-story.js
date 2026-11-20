@@ -154,7 +154,7 @@
     try {
       // Render to a temporary canvas to prevent partially drawn asynchronous frames.
       const p = C.copy(project), s = p.scenes[active], chosen = selected, drawRevision = revision, c = document.createElement('canvas'); c.width = 648; c.height = 810;
-      try { const next = await R.draw(c, p, s, image, { selected: chosen }); if (project.id === p.id && scene().id === s.id && revision === drawRevision && selected === chosen) { $('#mr-canvas').getContext('2d').drawImage(c, 0, 0); boxes = next; } else repaint = true; } finally { c.width = c.height = 1; }
+      try { const next = await R.draw(c, p, s, image, { selected: chosen }); if (project.id === p.id && scene().id === s.id && revision === drawRevision && selected === chosen) { $('#mr-canvas').getContext('2d').drawImage(c, 0, 0); boxes = next; previewTools.refresh(); } else repaint = true; } finally { c.width = c.height = 1; }
     } finally { painting = false; if (repaint) { repaint = false; schedulePaint(); } }
   }
   function assets() {
@@ -315,6 +315,12 @@
   const canvas = $('#mr-canvas'), points = new Map(); let gesture = null;
   const point = e => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * R.W, y: (e.clientY - r.top) / r.height * R.H }; };
   const previewTools = window.maruniCanvasTools(canvas, {
+    box(){const l=layer();return l?.type==='actor'?C.actorBox(l):null;},
+    startMove(){
+      const l=layer();if(busy||l?.type!=='actor')return;
+      const b=C.actorBox(l), x=(b.x+b.w/2)/R.W,y=(b.y+b.h/2)/R.H;
+      remember();return (dx,dy)=>{if(layer()!==l||busy)return;l.x=C.clamp(x+dx/R.W,0,1);l.y=C.clamp(y+dy/R.H,0,1);changed();};
+    },
     anchor: canvas.parentElement, min: 8, max: 90,
     pick(e) {
       if (busy || photoMode) return;

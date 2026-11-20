@@ -48,8 +48,8 @@
     '<div id="ml-pose-grid" class="ml-pose-grid"></div>',
     '<div class="ml-actions ml-pose-pager"><button type="button" id="ml-pose-prev">이전</button><output id="ml-pose-page">1 / 1</output><button type="button" id="ml-pose-next">다음</button>',
     '<button type="button" id="ml-pose-hide">이 컷에서 숨기기</button></div></div></div>',
-    '<div class="ml-minirow"><label>마루니 크기<input id="ml-size-maruni" type="range" min="65" max="130" value="100"></label>',
-    '<label>루루 크기<input id="ml-size-ruru" type="range" min="65" max="130" value="100"></label></div>',
+    '<div class="ml-minirow"><label>마루니 크기<input id="ml-size-maruni" type="range" min="20" max="130" value="100"></label>',
+    '<label>루루 크기<input id="ml-size-ruru" type="range" min="20" max="130" value="100"></label></div>',
     '<button id="ml-actor-reset" type="button">캐릭터 위치·크기 초기화</button>',
     '<p class="ml-note">캐릭터를 손가락으로 끌어 이동할 수 있습니다. 제목·로고·말풍선은 고정입니다.</p>',
 
@@ -427,10 +427,10 @@
     const size=(actor==='maruni'?315:270);
     const baseX=actor==='maruni'?(left?62:520):(left?365:787);
     const offsets=scene.actorTransform?.[actor]||{};
-    const scale=Math.max(.65,Math.min(1.3,Number(offsets.scale)||1));
+    const scale=Math.max(.2,Math.min(1.3,Number(offsets.scale)||1));
     const width=size*scale;
     return {x:Math.max(12,Math.min(W-width-12,baseX+(Number(offsets.dx)||0))),
-            y:Math.max(650,Math.min(1192-width,baseY+(actor==='ruru'?44:0)+(Number(offsets.dy)||0))),
+            y:Math.max(12,Math.min(H-width-12,baseY+(actor==='ruru'?44:0)+(Number(offsets.dy)||0))),
             w:width,h:width};
   }
   function transform(scene,actor){
@@ -446,7 +446,7 @@
       ctx.drawImage(images[actor],box.x,box.y,box.w,box.h);
       boxes.set(actor,box);
     }
-    if(canvas.width<1080){actorBoxes=boxes;}  // 고화질 출력에서는 편집 중 hit 영역 변경 금지
+    if(canvas.width<1080){actorBoxes=boxes;previewTools?.refresh();}  // 고화질 출력에서는 편집 중 hit 영역 변경 금지
   }
   function pillCaption(text,y){
     rounded(55,y,970,98,46,'rgba(255,252,246,.94)','#c8b69b');
@@ -633,7 +633,13 @@
       return {x:(e.clientX-box.left)*W/box.width,y:(e.clientY-box.top)*H/box.height};
     };
     const tools = window.maruniCanvasTools(canvas, {
-      anchor:canvas, min:65, max:130,
+      box(){return current().photo&&current()[selectedActor]?actorBox(current(),active,selectedActor):null;},
+      startMove(){
+        const s=current(),actor=selectedActor;if(busy||!s[actor])return;
+        const t=transform(s,actor),dx=t.dx||0,dy=t.dy||0;
+        return (x,y)=>{if(busy||current()!==s||actor!==selectedActor)return;t.dx=dx+x;t.dy=dy+y;changed();};
+      },
+      anchor:canvas, min:20, max:130,
       pick(e){
         if(busy || !current().photo)return;
         const p=point(e);
