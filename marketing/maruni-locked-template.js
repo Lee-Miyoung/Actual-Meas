@@ -14,6 +14,7 @@
     '<div class="ml-layout"><div class="ml-stage">',
     '<div class="ml-quick-upload"><button id="ml-quick-photo" type="button">＋ 사진 여러 장 선택</button><button id="ml-touch-edit" type="button" aria-pressed="false">화면 스크롤 · 이동 끔</button><small id="ml-photo-tip">사진 위에서도 화면을 밀어 스크롤할 수 있어요. 캐릭터를 옮길 때만 이동 모드를 켜세요.</small></div>',
     '<canvas id="ml-canvas" width="540" height="675" aria-label="고정 포맷 4대5 이미지 미리보기"></canvas>',
+    '<div class="ml-actions ml-actor-choose-actions"><button id="ml-open-pose-maruni" type="button">마루니 다른 동작 보기</button><button id="ml-open-pose-ruru" type="button">루루 다른 동작 보기</button></div>',
     '<div id="ml-tabs" class="ml-tabs" aria-label="썸네일 및 4컷 선택"></div>',
     '<div class="ml-actions ml-photo-order"><button id="ml-photo-left" type="button">← 사진 이전 컷과 교환</button>',
     '<button id="ml-photo-right" type="button">사진 다음 컷과 교환 →</button>',
@@ -37,7 +38,7 @@
     '<div class="ml-actions ml-gallery-pager"><button id="ml-library-prev" type="button">이전 사진</button><output id="ml-library-page">1 / 1</output><button id="ml-library-next" type="button">다음 사진</button></div></section>',
     '<div class="ml-actions"><button id="ml-copy-photo-next" type="button">현재 사진을 다음 컷에 복사</button><button id="ml-copy-photo-all" type="button">현재 사진을 5장에 사용</button></div>',
     '<label>현재 장 제목(위치·크기 고정)<textarea id="ml-title" maxlength="44" rows="2"></textarea></label>',
-    '<label id="ml-bubble-wrap">현재 장 짧은 말풍선(1개만)<input id="ml-bubble" maxlength="34"></label>',
+    '<label>말풍선 모양<select id="ml-format"><option value="legacy">기존 말풍선</option><option value="speech">대화</option><option value="thought">생각</option><option value="note">현장 설명</option><option value="none">없음</option></select></label><label id="ml-bubble-wrap">현재 장 짧은 말풍선(1개만)<input id="ml-bubble" maxlength="34"></label>',
     '<label>하단 핵심 문구(한 줄)<input id="ml-foot" maxlength="34"></label>',
     '<div class="ml-actor-selectors"><strong>공식 캐릭터 · 그림을 눌러 선택</strong><p class="ml-note">아이패드에서 이름 대신 그림으로 찾으세요. 현재 장만 바뀝니다.</p>',
     '<div class="ml-actor-cards"><button type="button" id="ml-card-maruni" class="ml-actor-card"><img id="ml-img-maruni" alt="" loading="lazy"><span id="ml-label-maruni">마루니 · 포즈 선택</span></button>',
@@ -51,7 +52,7 @@
     '<label>루루 크기<input id="ml-size-ruru" type="range" min="65" max="130" value="100"></label></div>',
     '<button id="ml-actor-reset" type="button">캐릭터 위치·크기 초기화</button>',
     '<p class="ml-note">캐릭터를 손가락으로 끌어 이동할 수 있습니다. 제목·로고·말풍선은 고정입니다.</p>',
-    '<div class="ml-actions ml-actor-choose-actions"><button id="ml-open-pose-maruni" type="button">마루니 다른 동작 보기</button><button id="ml-open-pose-ruru" type="button">루루 다른 동작 보기</button></div>',
+
     '<div class="ml-minirow ml-native-actor-selects"><label>마루니 공식 포즈<select id="ml-maruni"><option value="">없음</option></select></label>',
     '<label>루루 공식 포즈<select id="ml-ruru"><option value="">없음</option></select></label></div>',
     '<div class="ml-minirow"><label>캐릭터 배치 방향<select id="ml-side"><option value="right">오른쪽 아래</option><option value="left">왼쪽 아래</option></select></label>',
@@ -74,7 +75,7 @@
   const makeId = () => (crypto.randomUUID ? crypto.randomUUID() : 'p'+Date.now()+'x'+Math.random().toString(16).slice(2));
   function makeProject() {
     return {schema:'cheonginmaru-maruni-locked-v1',id:makeId(),name:'새 마루니·루루 시리즈',type:'product',series:'마루니·루루 제품 이야기',product:'동화 시그니월 슬레이트모티프',field:'벽장재',region:'',spec:'',library:[],
-      updatedAt:Date.now(),scenes:Workflow.scenesFor('product').map(s => Object.assign({},s,{photo:null,photoId:null,focusY:50}))};
+      updatedAt:Date.now(),scenes:Workflow.scenesFor('product').map(s => Object.assign({},s,{photo:null,photoId:null,focusY:50,bubbleFormat:'speech'}))};
   }
   let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false, persistedPhotos=new Set();
   const canvas=q('#ml-canvas'), ctx=canvas.getContext('2d'), imagePromises=new Map(), blobCache=new Map();
@@ -403,7 +404,18 @@
     const dx=(W-dw)*.5,dy=(H-dh)*Number(scene.focusY||0)/100;
     ctx.drawImage(im,dx,dy,dw,dh);
   }
-  function bubble(text){
+  function bubble(text,scene,index){
+    if(scene.bubbleFormat==='none')return;
+    if(text.trim() && scene.bubbleFormat && scene.bubbleFormat!=='legacy'){
+      font(40);const lines=splitLines(text,730,3);
+      const w=Math.max(150,...lines.map(line=>ctx.measureText(line).width+54));
+      const h=lines.length*50+38;
+      const actor=scene.maruni?'maruni':scene.ruru?'ruru':null;
+      const ab=actor?actorBox(scene,index,actor):null, sx=ab?ab.x+ab.w/2:540;
+      const x=Math.max(35,Math.min(W-w-35,sx-w/2)),y=ab?Math.max(365,ab.y-h-45):365;
+      window.MaruniStoryRender.balloon(ctx,{x,y,w,h},scene.bubbleFormat,ab?{x:sx,y:ab.y}:null,paper,ink);
+      textBlock(text,x+w/2,y+19,w-45,40,50,3,ink,'center');return;
+    }
     if(!text.trim())return;
     const x=110,y=365,w=750,h=158;
     rounded(x,y,w,h,38,'rgba(255,252,246,.96)',ink);
@@ -474,7 +486,7 @@
       rounded(54,142,110,112,24,green,null);
       textBlock(String(index).padStart(2,'0'),109,169,100,54,70,1,'#fffdf6','center');
       textBlock(scene.title,185,152,820,62,76,2,ink);
-      bubble(scene.bubble);
+      bubble(scene.bubble,scene,index);
     }
     drawActors(scene,index,{maruni,ruru});
     pillCaption(scene.foot,1204);
@@ -515,6 +527,7 @@
     q('#ml-spec').value=project.spec||'';
     const s=current();
     previewTools?.show(s.photo && s[selectedActor] ? Math.round((s.actorTransform?.[selectedActor]?.scale || 1)*100) : null);
+    q('#ml-format').value=s.bubbleFormat||'legacy';q('#ml-format').disabled=active===0;
     q('#ml-title').value=s.title;q('#ml-bubble').value=s.bubble;
     q('#ml-foot').value=s.foot;q('#ml-side').value=s.side;
     q('#ml-photo-y').value=s.focusY===undefined?50:s.focusY;
@@ -577,6 +590,7 @@
     catalog=(data.assets||[]).filter(a=>a.status==='ready'&&a.path&&['maruni','ruru'].includes(a.actor));
     if(!catalog.length)throw Error('등록된 공식 캐릭터가 없습니다. 가짜 그림을 대신 사용하지 않습니다.');
     for(const actor of ['maruni','ruru']){
+      q('#ml-open-pose-'+actor).textContent=(actor==='maruni'?'마루니 ':'루루 ')+catalog.filter(a=>a.actor===actor).length+'종 보기';
       const sel=q('#ml-'+actor);sel.replaceChildren(new Option('표시 안 함',''));
       for(const asset of catalog.filter(a=>a.actor===actor))sel.add(new Option(asset.label,asset.id));
     }
@@ -600,11 +614,11 @@
     q('#ml-pose-page').textContent=(pickerPage+1)+' / '+pages;
     q('#ml-pose-prev').disabled=pickerPage===0;
     q('#ml-pose-next').disabled=pickerPage>=pages-1;
-    q('#ml-picker-name').textContent=pickerActor==='maruni'?'마루니 30종 포즈':'루루 30종 포즈';
+    q('#ml-picker-name').textContent=q('#ml-open-pose-'+pickerActor).textContent;
   }
   function openPosePicker(actor){
     pickerActor=actor;selectedActor=actor;pickerPage=0;q('#ml-pose-search').value='';
-    q('#ml-picker').hidden=false;renderPosePicker();preview();
+    q('#ml-picker').hidden=false;renderPosePicker();preview();q('#ml-picker').scrollIntoView({block:'center'});
   }
   function closePosePicker(){q('#ml-picker').hidden=true;pickerActor='';}
   function updateTouchEdit(){
@@ -672,6 +686,7 @@
     canvas.addEventListener('pointercancel',finish);
   }
   function setupEvents(){
+    q('#ml-format').onchange=e=>{current().bubbleFormat=e.target.value;changed();};
     q('#ml-touch-edit').addEventListener('click',()=>{
       drag=null;touchEdit=!touchEdit;updateTouchEdit();
       q('#ml-photo-tip').textContent=touchEdit

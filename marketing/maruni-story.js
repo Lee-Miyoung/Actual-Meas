@@ -14,7 +14,7 @@
     <p id="mr-status" role="status" aria-live="polite">편집기를 준비하고 있습니다.</p>
     <div class="mr-grid">
       <div class="mr-stage">
-        <div class="mr-quick-upload"><button id="mr-quick-photo" type="button">＋ 현장 사진 선택</button><button id="mr-touch-edit" type="button" aria-pressed="false">화면 스크롤 · 이동 끔</button><button id="mr-open-locked" type="button">4컷 고정 템플릿 열기</button><small id="mr-touch-help">사진 위에서 위아래로 밀면 화면이 움직입니다. 캐릭터 위치를 바꿀 때만 이동 모드를 켜 주세요. 4컷은 별도의 작업으로 저장됩니다.</small></div>
+        <div class="mr-quick-upload"><button id="mr-quick-photo" type="button">＋ 현장 사진 선택</button><button id="mr-touch-edit" type="button" aria-pressed="false">화면 스크롤 · 이동 끔</button><button id="mr-browse-maruni" type="button">마루니 포즈 보기</button><button id="mr-browse-ruru" type="button">루루 포즈 보기</button><button id="mr-open-locked" type="button">4컷 고정 템플릿 열기</button><small id="mr-touch-help">사진 위에서 위아래로 밀면 화면이 움직입니다. 캐릭터 위치를 바꿀 때만 이동 모드를 켜 주세요. 4컷은 별도의 작업으로 저장됩니다.</small></div>
         <div class="mr-canvas-wrap"><canvas id="mr-canvas" width="648" height="810" aria-label="선택한 장면 미리보기. 캐릭터를 눌러 선택한 뒤 끌어 이동합니다."></canvas></div>
         <div id="mr-scenes" class="mr-scenes" aria-label="6컷 장면 선택"></div>
         <div class="mr-toolbar" style="margin-top:10px"><button id="mr-prev" type="button">앞 순서로</button><button id="mr-next" type="button">뒤 순서로</button><button id="mr-copy-scene" type="button">다른 컷에 복제</button><button id="mr-undo" type="button">뒤로 한 단계</button></div>
@@ -41,7 +41,7 @@
           <div id="mr-layers" class="mr-layers" aria-label="현재 장면의 항목"></div>
           <label>선택한 항목 크기<input id="mr-size" type="range" min="8" max="90" value="30" disabled></label>
           <div class="mr-toolbar"><button id="mr-flip" type="button">좌우 반전</button><button id="mr-front" type="button">맨 앞으로</button><button id="mr-delete" type="button">선택 삭제</button><button id="mr-bubble-add" type="button">말풍선 추가</button></div>
-          <label>말풍선 화자<select id="mr-speaker" disabled></select></label>
+          <label>말풍선 모양<select id="mr-format"><option value="legacy">기존 말풍선</option><option value="speech">대화</option><option value="thought">생각</option><option value="note">현장 설명</option><option value="none">없음</option></select></label><label>말풍선 화자<select id="mr-speaker" disabled></select></label>
           <label>말풍선 내용<textarea id="mr-bubble" rows="3" maxlength="180" placeholder="말풍선을 선택하거나 추가하세요" disabled></textarea></label>
           <div class="mr-toolbar"><button type="button" data-mr-phrase="결이 잘 보인다개!">결이 잘 보인다개!</button><button type="button" data-mr-phrase="여기도 확인했다개!">여기도 확인했다개!</button></div>
           <label>전체 6컷 말풍선 글자 크기<input id="mr-font" type="range" min="24" max="64" value="38"></label>
@@ -139,6 +139,7 @@
     $('#mr-flip').disabled = l?.type !== 'actor' || !l.allowFlip; $('#mr-delete').disabled = $('#mr-front').disabled = !l;
     $('#mr-bubble-add').disabled = scene().layers.length >= 12;
     $('#mr-bubble').disabled = $('#mr-speaker').disabled = !bubble; $('#mr-bubble').value = bubble ? l.text : '';
+    $('#mr-format').disabled=!bubble; $('#mr-format').value=bubble?(l.format||'legacy'):'speech';
     const sp = $('#mr-speaker'); sp.replaceChildren(new Option('화자 없음', ''));
     for (const a of scene().layers.filter(a => a.type === 'actor')) sp.add(new Option(a.actor === 'maruni' ? '마루니' : '루루', a.id)); sp.value = bubble ? l.speakerId || '' : '';
     $('#mr-photo-mode').hidden = true; $('#mr-photo-zoom').parentElement.hidden = true; $('#mr-photo-reset').hidden = true; $('#mr-photo-mode').setAttribute('aria-pressed', String(photoMode)); $('#mr-photo-mode').textContent = photoMode ? '사진 조절 · 켜짐' : '사진 조절 · 잠김'; $('#mr-photo-zoom').disabled = !photoMode || !scene().photoId; $('#mr-photo-zoom').value = Math.round(scene().photo.zoom * 100);
@@ -157,6 +158,11 @@
     } finally { painting = false; if (repaint) { repaint = false; schedulePaint(); } }
   }
   function assets() {
+    for(const actor of ['maruni','ruru']){
+      const button=$('#mr-browse-'+actor);
+      button.textContent=(actor==='maruni'?'마루니 ':'루루 ')+manifest.filter(a=>a.actor===actor&&a.status==='ready').length+'종 보기';
+      button.onclick=()=>{if(busy)return;actorTab=actor;assetPage=0;$('#mr-search').value='';assets();$('#mr-assets').scrollIntoView({block:'center'});};
+    }
     $('#mr-tab-maruni').setAttribute('aria-pressed', String(actorTab === 'maruni')); $('#mr-tab-ruru').setAttribute('aria-pressed', String(actorTab === 'ruru'));
     const all = manifest.filter(a => a.actor === actorTab), q = $('#mr-search').value.trim(), available = all.filter(a => a.status === 'ready');
     const hiddenCount = available.filter(a => isPoseHidden(a.id)).length;
@@ -294,6 +300,7 @@
   $('#mr-flip').onclick = () => { const l = layer(); if (busy || l?.type !== 'actor' || !l.allowFlip) return; remember(); l.flipped = !l.flipped; changed(); };
   $('#mr-front').onclick = () => { const l = layer(); if (busy || !l) return; remember(); scene().layers = scene().layers.filter(a => a.id !== l.id); scene().layers.push(l); changed(); controls(); };
   $('#mr-delete').onclick = () => { if (busy || !layer()) return; remember(); const id = selected; scene().layers = scene().layers.filter(l => l.id !== id); for (const l of scene().layers) if (l.speakerId === id) l.speakerId = null; selected = null; changed(); controls(); };
+  $('#mr-format').onchange=e=>{if(busy||layer()?.type!=='bubble')return;remember();layer().format=e.target.value;changed();};
   function addBubble() { if (scene().layers.length >= 12) throw Error('한 컷 최대 12개입니다.'); const a = layer()?.type === 'actor' ? layer() : scene().layers.find(l => l.type === 'actor'); const l = { id: C.id(), type: 'bubble', speakerId: a?.id || null, text: '', x: a ? (a.x < .5 ? .27 : .73) : .5, y: Math.min(.7, .18 + scene().layers.filter(l => l.type === 'bubble' && l.speakerId === (a?.id || null)).length * .22), width: a ? .46 : .7 }; scene().layers.push(l); selected = l.id; photoMode = false; }
   $('#mr-bubble-add').onclick = () => { if (busy) return; remember(); addBubble(); changed(); controls(); $('#mr-bubble').focus(); };
   let typingId = null;

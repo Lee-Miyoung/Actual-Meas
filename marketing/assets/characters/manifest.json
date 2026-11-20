@@ -1759,6 +1759,2156 @@
         337,
         374
       ]
+    },
+    {
+      "id": "maruni-31",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "손을 펴서 소개",
+      "tags": [
+        "스티커",
+        "손을 펴서 소개"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/31.png",
+      "width": 357,
+      "height": 575,
+      "sha256": "4728e29526f0c151ec98c4c007c3ebf0d9b6df2c03620c2a2149eaee4e9375d7",
+      "source": {
+        "filename": "마루니와 루루 캐릭터 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        357,
+        575
+      ]
+    },
+    {
+      "id": "maruni-32",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "주먹 들고 환호",
+      "tags": [
+        "스티커",
+        "주먹 들고 환호"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/32.png",
+      "width": 384,
+      "height": 570,
+      "sha256": "2132793348368043770ab77eefbcd71390bcb49bc4754dd0e3ade004f759f2aa",
+      "source": {
+        "filename": "마루니와 루루 캐릭터 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        384,
+        570
+      ]
+    },
+    {
+      "id": "maruni-33",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "턱을 괴고 궁금",
+      "tags": [
+        "스티커",
+        "턱을 괴고 궁금"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/33.png",
+      "width": 367,
+      "height": 539,
+      "sha256": "77b60793312619fc48060a6da8ac0eb03299a7d0b777d027c55a4e2a41c79a42",
+      "source": {
+        "filename": "마루니와 루루 캐릭터 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        367,
+        539
+      ]
+    },
+    {
+      "id": "maruni-34",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "엄지 들어 추천",
+      "tags": [
+        "스티커",
+        "엄지 들어 추천"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/34.png",
+      "width": 373,
+      "height": 562,
+      "sha256": "457798e2b958c06e3f84031a5c94dd482b40203d9cc495d00d0e05551fe7731e",
+      "source": {
+        "filename": "마루니와 루루 캐릭터 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        373,
+        562
+      ]
+    },
+    {
+      "id": "ruru-31",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "고개 들어 반응",
+      "tags": [
+        "스티커",
+        "고개 들어 반응"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/31.png",
+      "width": 313,
+      "height": 384,
+      "sha256": "d1bc64a4f02d1c1b9911e91064b6469bac46afa295eaec127f21433a52dc6b68",
+      "source": {
+        "filename": "마루니와 루루 캐릭터 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        313,
+        384
+      ]
+    },
+    {
+      "id": "ruru-32",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "앞발 들고 웃기",
+      "tags": [
+        "스티커",
+        "앞발 들고 웃기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/32.png",
+      "width": 334,
+      "height": 367,
+      "sha256": "f4194b0ec6da0e7ddecd07cd89e6397f9c48404e69a02fda02a4d8f3774bf57a",
+      "source": {
+        "filename": "마루니와 루루 캐릭터 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        334,
+        367
+      ]
+    },
+    {
+      "id": "ruru-33",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "자재판 살펴보기",
+      "tags": [
+        "스티커",
+        "자재판 살펴보기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/33.png",
+      "width": 465,
+      "height": 372,
+      "sha256": "a1b4ebee294c5956ce836b31279489bce1a3ff91647532f543120e17c294e8f1",
+      "source": {
+        "filename": "마루니와 루루 캐릭터 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        465,
+        372
+      ]
+    },
+    {
+      "id": "ruru-34",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "엎드려 낮잠",
+      "tags": [
+        "스티커",
+        "엎드려 낮잠"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/34.png",
+      "width": 368,
+      "height": 379,
+      "sha256": "6dfb8d0fd55e67ca40b44beff51fa0632f5ce09b350acc861bce14c45ea4fd07",
+      "source": {
+        "filename": "마루니와 루루 캐릭터 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        368,
+        379
+      ]
+    },
+    {
+      "id": "maruni-35",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "둘이서 궁금해요",
+      "tags": [
+        "스티커",
+        "둘이서 궁금해요"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/35.png",
+      "width": 642,
+      "height": 583,
+      "sha256": "a05da0d68e86636a09fd0954d3906523b9e3027db31d61a5f548d84de12c33ce",
+      "source": {
+        "filename": "마루니와 루루의 네 가지 표정 스티커.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        642,
+        583
+      ]
+    },
+    {
+      "id": "maruni-36",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "둘이서 반갑게 인사",
+      "tags": [
+        "스티커",
+        "둘이서 반갑게 인사"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/36.png",
+      "width": 655,
+      "height": 577,
+      "sha256": "fc5fca3f2840264cf89c8a9920766be7228e58c9078f608dff89f3fc58c152e0",
+      "source": {
+        "filename": "마루니와 루루의 네 가지 표정 스티커.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        655,
+        577
+      ]
+    },
+    {
+      "id": "maruni-37",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "루루와 방향 안내",
+      "tags": [
+        "스티커",
+        "루루와 방향 안내"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/37.png",
+      "width": 643,
+      "height": 565,
+      "sha256": "1e7af47beb9823680091ca5934eb7e9c0de72192f569ff98fe0d3503264feb11",
+      "source": {
+        "filename": "마루니와 루루의 네 가지 표정 스티커.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        643,
+        565
+      ]
+    },
+    {
+      "id": "maruni-38",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "루루와 함께 추천",
+      "tags": [
+        "스티커",
+        "루루와 함께 추천"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/38.png",
+      "width": 657,
+      "height": 597,
+      "sha256": "ea076bbe3d5bb06debdaae415b3037a790f3b97e7bca97a3d46639ec45459e33",
+      "source": {
+        "filename": "마루니와 루루의 네 가지 표정 스티커.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        657,
+        597
+      ]
+    },
+    {
+      "id": "maruni-39",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "한 손으로 소개",
+      "tags": [
+        "스티커",
+        "한 손으로 소개"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/39.png",
+      "width": 384,
+      "height": 291,
+      "sha256": "7c3e2a63158bca93003682ec66ed7b42968341156ee67dfee90d101d0ea46e49",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        384,
+        291
+      ]
+    },
+    {
+      "id": "maruni-40",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "위로 가리키기",
+      "tags": [
+        "스티커",
+        "위로 가리키기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/40.png",
+      "width": 384,
+      "height": 296,
+      "sha256": "15ac6417524f19d113c0a20dd98620fb54a9cae79bed0a6357904e2fec544ee1",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        384,
+        296
+      ]
+    },
+    {
+      "id": "maruni-41",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "고개 갸웃",
+      "tags": [
+        "스티커",
+        "고개 갸웃"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/41.png",
+      "width": 360,
+      "height": 297,
+      "sha256": "78bad902e84e46533cc96f51869c2066b83b8d0bedc367a45c6d5d8ac03122a2",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        360,
+        297
+      ]
+    },
+    {
+      "id": "maruni-42",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "점검표 기록",
+      "tags": [
+        "스티커",
+        "점검표 기록"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/42.png",
+      "width": 372,
+      "height": 281,
+      "sha256": "db1ef06613eb5dd40d957cdfaddac389363e4dff3e78156e63134754e001372f",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        372,
+        281
+      ]
+    },
+    {
+      "id": "maruni-43",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "돋보기로 마루 점검",
+      "tags": [
+        "스티커",
+        "돋보기로 마루 점검"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/43.png",
+      "width": 328,
+      "height": 279,
+      "sha256": "46781c0567954004de403e201450d2085151d7c88e5afe574bda4948c7928f6c",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        328,
+        279
+      ]
+    },
+    {
+      "id": "maruni-44",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "엄지 들어 인사",
+      "tags": [
+        "스티커",
+        "엄지 들어 인사"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/44.png",
+      "width": 385,
+      "height": 279,
+      "sha256": "c7f1819f6d3278d0d9bc44143c62cbcf215d8910e434a178ab3dfffb42bcb6a2",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        385,
+        279
+      ]
+    },
+    {
+      "id": "ruru-35",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "앉아서 주목",
+      "tags": [
+        "스티커",
+        "앉아서 주목"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/35.png",
+      "width": 341,
+      "height": 199,
+      "sha256": "72b10268b3afa17d7e07783698b4c2c7cb788dabc239c1dbd0e67f41a1f343a4",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        341,
+        199
+      ]
+    },
+    {
+      "id": "ruru-36",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "발 흔들어 인사",
+      "tags": [
+        "스티커",
+        "발 흔들어 인사"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/36.png",
+      "width": 377,
+      "height": 199,
+      "sha256": "1eb63697ae7041118cd72e131374d4e2d66e15d081b5c008e603cd9a24090e55",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        377,
+        199
+      ]
+    },
+    {
+      "id": "ruru-37",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "폴짝 뛰기",
+      "tags": [
+        "스티커",
+        "폴짝 뛰기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/37.png",
+      "width": 384,
+      "height": 246,
+      "sha256": "d13c578146141685ca6abcf33cd2a3a67890f5a3d44dd7ff248b272e77975147",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        384,
+        246
+      ]
+    },
+    {
+      "id": "ruru-38",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "샘플 앞에서 점검",
+      "tags": [
+        "스티커",
+        "샘플 앞에서 점검"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/38.png",
+      "width": 356,
+      "height": 246,
+      "sha256": "02507306bba5120451e3d182dbdeb5ff333112cd41ba7851741914ab18427b8d",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        356,
+        246
+      ]
+    },
+    {
+      "id": "ruru-39",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "샘플 들고 미소",
+      "tags": [
+        "스티커",
+        "샘플 들고 미소"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/39.png",
+      "width": 360,
+      "height": 239,
+      "sha256": "7d9534d0edccbbd3f6ed2c2b7658f038f3fd098ee90302a3533ff772850718ed",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        360,
+        239
+      ]
+    },
+    {
+      "id": "ruru-40",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "고개 갸웃",
+      "tags": [
+        "스티커",
+        "고개 갸웃"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/40.png",
+      "width": 387,
+      "height": 243,
+      "sha256": "2071da2e19d9647eaf9af8916c41d2665275652e4f358bd9633700411451b81d",
+      "source": {
+        "filename": "마루니와 루루의 바닥재 스티커 모음.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        387,
+        243
+      ]
+    },
+    {
+      "id": "maruni-45",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 손인사",
+      "tags": [
+        "스티커",
+        "스티커 · 손인사"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/45.png",
+      "width": 147,
+      "height": 178,
+      "sha256": "f41f70c10dc247b698dfd80439b53da5a8fb7bd30d5ff165aa49b3d280b28050",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        147,
+        178
+      ]
+    },
+    {
+      "id": "maruni-46",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 손 펼쳐 소개",
+      "tags": [
+        "스티커",
+        "스티커 · 손 펼쳐 소개"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/46.png",
+      "width": 138,
+      "height": 170,
+      "sha256": "8c31772907d5abd6442c87c66967113505ec9313fc89ad9c0f46425c929f6221",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        138,
+        170
+      ]
+    },
+    {
+      "id": "maruni-47",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 검지 들어 설명",
+      "tags": [
+        "스티커",
+        "스티커 · 검지 들어 설명"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/47.png",
+      "width": 123,
+      "height": 172,
+      "sha256": "ac48a5b0c622b1da9b9d592f69a2c5da4d7e01bfef2501d770a542920ccd94ac",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        123,
+        172
+      ]
+    },
+    {
+      "id": "maruni-48",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 옆을 가리키기",
+      "tags": [
+        "스티커",
+        "스티커 · 옆을 가리키기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/48.png",
+      "width": 128,
+      "height": 164,
+      "sha256": "5f9b76fde3b883d50e2bbeb0d2e6611b8e2a207cbf7c94cc44a29ebe733dbd47",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        164
+      ]
+    },
+    {
+      "id": "maruni-49",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 양팔로 환영",
+      "tags": [
+        "스티커",
+        "스티커 · 양팔로 환영"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/49.png",
+      "width": 139,
+      "height": 168,
+      "sha256": "11836998168d50895818d68fbd04eeba0fb9f49865b5de6c595a7b3a61e083a7",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        139,
+        168
+      ]
+    },
+    {
+      "id": "maruni-50",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 아이디어",
+      "tags": [
+        "스티커",
+        "스티커 · 아이디어"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/50.png",
+      "width": 128,
+      "height": 167,
+      "sha256": "c78901525a6dac75195b6452eeefbee1b92a4ce1fbbfdfb6200b77ce1c6471f0",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        167
+      ]
+    },
+    {
+      "id": "ruru-41",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 정면 인사",
+      "tags": [
+        "스티커",
+        "스티커 · 정면 인사"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/41.png",
+      "width": 129,
+      "height": 143,
+      "sha256": "460bf847d64e1f38dd0246a9b924c81a2bb6721d6206e8632aeda3b2a30c7a75",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        129,
+        143
+      ]
+    },
+    {
+      "id": "ruru-42",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 웃으며 인사",
+      "tags": [
+        "스티커",
+        "스티커 · 웃으며 인사"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/42.png",
+      "width": 132,
+      "height": 123,
+      "sha256": "098899f4f5b029dfed85cae4c9f5d0e490e88d113976af8cdbeca3d4bf54c733",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        132,
+        123
+      ]
+    },
+    {
+      "id": "ruru-43",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 깜짝",
+      "tags": [
+        "스티커",
+        "스티커 · 깜짝"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/43.png",
+      "width": 127,
+      "height": 150,
+      "sha256": "843f2c77e7905f522cd0b7e08fe61b5ffcbcc39e990bac1c2cb86660e91f771b",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        127,
+        150
+      ]
+    },
+    {
+      "id": "ruru-44",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 궁금",
+      "tags": [
+        "스티커",
+        "스티커 · 궁금"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/44.png",
+      "width": 122,
+      "height": 168,
+      "sha256": "4532f3783a52dd736e325945218f19005f3f98d2eef727b8e6cb99502f549a55",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        122,
+        168
+      ]
+    },
+    {
+      "id": "ruru-45",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 관심",
+      "tags": [
+        "스티커",
+        "스티커 · 관심"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/45.png",
+      "width": 123,
+      "height": 170,
+      "sha256": "54d7c620c2509c9b15f18a5f9f3466ec3e1809008d5291addd04f5504976259b",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        123,
+        170
+      ]
+    },
+    {
+      "id": "ruru-46",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 신나게 뛰기",
+      "tags": [
+        "스티커",
+        "스티커 · 신나게 뛰기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/46.png",
+      "width": 137,
+      "height": 142,
+      "sha256": "5567023dfc762ae306cbf288fae2b40767055290b34d98c5fc8edc18c03bc794",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        137,
+        142
+      ]
+    },
+    {
+      "id": "maruni-51",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 고민",
+      "tags": [
+        "스티커",
+        "스티커 · 고민"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/51.png",
+      "width": 127,
+      "height": 165,
+      "sha256": "4e65ed72d215bfd3545b1eee24c56f823873b5c40261a4d82339a4fa8c9ee12c",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        127,
+        165
+      ]
+    },
+    {
+      "id": "maruni-52",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 떠오른 생각",
+      "tags": [
+        "스티커",
+        "스티커 · 떠오른 생각"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/52.png",
+      "width": 138,
+      "height": 160,
+      "sha256": "0d5ae44b57972aff9099d487b41682e0605aa1a972e7ed5abdcc1bda93b7c90e",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        138,
+        160
+      ]
+    },
+    {
+      "id": "maruni-53",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 팔짱",
+      "tags": [
+        "스티커",
+        "스티커 · 팔짱"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/53.png",
+      "width": 99,
+      "height": 163,
+      "sha256": "e47ec5e2821ba2711e33e0cdbbb8154b8c02df62dd86b6b02f2e8d80bc5209c2",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        99,
+        163
+      ]
+    },
+    {
+      "id": "maruni-54",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 눈 감고 생각",
+      "tags": [
+        "스티커",
+        "스티커 · 눈 감고 생각"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/54.png",
+      "width": 126,
+      "height": 158,
+      "sha256": "46d64f2e563ead83cd8765f6e242522e300d89f62665f0583546881c8dda7004",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        126,
+        158
+      ]
+    },
+    {
+      "id": "maruni-55",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 좋아요",
+      "tags": [
+        "스티커",
+        "스티커 · 좋아요"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/55.png",
+      "width": 131,
+      "height": 162,
+      "sha256": "0bc9d90fa57c06d394d946e9ebda60340abc2d7cc9248157af6622790655ed51",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        131,
+        162
+      ]
+    },
+    {
+      "id": "maruni-56",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 문서 들기",
+      "tags": [
+        "스티커",
+        "스티커 · 문서 들기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/56.png",
+      "width": 120,
+      "height": 157,
+      "sha256": "fd34687ef26adcd3f92ca9d0fbe0d378c62be04531fff23a766e200dc8a6176c",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        120,
+        157
+      ]
+    },
+    {
+      "id": "ruru-47",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 졸음",
+      "tags": [
+        "스티커",
+        "스티커 · 졸음"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/47.png",
+      "width": 129,
+      "height": 92,
+      "sha256": "9afa983012f5cf377f11bb556489bb4b0119d4718b2ad7fc8815690d693c35a9",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        129,
+        92
+      ]
+    },
+    {
+      "id": "ruru-48",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 활짝 웃기",
+      "tags": [
+        "스티커",
+        "스티커 · 활짝 웃기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/48.png",
+      "width": 138,
+      "height": 147,
+      "sha256": "4bdfa44227508879a1c0874280968a0001371e2233c54cf2588766e8cbeaefbe",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        138,
+        147
+      ]
+    },
+    {
+      "id": "ruru-49",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 하트",
+      "tags": [
+        "스티커",
+        "스티커 · 하트"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/49.png",
+      "width": 151,
+      "height": 162,
+      "sha256": "66bfceedca28871fc3c2bb10181a1f335da6a481d881afc379274aa56e072741",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        151,
+        162
+      ]
+    },
+    {
+      "id": "ruru-50",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 엄지 척",
+      "tags": [
+        "스티커",
+        "스티커 · 엄지 척"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/50.png",
+      "width": 131,
+      "height": 125,
+      "sha256": "6cc251fd02d94034d55eb5cca0098bc210b336d68c77d755ccaddbf0244d4033",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        131,
+        125
+      ]
+    },
+    {
+      "id": "ruru-51",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 생각",
+      "tags": [
+        "스티커",
+        "스티커 · 생각"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/51.png",
+      "width": 128,
+      "height": 144,
+      "sha256": "fde387a94a5d0360317e5a319c53bd1802735f8cdf29cb5e9e1bfe59772869ba",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        144
+      ]
+    },
+    {
+      "id": "ruru-52",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 만족",
+      "tags": [
+        "스티커",
+        "스티커 · 만족"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/52.png",
+      "width": 130,
+      "height": 131,
+      "sha256": "79cd01ad4705052aeee3f57070b250b68cdb8fbb5b8a65dcc0e9c412820f6d32",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        130,
+        131
+      ]
+    },
+    {
+      "id": "maruni-57",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 도면 펼치기",
+      "tags": [
+        "스티커",
+        "스티커 · 도면 펼치기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/57.png",
+      "width": 137,
+      "height": 152,
+      "sha256": "6b5e9d3bb3c928b8c382ab32d76834383888992dacfd79d7c0dc1b8e035973bc",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        137,
+        152
+      ]
+    },
+    {
+      "id": "maruni-58",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 샘플북",
+      "tags": [
+        "스티커",
+        "스티커 · 샘플북"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/58.png",
+      "width": 144,
+      "height": 150,
+      "sha256": "8e269840e909a356a60cfa4590faf9031d22db329de3719aae06bb02bfcd31eb",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        144,
+        150
+      ]
+    },
+    {
+      "id": "maruni-59",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 돋보기",
+      "tags": [
+        "스티커",
+        "스티커 · 돋보기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/59.png",
+      "width": 124,
+      "height": 151,
+      "sha256": "01dc0e8ade50e9e16f9e6d93d9912234d63701c73dc78a0b58ffba7d74bcb7dd",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        124,
+        151
+      ]
+    },
+    {
+      "id": "maruni-60",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 클립보드",
+      "tags": [
+        "스티커",
+        "스티커 · 클립보드"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/60.png",
+      "width": 123,
+      "height": 150,
+      "sha256": "4d22b1116dfd18d02c2c14333c1c7f4b108759ff5a598d46f6bd088c9fa311b9",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        123,
+        150
+      ]
+    },
+    {
+      "id": "maruni-61",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 줄자",
+      "tags": [
+        "스티커",
+        "스티커 · 줄자"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/61.png",
+      "width": 135,
+      "height": 148,
+      "sha256": "28ed741622298ca73082f7cc8d2ce6f87b12a01b473a7ed975ded3bebcd753cc",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        135,
+        148
+      ]
+    },
+    {
+      "id": "maruni-62",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 마루 작업",
+      "tags": [
+        "스티커",
+        "스티커 · 마루 작업"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/62.png",
+      "width": 131,
+      "height": 145,
+      "sha256": "f02883f6f95f6cff18ad43e1add7e6a382a29a511812e29f25bcb3ba8f1783f8",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        131,
+        145
+      ]
+    },
+    {
+      "id": "ruru-53",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 안내판",
+      "tags": [
+        "스티커",
+        "스티커 · 안내판"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/53.png",
+      "width": 140,
+      "height": 144,
+      "sha256": "074a395dde173d8a13face1dad069d7b68438c2dad9b93280bd05df4c756c067",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        140,
+        144
+      ]
+    },
+    {
+      "id": "ruru-54",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 바닥 점검",
+      "tags": [
+        "스티커",
+        "스티커 · 바닥 점검"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/54.png",
+      "width": 136,
+      "height": 129,
+      "sha256": "e200c80068d5f8af93259275bc03f35fbf574a1d2276a8875c1400a6337fc7e0",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        136,
+        129
+      ]
+    },
+    {
+      "id": "ruru-55",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 메모",
+      "tags": [
+        "스티커",
+        "스티커 · 메모"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/55.png",
+      "width": 145,
+      "height": 160,
+      "sha256": "7dddc9d730a71e42756c9409d951ede14082e07d6b8469d6149ce1c128086bf6",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        145,
+        160
+      ]
+    },
+    {
+      "id": "ruru-56",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 돋보기",
+      "tags": [
+        "스티커",
+        "스티커 · 돋보기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/56.png",
+      "width": 146,
+      "height": 151,
+      "sha256": "3613fe2a9951e5f6ffe2871c10d5346b01057dd411be05cd3911a60dfa3ba735",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        146,
+        151
+      ]
+    },
+    {
+      "id": "ruru-57",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 감탄",
+      "tags": [
+        "스티커",
+        "스티커 · 감탄"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/57.png",
+      "width": 134,
+      "height": 150,
+      "sha256": "f501cce9715e8dc39b161cddb056e2ccd0a58dc82eab71d51a48ad47b8b59f99",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        134,
+        150
+      ]
+    },
+    {
+      "id": "ruru-58",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 발바닥 인사",
+      "tags": [
+        "스티커",
+        "스티커 · 발바닥 인사"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/58.png",
+      "width": 136,
+      "height": 131,
+      "sha256": "56b91defc06781cfa1ca8cd6b75fd64273781e5a24261f20aaa3f77c0a2c914b",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        136,
+        131
+      ]
+    },
+    {
+      "id": "maruni-63",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 샘플 점검",
+      "tags": [
+        "스티커",
+        "스티커 · 샘플 점검"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/63.png",
+      "width": 145,
+      "height": 145,
+      "sha256": "5e44f90983fdc75e1de24747c8fa5dcc42add45fa7e8ae5e5c1e54174c48bcdf",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        145,
+        145
+      ]
+    },
+    {
+      "id": "maruni-64",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 안내판",
+      "tags": [
+        "스티커",
+        "스티커 · 안내판"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/64.png",
+      "width": 140,
+      "height": 152,
+      "sha256": "9b23da96b57c64b117aac1e367a085339807a7b6bd49f33a1bfe7fc1c5f5d634",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        140,
+        152
+      ]
+    },
+    {
+      "id": "maruni-65",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 넓은 판",
+      "tags": [
+        "스티커",
+        "스티커 · 넓은 판"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/65.png",
+      "width": 146,
+      "height": 150,
+      "sha256": "63e86b8333bbe0daffb8f657d46dbe7e8779ef1e4d7900d4ac81ae16ce0b7a0d",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        146,
+        150
+      ]
+    },
+    {
+      "id": "maruni-66",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 재료 소개",
+      "tags": [
+        "스티커",
+        "스티커 · 재료 소개"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/66.png",
+      "width": 146,
+      "height": 151,
+      "sha256": "a9d14ab6e4d21d2b47371e04c50b68a0404676a106efd646b6d421ffc1d534ff",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        146,
+        151
+      ]
+    },
+    {
+      "id": "maruni-67",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 샘플 비교",
+      "tags": [
+        "스티커",
+        "스티커 · 샘플 비교"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/67.png",
+      "width": 134,
+      "height": 154,
+      "sha256": "e41cad5c695b8a7462c47c9dbfbc16104370eae3b292539761bf3d597834a846",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        134,
+        154
+      ]
+    },
+    {
+      "id": "maruni-68",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 안전모",
+      "tags": [
+        "스티커",
+        "스티커 · 안전모"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/68.png",
+      "width": 128,
+      "height": 152,
+      "sha256": "598aa2915cd1671bc47d4fde1759573d0a870b61e0ef63776f475c4535360b82",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        152
+      ]
+    },
+    {
+      "id": "ruru-59",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 판재 옆",
+      "tags": [
+        "스티커",
+        "스티커 · 판재 옆"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/59.png",
+      "width": 117,
+      "height": 158,
+      "sha256": "4bcb2162f64938bc80faf062ca1dde63cd89cc6f4bc9a6b6e9370fefea9e9c97",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        117,
+        158
+      ]
+    },
+    {
+      "id": "ruru-60",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 잠들기",
+      "tags": [
+        "스티커",
+        "스티커 · 잠들기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/60.png",
+      "width": 142,
+      "height": 110,
+      "sha256": "f76bfd621bf7f7da118e562a1d5d117b8bd8946432b5599a7c93862fb87a22e1",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        142,
+        110
+      ]
+    },
+    {
+      "id": "ruru-61",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 달리기",
+      "tags": [
+        "스티커",
+        "스티커 · 달리기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/61.png",
+      "width": 123,
+      "height": 122,
+      "sha256": "d5087a95689bc3e7b3ff6d9a549cc6b8117509be211808f5173a15592fec9b4b",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        123,
+        122
+      ]
+    },
+    {
+      "id": "ruru-62",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 작업 중",
+      "tags": [
+        "스티커",
+        "스티커 · 작업 중"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/62.png",
+      "width": 126,
+      "height": 130,
+      "sha256": "37e825d686b5f7ad9b6cec495b2f99078f77da2d35d2347b09ea309d60edb4d9",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        126,
+        130
+      ]
+    },
+    {
+      "id": "ruru-63",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 하트 안기",
+      "tags": [
+        "스티커",
+        "스티커 · 하트 안기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/63.png",
+      "width": 128,
+      "height": 137,
+      "sha256": "9937ce00214572d1b77671225dc980dad8894ebd1a74ad1501f7d7fc4e4a5a02",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        137
+      ]
+    },
+    {
+      "id": "ruru-64",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 쿨쿨",
+      "tags": [
+        "스티커",
+        "스티커 · 쿨쿨"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/64.png",
+      "width": 142,
+      "height": 128,
+      "sha256": "c6863b5a6d2812699fa6b04f801b1a95b381ac4becb3563e68c019f606953159",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        142,
+        128
+      ]
+    },
+    {
+      "id": "maruni-69",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 확성기",
+      "tags": [
+        "스티커",
+        "스티커 · 확성기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/69.png",
+      "width": 136,
+      "height": 158,
+      "sha256": "dc9a8eab6bacfe7b829875918dc84f9e9b5b7296eebed68c4642d2b360bead67",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        136,
+        158
+      ]
+    },
+    {
+      "id": "maruni-70",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 양팔 펼치기",
+      "tags": [
+        "스티커",
+        "스티커 · 양팔 펼치기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/70.png",
+      "width": 162,
+      "height": 155,
+      "sha256": "e5fc304a9a2408f570334cee8ad50499e7030e7c7108e16112c56d473249bf05",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        162,
+        155
+      ]
+    },
+    {
+      "id": "maruni-71",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 반가운 인사",
+      "tags": [
+        "스티커",
+        "스티커 · 반가운 인사"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/71.png",
+      "width": 100,
+      "height": 156,
+      "sha256": "e7207f2a219d183e06f208c5bce330c5b60a858adb3327b754590175f7e4cd47",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        100,
+        156
+      ]
+    },
+    {
+      "id": "maruni-72",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 하트",
+      "tags": [
+        "스티커",
+        "스티커 · 하트"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/72.png",
+      "width": 127,
+      "height": 158,
+      "sha256": "ad2890b76def2e3769daf43a7f92569a0d3e9a29296280d7ff74e5f95f93b4e0",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        127,
+        158
+      ]
+    },
+    {
+      "id": "maruni-73",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 양손으로 응원",
+      "tags": [
+        "스티커",
+        "스티커 · 양손으로 응원"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/73.png",
+      "width": 130,
+      "height": 158,
+      "sha256": "9829d97125d42e977233cfe5cb7fa1bd82c89c7c32eaaba1cc606c9c06807283",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        130,
+        158
+      ]
+    },
+    {
+      "id": "maruni-74",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 만족",
+      "tags": [
+        "스티커",
+        "스티커 · 만족"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/74.png",
+      "width": 125,
+      "height": 158,
+      "sha256": "670cc0570882fd43f8459a7b0a2ed354dba07ab39966d14ece341437811921f2",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        125,
+        158
+      ]
+    },
+    {
+      "id": "ruru-65",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 기대",
+      "tags": [
+        "스티커",
+        "스티커 · 기대"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/65.png",
+      "width": 142,
+      "height": 143,
+      "sha256": "68d1489bcf8607bf13593305cad7434dcf7541108941346d3acd27efe8508bda",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        142,
+        143
+      ]
+    },
+    {
+      "id": "ruru-66",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 깜짝 반응",
+      "tags": [
+        "스티커",
+        "스티커 · 깜짝 반응"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/66.png",
+      "width": 117,
+      "height": 152,
+      "sha256": "7a3d5d35cdcf894fa6146b5de252419cc3bab5f06bb36bc5707fecaa934aa6e5",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        117,
+        152
+      ]
+    },
+    {
+      "id": "ruru-67",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 혀 내밀기",
+      "tags": [
+        "스티커",
+        "스티커 · 혀 내밀기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/67.png",
+      "width": 143,
+      "height": 146,
+      "sha256": "3a8c2e5cb52f32e99ccef80e77dc11caa551a2dff5a04628440fdbd91a5fee15",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        143,
+        146
+      ]
+    },
+    {
+      "id": "ruru-68",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 안전모",
+      "tags": [
+        "스티커",
+        "스티커 · 안전모"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/68.png",
+      "width": 129,
+      "height": 147,
+      "sha256": "f6d5331a48c8fceb4623be4215f2eeeecc8b01bb367cffa9e8c813f2330e4772",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        129,
+        147
+      ]
+    },
+    {
+      "id": "ruru-69",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 선글라스",
+      "tags": [
+        "스티커",
+        "스티커 · 선글라스"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/69.png",
+      "width": 142,
+      "height": 145,
+      "sha256": "b7f52757c829564b87d3f084464a065643acaea13afbdfb136938f9724883de0",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        142,
+        145
+      ]
+    },
+    {
+      "id": "ruru-70",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "스티커 · 기쁨",
+      "tags": [
+        "스티커",
+        "스티커 · 기쁨"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/70.png",
+      "width": 139,
+      "height": 140,
+      "sha256": "d8e70acb6ae6333e2c37139c08354eced67e4e44dfee997985c73c8a2ab436d3",
+      "source": {
+        "filename": "마루니와 루루의 귀여운 스티커 시트.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        139,
+        140
+      ]
+    },
+    {
+      "id": "maruni-75",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "반가운 손인사 · 입체 그림",
+      "tags": [
+        "스티커",
+        "반가운 손인사 · 입체 그림"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/75.png",
+      "width": 1098,
+      "height": 1355,
+      "sha256": "57af2e0c8b338f853aa89c48c0c964349b1ffb34df0b643cce7d8a9878e6c1ac",
+      "source": {
+        "filename": "마루니의 반가운 손인사.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        1098,
+        1355
+      ]
+    },
+    {
+      "id": "maruni-76",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "둘이서 바닥 발견",
+      "tags": [
+        "스티커",
+        "둘이서 바닥 발견"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/76.png",
+      "width": 1311,
+      "height": 1015,
+      "sha256": "47a5b4b39fa8963192343e63a9d12b074fefab447fdb2f25d38d6e84b8eb12ad",
+      "source": {
+        "filename": "마루니와 루루의 바닥 발견.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        1311,
+        1015
+      ]
     }
   ]
 }
