@@ -12,14 +12,14 @@
       panel.hidden=key!==name;panel.open=hub.open&&key===name;
     }
     hub.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===key)));
-    if(key==='single'&&hub.open)refreshPhotos();
+    if(key==='single'&&hub.open){refreshPhotos();poses();}
   }
   function refreshPhotos(prefer){
     if(applying)return;
     photos.replaceChildren(...state.photos.map((p,i)=>new Option((i+1)+' · '+p.name,p.id)));
     const next=state.photos.find(p=>p.id===prefer)||state.photos.find(p=>p===photo)||state.photos[selected]||state.photos[0];
     photo=next;chosen=null;layers=[];
-    $('mh-apply').disabled=$('mh-add').disabled=!next;stage.hidden=!next;
+    $('mh-apply').disabled=!next;stage.hidden=!next;
     if(next){
       photos.value=next.id;
       layers=drafts.get(next)||structuredClone(next.characterEdit?.layers||[]);
@@ -61,24 +61,41 @@
       };
     }
   }
+  let actor='maruni', page=0;
   async function poses(){
     try{
-      catalog??=fetch('assets/characters/manifest.json').then(r=>{if(!r.ok)throw Error();return r.json();});
-      const data=await catalog;
-      $('mh-pose').replaceChildren(...data.assets.filter(a=>a.actor===$('mh-character').value&&a.status==='ready').map(a=>new Option(a.label,a.path)));
-    }catch{catalog=null;note('포즈를 불러오지 못했습니다. 목록을 다시 열어 주세요.');}
+      catalog??=fetch('assets/characters/manifest.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw Error();return r.json();});
+      const {assets}=await catalog;
+      for(const b of $('mh-poses').querySelectorAll('[data-actor]')){
+        const name=b.dataset.actor;
+        b.textContent=(name==='maruni'?'마루니 ':'루루 ')+assets.filter(a=>a.actor===name&&a.status==='ready').length+'종 보기';
+        b.setAttribute('aria-pressed',String(name===actor));
+      }
+      const items=assets.filter(a=>a.actor===actor&&a.status==='ready'),pages=Math.ceil(items.length/8);
+      page=Math.max(0,Math.min(page,pages-1));
+      $('mh-gallery').replaceChildren(...items.slice(page*8,page*8+8).map(a=>{
+        const b=document.createElement('button'),im=new Image(),label=document.createElement('span');
+        b.type='button';im.alt='';im.loading='lazy';im.decoding='async';im.src=a.path;label.textContent=a.label;
+        b.append(im,label);b.onclick=()=>addPose(a);return b;
+      }));
+      $('mh-count').textContent=(page+1)+' / '+pages;
+      $('mh-prev').disabled=page===0;$('mh-next').disabled=page+1>=pages;
+    }catch{catalog=null;note('포즈를 불러오지 못했어요. 캐릭터 이름을 눌러 다시 열어 주세요.');}
   }
-  $('mh-poses').ontoggle=()=>{if($('mh-poses').open)poses();};
-  $('mh-character').onchange=poses;
-  $('mh-add').onclick=async()=>{
-    const opt=$('mh-pose').selectedOptions[0],target=photo;if(!target||!opt||applying)return;
+  for(const b of $('mh-poses').querySelectorAll('[data-actor]'))b.onclick=()=>{actor=b.dataset.actor;page=0;poses();};
+  $('mh-prev').onclick=()=>{page--;poses();};$('mh-next').onclick=()=>{page++;poses();};
+  async function addPose(asset){
+    const target=photo;
+    if(!target){note('캐릭터를 넣을 현장 사진을 먼저 골라 주세요.');return;}
+    if(applying)return;
     try{
-      const img=await loadImage(opt.value);if(target!==photo||applying)return;
-      const ratio=base.naturalWidth/base.naturalHeight;if(!ratio)return;
+      const img=await loadImage(asset.path);await base.decode();if(target!==photo||applying)return;
+      const ratio=base.naturalWidth/base.naturalHeight;
       const w=Math.min(.25,.45/ratio*img.width/img.height);
-      chosen={path:opt.value,name:opt.textContent,x:.35,y:.35,w};layers.push(chosen);render();
+      chosen={path:asset.path,name:asset.label,x:.35,y:.35,w};layers.push(chosen);render();
+      note(asset.label+' 포즈를 사진에 넣었어요.');
     }catch{note('선택한 포즈를 열 수 없습니다.');}
-  };
+  }
   $('mh-apply').onclick=async()=>{
     if(!photo||applying)return;
     applying=true;const p=photo,source=p.characterEdit?.source||p.src,list=structuredClone(layers);
@@ -140,5 +157,12 @@
   entry($('export-photo').parentElement,false);
   const attach=()=>{const slot=document.querySelector('.simple-photo-card');if(slot&&!slot.querySelector('[data-character-entry]')){entry(slot,true);slot.lastElementChild.dataset.characterEntry='true';}};
   attach();const observer=new MutationObserver(()=>{attach();if(document.querySelector('[data-character-entry]'))observer.disconnect();});observer.observe($('studio'),{childList:true,subtree:true});
+  function openGallery(){
+    if(location.hash!=='#mh-poses')return;
+    document.querySelector('button[data-tab="studio"]')?.click();
+    hub.open=true;switchMode('single');$('mh-poses').scrollIntoView({block:'center'});
+  }
+  window.addEventListener('hashchange',openGallery);
+  window.addEventListener('load',openGallery);
   switchMode('single');
 })();

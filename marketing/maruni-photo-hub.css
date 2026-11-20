@@ -17,3 +17,8 @@
 @media(max-width:1366px){body.simple-marketing-mode:has(#maruni-hub[open]),body.simple-marketing-mode:has(#maruni-hub[open]) main,body.simple-marketing-mode:has(#maruni-hub[open]) #studio{height:auto!important;overflow:visible!important}}
 
 #mh-choices{display:flex;flex-wrap:wrap;gap:6px}.ml-story-type button{margin:3px}.ml-story-type label:has(#ml-type){display:none}
+
+#mh-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px}
+#mh-gallery button{display:grid;justify-items:center;align-content:start;padding:4px}
+#mh-gallery img{height:66px;width:100%;object-fit:contain}
+#mh-gallery span{font-size:12px;line-height:1.3}
