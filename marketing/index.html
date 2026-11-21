@@ -206,8 +206,8 @@
 <div class="mh-nav" aria-label="편집 형식"><button type="button" data-mode="single">일반 사진</button><button type="button" data-mode="free">현장 이야기 편집</button></div>
 <details id="mh-situations"><summary>상황 바꾸기</summary><div id="mh-choices"></div><p id="mh-prompt" aria-live="polite"></p></details>
 <section id="mh-single"><label>편집할 현장 사진 <select id="mh-photo"></select></label> <button id="mh-upload" type="button">현장 사진 불러오기</button>
-<section id="mh-poses" aria-label="캐릭터 포즈"><div class="mh-nav"><button type="button" data-actor="maruni">마루니 76종 보기</button><button type="button" data-actor="ruru">루루 70종 보기</button></div><div id="mh-gallery"></div><div class="mh-nav"><button id="mh-prev" type="button">이전 포즈</button><output id="mh-count"></output><button id="mh-next" type="button">다음 포즈</button></div></section>
-<div id="mh-stage"><img id="mh-base" alt="선택한 현장 사진"><div id="mh-actors"></div></div>
+<section id="mh-poses" aria-label="캐릭터 포즈"><div class="mh-nav"><button type="button" data-actor="maruni">마루니 76종 보기</button><button type="button" data-actor="ruru">루루 70종 보기</button></div><button type="button" id="mh-manage">스티커 삭제·복원</button><div id="mh-gallery"></div><div class="mh-nav"><button id="mh-prev" type="button">이전 포즈</button><output id="mh-count"></output><button id="mh-next" type="button">다음 포즈</button></div></section>
+<details><summary>말풍선 추가</summary><label>대사 <input id="mh-dialogue" maxlength="120"></label><label>말풍선 모양 <select id="mh-shape"><option value="speech">대화</option><option value="thought">생각</option><option value="note">현장 설명</option><option value="oval">둥근 캡슐</option><option value="caption">진한 자막 상자</option></select></label><label>글꼴 <select id="mh-font"><option value="original">함렛 명조</option><option value="serif">본명조</option><option value="sans">본고딕</option></select></label><button type="button" id="mh-add-balloon">사진에 말풍선 넣기</button></details><div id="mh-stage"><img id="mh-base" alt="선택한 현장 사진"><div id="mh-actors"></div></div>
 <button id="mh-apply" type="button">이 사진에 적용</button> <span id="mh-status" role="status"></span></section>
 <details id="maruni-locked-template"><summary>마루니·루루 4컷 고정 템플릿 <small>썸네일 1장 + 만화 4컷 · 브랜드 요소 잠금 · 1080×1350</small></summary><div class="ml-body"></div></details>
 <details id="maruni-story"><summary>마루니·루루 현장 이야기 <small>실제 시공사진 · 6장 캐러셀 편집</small></summary><div class="mr-body"></div></details></details>
@@ -921,13 +921,13 @@
     <script src="direct-edit.js?v=ending-100-01"></script>
   <script src="maruni-story-core.js?v=20261117-02"></script>
 <script src="maruni-story-store.js?v=20261117-02"></script>
-<script src="maruni-story-render.js?v=poses-bubbles-20261120"></script>
+<script src="maruni-story-render.js?v=sticker-font-1"></script>
 <script src="maruni-story-export.js?v=20261117-02"></script>
 <script src="maruni-canvas-tools.js?v=photo-handles-20261121"></script>
-<script src="maruni-story.js?v=unified-touch1"></script>
+<script src="maruni-story.js?v=sticker-font-1"></script>
 <script src="maruni-locked-workflow-core.js?v=stories-20261119c"></script>
 <script src="maruni-locked-template.js?v=photo-hub-20261121"></script>
-<script src="maruni-photo-hub.js?v=hub-scroll-2"></script>
+<script src="maruni-photo-hub.js?v=sticker-font-1"></script>
 </body>
 </html>
 

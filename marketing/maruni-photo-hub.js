@@ -62,21 +62,31 @@
     }
   }
   let actor='maruni', page=0;
+  let managing=false;
+  const prefix='cheonginmaru-maruni-story:hidden-pose:';
+  function hidden(id){try{return localStorage.getItem(prefix+id)==='1';}catch{return false;}}
+  $('mh-manage').onclick=()=>{managing=!managing;page=0;$('mh-manage').textContent=managing?'관리 마치기':'스티커 삭제·복원';poses();};
+  window.addEventListener('pose-list-changed',poses);
+  window.addEventListener('storage',e=>{if(!e.key||e.key.startsWith(prefix))poses();});
   async function poses(){
     try{
       catalog??=fetch('assets/characters/manifest.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw Error();return r.json();});
       const {assets}=await catalog;
       for(const b of $('mh-poses').querySelectorAll('[data-actor]')){
         const name=b.dataset.actor;
-        b.textContent=(name==='maruni'?'마루니 ':'루루 ')+assets.filter(a=>a.actor===name&&a.status==='ready').length+'종 보기';
+        b.textContent=(name==='maruni'?'마루니 ':'루루 ')+assets.filter(a=>a.actor===name&&a.status==='ready'&&!hidden(a.id)).length+'종 보기';
         b.setAttribute('aria-pressed',String(name===actor));
       }
-      const items=assets.filter(a=>a.actor===actor&&a.status==='ready'),pages=Math.ceil(items.length/8);
+      const items=assets.filter(a=>a.actor===actor&&a.status==='ready'&&(managing||!hidden(a.id))),pages=Math.max(1,Math.ceil(items.length/8));
       page=Math.max(0,Math.min(page,pages-1));
       $('mh-gallery').replaceChildren(...items.slice(page*8,page*8+8).map(a=>{
         const b=document.createElement('button'),im=new Image(),label=document.createElement('span');
-        b.type='button';im.alt='';im.loading='lazy';im.decoding='async';im.src=a.path;label.textContent=a.label;
-        b.append(im,label);b.onclick=()=>addPose(a);return b;
+        b.type='button';im.alt='';im.loading='lazy';im.decoding='async';im.src=a.path;label.textContent=a.label+(managing?(hidden(a.id)?' · 복원':' · 목록에서 삭제'):'');
+        b.append(im,label);b.onclick=()=>{
+          if(!managing)return addPose(a);
+          try{if(hidden(a.id))localStorage.removeItem(prefix+a.id);else localStorage.setItem(prefix+a.id,'1');window.dispatchEvent(new Event('pose-list-changed'));}
+          catch{note('목록 설정을 저장하지 못했습니다.');}
+        };return b;
       }));
       $('mh-count').textContent=(page+1)+' / '+pages;
       $('mh-prev').disabled=page===0;$('mh-next').disabled=page+1>=pages;
@@ -97,6 +107,24 @@
       note(asset.label+' 포즈를 넣었어요. 캐릭터를 잡고 끌면 움직입니다.');
     }catch{note('선택한 포즈를 열 수 없습니다.');}
   }
+  $('mh-add-balloon').onclick=async()=>{
+    const target=photo,text=$('mh-dialogue').value.trim(),font=$('mh-font').value,shape=$('mh-shape').value;
+    if(!target||!text){note('사진을 선택하고 대사를 입력해 주세요.');return;}
+    try{
+      const R=window.MaruniStoryRender;
+      await R.loadBubbleFont(font,text);
+      if(photo!==target)return;
+      const c=document.createElement('canvas'),ctx=c.getContext('2d'),face=R.bubbleFont(font,38);
+      ctx.font=face;
+      const lines=window.MaruniStoryCore.wrap(text,t=>ctx.measureText(t).width,660);
+      const w=Math.ceil(Math.max(...lines.map(t=>ctx.measureText(t).width),70))+64,h=lines.length*56+36;
+      c.width=w+8;c.height=h+34;ctx.font=face;
+      R.balloon(ctx,{x:4,y:4,w,h},shape,{x:w*.3,y:h+40},'#fffaf1','#332b26');
+      ctx.fillStyle=shape==='caption'?'#fffaf1':'#332b26';ctx.textBaseline='top';
+      lines.forEach((t,i)=>ctx.fillText(t,36,20+i*56));
+      await addPose({path:c.toDataURL('image/png'),label:text});
+    }catch{note('말풍선을 만들지 못했습니다.');}
+  };
   $('mh-apply').onclick=async()=>{
     if(!photo||applying)return;
     applying=true;const p=photo,source=p.characterEdit?.source||p.src,list=structuredClone(layers);

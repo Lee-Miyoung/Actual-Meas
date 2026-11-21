@@ -8,18 +8,29 @@
       await f.load(); document.fonts.add(f); return f;
     })().catch(e => { fontPromise = null; throw Error('말풍선 글꼴을 불러오지 못했습니다. 다시 시도해 주세요.'); }));
   }
+  function bubbleFont(key, size) {
+    const family = {serif:'"Studio Serif", serif', sans:'"Studio Sans", sans-serif'}[key] || '"Maruni Story", serif';
+    return '500 '+size+'px '+family;
+  }
+  async function loadBubbleFont(key,text) {
+    await fonts();
+    if(key==='serif'||key==='sans')await document.fonts.load(bubbleFont(key,38),text || '가');
+  }
   function bubbleBox(ctx, layer, style) {
     const w = Math.max(220, W * layer.width), fs = style.fontSize;
-    ctx.font = `500 ${fs}px "Maruni Story", serif`;
+    ctx.font = bubbleFont(layer.font,fs);
     const lines = C.wrap(layer.text || '내용을 입력하세요', t => ctx.measureText(t).width, w - 56), lh = fs * 1.55, h = lines.length * lh + 48;
     return { x: C.clamp(layer.x * W - w / 2, 14, W - w - 14), y: C.clamp(layer.y * H - h / 2, 14, Math.max(14, H - h - 28)), w, h, lines, lh, overflow: h > H - 60 };
   }
   function balloon(ctx, box, format, speaker, paper, ink) {
     const {x,y,w,h}=box;
     ctx.fillStyle=paper; ctx.strokeStyle=ink; ctx.lineWidth=2;
-    ctx.beginPath();ctx.roundRect(x,y,w,h,format==='note'?8:Math.min(35,h/2));
+    ctx.beginPath();
+    if(format==='oval')ctx.roundRect(x,y,w,h,h/2);
+    else ctx.roundRect(x,y,w,h,format==='note'||format==='caption'?8:Math.min(35,h/2));
+    if(format==='caption')ctx.fillStyle=ink;
     ctx.fill();ctx.stroke();
-    if(format==='note'||!speaker)return;
+    if(format==='note'||format==='caption'||!speaker)return;
     const sign=speaker.y<y+h/2?-1:1, edge=sign<0?y:y+h;
     const base=C.clamp(speaker.x,x+30,x+w-30);
     const tip=C.clamp(speaker.x-base,-26,26);
@@ -48,6 +59,7 @@
       } else {
         if (l.format==='none') continue;
         if (!l.text.trim() && options.selected !== l.id) continue;
+        await loadBubbleFont(l.font,l.text);
         const b = bubbleBox(ctx, l, project.style); if (b.overflow) throw Error('말풍선이 너무 깁니다. 문구를 줄이거나 폭을 넓혀 주세요.');
         boxes.set(l.id, b); ctx.save(); ctx.fillStyle = project.style.paper; ctx.strokeStyle = project.style.ink; ctx.lineWidth = 3;
         if(l.format && l.format!=='legacy'){
@@ -63,7 +75,7 @@
           ctx.beginPath(); ctx.moveTo(center - 13, edge); ctx.lineTo(center, tip); ctx.lineTo(center + 13, edge); ctx.fill(); ctx.stroke();
         }
         }
-        ctx.font = `500 ${project.style.fontSize}px "Maruni Story", serif`; ctx.textBaseline = 'top'; ctx.fillStyle = project.style.ink;
+        ctx.font = bubbleFont(l.font,project.style.fontSize); ctx.textBaseline = 'top'; ctx.fillStyle = l.format==='caption'?project.style.paper:project.style.ink;
         b.lines.forEach((t, i) => ctx.fillText(t, b.x + 28, b.y + 24 + i * b.lh)); ctx.restore();
       }
     }
@@ -72,5 +84,5 @@
     }
     return boxes;
   }
-  window.MaruniStoryRender = { draw, fonts, balloon, bubbleBox, W, H };
+  window.MaruniStoryRender = { draw, fonts, bubbleFont, loadBubbleFont, balloon, bubbleBox, W, H };
 })();
