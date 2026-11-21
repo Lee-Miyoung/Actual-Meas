@@ -93,7 +93,8 @@
       const ratio=base.naturalWidth/base.naturalHeight;
       const w=Math.min(.25,.45/ratio*img.width/img.height);
       chosen={path:asset.path,name:asset.label,x:.35,y:.35,w};layers.push(chosen);render();
-      note(asset.label+' 포즈를 사진에 넣었어요.');
+      stage.scrollIntoView({block:'center',behavior:'instant'});
+      note(asset.label+' 포즈를 넣었어요. 캐릭터를 잡고 끌면 움직입니다.');
     }catch{note('선택한 포즈를 열 수 없습니다.');}
   }
   $('mh-apply').onclick=async()=>{

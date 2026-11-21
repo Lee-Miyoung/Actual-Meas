@@ -14,7 +14,7 @@
 
 /* Keep Safari's document scroller out of the tablet workspace. Each pane owns its scroll. */
 @media (min-width:700px) and (max-width:1366px){
-  body.simple-marketing-mode{position:fixed;inset:0;margin:0;height:auto!important;overflow:hidden!important}
+  body.simple-marketing-mode:not(:has(#maruni-hub[open])){position:fixed;inset:0;margin:0;height:auto!important;overflow:hidden!important}
   body.simple-marketing-mode main{height:100%!important;box-sizing:border-box;overflow:hidden!important;padding:12px 14px!important}
   body.simple-marketing-mode #studio,body.simple-marketing-mode #studio .production-desk{height:100%!important;min-height:0!important}
   body.simple-marketing-mode #studio .simple-marketing-panel{box-sizing:border-box}
