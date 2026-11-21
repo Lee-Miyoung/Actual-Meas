@@ -14,17 +14,17 @@
     <p id="mr-status" role="status" aria-live="polite">편집기를 준비하고 있습니다.</p>
     <div class="mr-grid">
       <div class="mr-stage">
-        <div class="mr-quick-upload"><button id="mr-quick-photo" type="button">＋ 현장 사진 선택</button><button id="mr-touch-edit" type="button" aria-pressed="false">화면 스크롤 · 이동 끔</button><button id="mr-browse-maruni" type="button">마루니 포즈 보기</button><button id="mr-browse-ruru" type="button">루루 포즈 보기</button><button id="mr-open-locked" type="button">4컷 고정 템플릿 열기</button><small id="mr-touch-help">사진 위에서 위아래로 밀면 화면이 움직입니다. 캐릭터 위치를 바꿀 때만 이동 모드를 켜 주세요. 4컷은 별도의 작업으로 저장됩니다.</small></div>
+        <div class="mr-quick-upload"><button id="mr-quick-photo" type="button">＋ 현장 사진 선택</button><button id="mr-touch-edit" type="button" aria-pressed="false">화면 스크롤 · 이동 끔</button><button id="mr-browse-maruni" type="button">마루니 포즈 보기</button><button id="mr-browse-ruru" type="button">루루 포즈 보기</button><button id="mr-open-locked" type="button">예전 4컷 프로젝트 열기</button><small id="mr-touch-help">사진 위에서 위아래로 밀면 화면이 움직입니다. 캐릭터 위치를 바꿀 때만 이동 모드를 켜 주세요. 4컷은 별도의 작업으로 저장됩니다.</small></div>
         <div class="mr-canvas-wrap"><canvas id="mr-canvas" width="648" height="810" aria-label="선택한 장면 미리보기. 캐릭터를 눌러 선택한 뒤 끌어 이동합니다."></canvas></div>
-        <div id="mr-scenes" class="mr-scenes" aria-label="6컷 장면 선택"></div>
+        <label>장면 구성 <select id="mr-layout"><option value="six">자유 6컷</option><option value="four">썸네일 + 본편 4컷</option></select></label><div id="mr-scenes" class="mr-scenes" aria-label="장면 선택"></div>
         <div class="mr-toolbar" style="margin-top:10px"><button id="mr-prev" type="button">앞 순서로</button><button id="mr-next" type="button">뒤 순서로</button><button id="mr-copy-scene" type="button">다른 컷에 복제</button><button id="mr-undo" type="button">뒤로 한 단계</button></div>
         <label>복제할 대상 컷<select id="mr-copy-target" aria-label="장면 복제 대상"></select></label>
         <p class="mr-note">캐릭터·말풍선을 눌러 선택하고 끌어 이동하세요. 선택한 항목은 두 손가락으로 크기를 바꿀 수 있습니다. 사진은 구도 보존을 위해 고정됩니다.</p>
       </div>
       <div class="mr-controls">
         <fieldset><legend>01 · 현장 사진</legend>
-          <label>현재 컷부터 사진 1–6장 넣기<input id="mr-photo" type="file" accept="image/png,image/jpeg,image/webp" multiple></label>
-          <button id="mr-photo-all" type="button">현재 사진을 6컷에 사용</button>
+          <label>현재 컷부터 사진 넣기<input id="mr-photo" type="file" accept="image/png,image/jpeg,image/webp" multiple></label>
+          <button id="mr-photo-all" type="button">현재 사진을 모든 컷에 사용</button>
           <button id="mr-photo-mode" type="button" aria-pressed="false">사진 조절 · 잠김</button>
           <label>사진 확대<input id="mr-photo-zoom" type="range" min="100" max="300" value="100" disabled></label>
           <button id="mr-photo-reset" type="button">사진 구도 초기화</button>
@@ -44,7 +44,7 @@
           <label>말풍선 모양<select id="mr-format"><option value="legacy">기존 말풍선</option><option value="speech">대화</option><option value="thought">생각</option><option value="note">현장 설명</option><option value="none">없음</option></select></label><label>말풍선 화자<select id="mr-speaker" disabled></select></label>
           <label>말풍선 내용<textarea id="mr-bubble" rows="3" maxlength="180" placeholder="말풍선을 선택하거나 추가하세요" disabled></textarea></label>
           <div class="mr-toolbar"><button type="button" data-mr-phrase="결이 잘 보인다개!">결이 잘 보인다개!</button><button type="button" data-mr-phrase="여기도 확인했다개!">여기도 확인했다개!</button></div>
-          <label>전체 6컷 말풍선 글자 크기<input id="mr-font" type="range" min="24" max="64" value="38"></label>
+          <label>전체 컷 말풍선 글자 크기<input id="mr-font" type="range" min="24" max="64" value="38"></label>
           <p class="mr-note">좌우 반전하면 원본 명찰 글자도 함께 뒤집힙니다. 문구는 직접 확인한 뒤 저장하세요.</p>
         </fieldset>
       </div>
@@ -117,18 +117,25 @@
     const b = C.fitPhoto(im.width, im.height, 96, 120, { x: .5, y: .5, zoom: 1 }); c.getContext('2d').drawImage(im, b.x, b.y, b.w, b.h);
     const src = c.toDataURL('image/jpeg', .65); c.width = c.height = 1; thumbs.set(mid, src); return src;
   }
+  const sceneCount = () => project.layout === 'four' ? 5 : 6;
+  const sceneLabel = i => project.layout === 'four' ? (i ? '본편 '+i+'컷' : '썸네일') : (i+1)+'컷';
+  $('#mr-layout').onchange = e => {
+    if (busy) return;
+    remember(); project.layout=e.target.value; cancelGesture(); selected=null;
+    changed(); render();
+  };
   function renderScenes() {
     const holder = $('#mr-scenes'); holder.replaceChildren();
-    project.scenes.forEach((s, i) => {
-      const b = el('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(i === active)); b.setAttribute('aria-label', `${i + 1}컷 선택`);
-      const label = el('span', `${i + 1}컷`); b.append(label);
+    project.scenes.slice(0, sceneCount()).forEach((s, i) => {
+      const b = el('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(i === active)); b.setAttribute('aria-label', sceneLabel(i)+' 선택');
+      const label = el('span', sceneLabel(i)); b.append(label);
       if (s.photoId) { const im = el('img'); im.alt = ''; b.prepend(im); thumbnail(s.photoId).then(src => { if (b.isConnected) im.src = src; }).catch(e => status(e.message, true)); }
       else { const ph = el('span', '+'); ph.className = 'mr-empty-thumb'; b.prepend(ph); }
       b.onclick = () => { if (busy) return; cancelGesture(); active = i; selected = null; photoMode = false; render(); }; holder.append(b);
     });
     const target = $('#mr-copy-target'), old = target.value; target.replaceChildren();
-    for (let i = 0; i < 6; i++) if (i !== active) target.add(new Option(`${i + 1}컷`, String(i))); if (old !== String(active)) target.value = old || String((active + 1) % 6);
-    $('#mr-prev').disabled = active === 0; $('#mr-next').disabled = active === 5;
+    for (let i = 0; i < sceneCount(); i++) if (i !== active) target.add(new Option(sceneLabel(i), String(i))); if ([...target.options].some(o => o.value === old)) target.value = old;
+    $('#mr-prev').disabled = active === 0; $('#mr-next').disabled = active === sceneCount()-1;
   }
   function controls() {
     const l = layer(), bubble = l?.type === 'bubble';
@@ -145,7 +152,7 @@
     $('#mr-photo-mode').hidden = true; $('#mr-photo-zoom').parentElement.hidden = true; $('#mr-photo-reset').hidden = true; $('#mr-photo-mode').setAttribute('aria-pressed', String(photoMode)); $('#mr-photo-mode').textContent = photoMode ? '사진 조절 · 켜짐' : '사진 조절 · 잠김'; $('#mr-photo-zoom').disabled = !photoMode || !scene().photoId; $('#mr-photo-zoom').value = Math.round(scene().photo.zoom * 100);
     $('#mr-undo').disabled = !history.length; $('#mr-font').value = project.style.fontSize;
   }
-  function render() { $('#mr-name').value = project.name; renderScenes(); controls(); schedulePaint(); }
+  function render() { active=Math.min(active,sceneCount()-1); $('#mr-layout').value=sceneCount()===5?'four':'six'; $('#mr-export-all').textContent=sceneCount()+'장 PNG · ZIP 준비'; $('#mr-name').value = project.name; renderScenes(); controls(); schedulePaint(); }
   function schedulePaint() { if (paintFrame) return; paintFrame = requestAnimationFrame(() => { paintFrame = 0; paint().catch(e => status(e.message, true)); }); }
   let painting = false, repaint = false;
   async function paint() {
@@ -154,7 +161,7 @@
     try {
       // Render to a temporary canvas to prevent partially drawn asynchronous frames.
       const p = C.copy(project), s = p.scenes[active], chosen = selected, drawRevision = revision, c = document.createElement('canvas'); c.width = 648; c.height = 810;
-      try { const next = await R.draw(c, p, s, image, { selected: chosen }); if (project.id === p.id && scene().id === s.id && revision === drawRevision && selected === chosen) { $('#mr-canvas').getContext('2d').drawImage(c, 0, 0); boxes = next; previewTools.refresh(); } else repaint = true; } finally { c.width = c.height = 1; }
+      try { const next = await R.draw(c, p, s, image, { selected: chosen }); if (project.id === p.id && scene().id === s.id && revision === drawRevision && selected === chosen) { $('#mr-canvas').getContext('2d').drawImage(c, 0, 0); boxes = next; refreshActorTargets(); previewTools.refresh(); } else repaint = true; } finally { c.width = c.height = 1; }
     } finally { painting = false; if (repaint) { repaint = false; schedulePaint(); } }
   }
   function assets() {
@@ -233,15 +240,15 @@
   });
   $('#mr-quick-photo').onclick = () => { if(!busy)$('#mr-photo').click(); };
   $('#mr-photo').onchange = e => run(async () => {
-    const files = [...e.target.files]; e.target.value = ''; if (!files.length) return; if (files.length > 6) throw Error('사진은 한 번에 6장까지 선택하세요.');
+    const files = [...e.target.files]; e.target.value = ''; if (!files.length) return; if (files.length > sceneCount()) throw Error('사진은 한 번에 '+sceneCount()+'장까지 선택하세요.');
     touchEdit = false; updateTouchEdit();
-    const targets = files.map((_, i) => (active + i) % 6);
+    const targets = files.map((_, i) => (active + i) % sceneCount());
     if (targets.some(i => project.scenes[i].photoId) && !confirm('선택한 컷의 사진을 바꿀까요? 캐릭터와 말풍선은 유지합니다.')) return;
     const staged = [];
     for (const f of files) staged.push(await addMedia(f, f.name));
     remember(); staged.forEach((mid, i) => { project.scenes[targets[i]].photoId = mid; project.scenes[targets[i]].photo = { x: .5, y: .5, zoom: 1 }; }); changed(); render();
   });
-  $('#mr-photo-all').onclick = () => { if (busy) return; if (!scene().photoId) { status('먼저 현장 사진을 넣어 주세요.', true); return; } if (project.scenes.some(s => s.photoId && s.photoId !== scene().photoId) && !confirm('6컷의 사진을 현재 사진으로 바꿀까요? 캐릭터와 대사는 유지합니다.')) return; remember(); const mid=scene().photoId; project.scenes.forEach(s => { s.photoId=mid; s.photo={x:.5,y:.5,zoom:1}; }); changed(); render(); };
+  $('#mr-photo-all').onclick = () => { if (busy) return; if (!scene().photoId) { status('먼저 현장 사진을 넣어 주세요.', true); return; } if (project.scenes.slice(0,sceneCount()).some(s => s.photoId && s.photoId !== scene().photoId) && !confirm('전체 컷의 사진을 현재 사진으로 바꿀까요? 캐릭터와 대사는 유지합니다.')) return; remember(); const mid=scene().photoId; project.scenes.slice(0,sceneCount()).forEach(s => { s.photoId=mid; s.photo={x:.5,y:.5,zoom:1}; }); changed(); render(); };
   $('#mr-character').onchange = e => run(async () => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return; if (f.type !== 'image/png') throw Error('원본 투명 PNG를 선택하세요.');
     if (scene().layers.length >= 12) throw Error('한 컷 최대 12개입니다.');
@@ -314,6 +321,21 @@
   // Pointer capture, fixed drag offset, separate pinch targets and cancellation.
   const canvas = $('#mr-canvas'), points = new Map(); let gesture = null;
   const point = e => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * R.W, y: (e.clientY - r.top) / r.height * R.H }; };
+  function refreshActorTargets() {
+    const host=canvas.parentElement;
+    host.querySelectorAll('.mr-actor-target').forEach(el=>el.remove());
+    if(photoMode || touchEdit)return;
+    const cr=canvas.getBoundingClientRect(), hr=host.getBoundingClientRect();
+    for(const actor of scene().layers.filter(l=>l.type==='actor')){
+      const b=boxes.get(actor.id); if(!b)continue;
+      const pad=document.createElement('div');
+      pad.className='mr-actor-target';
+      Object.assign(pad.style,{position:'absolute',touchAction:'none',left:(cr.left-hr.left+b.x*cr.width/R.W)+'px',top:(cr.top-hr.top+b.y*cr.height/R.H)+'px',width:b.w*cr.width/R.W+'px',height:b.h*cr.height/R.H+'px'});
+      pad.onpointerdown=e=>beginPointer(e,true);
+      host.append(pad);
+    }
+  }
+  new ResizeObserver(refreshActorTargets).observe(canvas);
   const previewTools = window.maruniCanvasTools(canvas, {
     box(){const l=layer();return l?.type==='actor'?C.actorBox(l):null;},
     startMove(){
@@ -343,21 +365,22 @@
   const distance = () => { const [a, b] = [...points.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
   function cancelGesture() { for (const pid of points.keys()) { try { canvas.releasePointerCapture(pid); } catch {} } points.clear(); gesture = null; }
   function updateTouchEdit(){
-    canvas.dataset.touchEdit=String(touchEdit);
+    canvas.dataset.touchEdit=String(touchEdit);refreshActorTargets();
     const button=$('#mr-touch-edit');
     button.setAttribute('aria-pressed',String(touchEdit));
-    button.textContent=touchEdit?'캐릭터 이동 켜짐 · 손가락으로 옮기기':'화면 스크롤 · 이동 끔';
+    button.textContent=touchEdit?'캐릭터 이동 켜짐 · 손가락으로 옮기기':'배경 스크롤';
     $('#mr-touch-help').textContent=touchEdit
       ? '사진 위 캐릭터를 잡고 움직이세요. 아래 설정을 보려면 이동 모드를 끄세요.'
-      : '사진 위를 위아래로 밀면 화면이 스크롤됩니다. 캐릭터를 옮길 때만 이동 모드를 켜세요.';
+      : '사진 위를 위아래로 밀면 화면이 스크롤됩니다. 캐릭터는 바로 잡고 끌어 옮기세요.';
   }
   $('#mr-touch-edit').addEventListener('click',()=>{
     cancelGesture();touchEdit=!touchEdit;updateTouchEdit();
   });
   updateTouchEdit();
-  canvas.addEventListener('pointerdown', e => {
+  canvas.addEventListener('pointerdown', e => beginPointer(e,false));
+  function beginPointer(e, direct){
     if (busy || !ready || (e.pointerType === 'mouse' && e.button !== 0)) return;
-    if (e.pointerType === 'touch' && !touchEdit) return; // 사진 위에서도 Safari 기본 세로 스크롤
+    if (!direct && e.pointerType === 'touch' && !touchEdit) return; // 사진 위에서도 Safari 기본 세로 스크롤
     e.preventDefault(); const p = point(e);
     if (points.size >= 2) return;
     if (points.size === 0) {
@@ -370,9 +393,9 @@
     points.set(e.pointerId, p); canvas.setPointerCapture(e.pointerId);
     if (points.size === 2 && gesture) { gesture.pinch = distance(); gesture.width = gesture.target.width; gesture.zoom = scene().photo.zoom; }
     controls(); schedulePaint();
-  });
+  }
   canvas.addEventListener('pointermove', e => {
-    if (!gesture || !points.has(e.pointerId) || busy || (e.pointerType === 'touch' && !touchEdit)) return;
+    if (!gesture || !points.has(e.pointerId) || busy) return;
     e.preventDefault(); const p = point(e); points.set(e.pointerId, p); const t = gesture.target;
     if (points.size === 2) {
       const factor = distance() / Math.max(1, gesture.pinch);
@@ -409,7 +432,7 @@
   async function exportImage(mid) { if (exportId === mid && exportDecoded) return exportDecoded.image; if (exportDecoded) dispose(exportDecoded); exportDecoded = null; exportId = null; const m = media.get(mid); if (!m) throw Error('출력할 원본이 없습니다.'); exportDecoded = await decode(m.blob, true); exportId = mid; return exportDecoded.image; }
   async function outputImages(p, indices) { try { return await E.images(p, exportImage, indices, status); } finally { if (exportDecoded) dispose(exportDecoded); exportDecoded = null; exportId = null; } }
   $('#mr-export-one').onclick = () => run(async () => { const p = C.copy(project), files = await outputImages(p, [active]); showResults(files[0].blob, E.name(p) + '_' + files[0].name, files); });
-  $('#mr-export-all').onclick = () => run(async () => { const p = C.copy(project), files = await outputImages(p, [0, 1, 2, 3, 4, 5]); status('6컷 ZIP 구성 중…'); showResults(await E.zip(files), E.name(p) + '_6컷.zip', files); });
+  $('#mr-export-all').onclick = () => run(async () => { const p = C.copy(project), files = await outputImages(p, Array.from({length:sceneCount()},(_,i)=>i)); status('ZIP 구성 중…'); showResults(await E.zip(files), E.name(p) + '_'+sceneCount()+'장.zip', files); });
   $('#mr-backup').onclick = () => run(async () => { const p = C.copy(project); status('사진과 편집 내용을 백업하는 중…'); showResults(await E.backup(p, media), E.name(p) + '_편집프로젝트.zip'); });
   $('#mr-restore-button').onclick = () => { if (!busy) $('#mr-restore').click(); };
   $('#mr-restore').onchange = e => run(async () => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; status('프로젝트 ZIP 확인 중…'); const next = await E.restore(f); const decoded = [];
