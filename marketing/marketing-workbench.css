@@ -35,3 +35,25 @@ body.simple-marketing-mode #studio .production-desk .desk-layout>#work-comic-pre
 body.simple-marketing-mode #studio .production-desk[data-work-mode]>.desk-layout{order:-1!important;position:sticky!important;top:0;z-index:14;background:#f8f8f3;height:38dvh!important;overflow:hidden}
 body.simple-marketing-mode #studio .desk-layout>.desk-preview:has(.thumbnail-live-tabs){height:100%!important}
 #work-comic-preview>:is(.mr-canvas-wrap,.ml-canvas-wrap){width:min(100%,26dvh)}}
+
+/* A short tool list must not shrink the entire iPad workspace to its contents. */
+@media(min-width:700px){
+  body.simple-marketing-mode main #studio:has(.production-desk[data-work-mode]),
+  body.simple-marketing-mode #studio .production-desk[data-work-mode]{
+    box-sizing:border-box;width:100%!important;max-width:none!important;min-width:0;margin-inline:0!important;align-self:stretch;
+  }
+  body.simple-marketing-mode #studio .production-desk[data-work-mode]{
+    grid-template-columns:clamp(270px,28vw,380px) minmax(0,1fr)!important;
+  }
+  body.simple-marketing-mode #studio .production-desk[data-work-mode]>.desk-layout{
+    width:100%!important;max-width:none!important;box-sizing:border-box;
+  }
+  #studio .work-nav button,#studio .work-nav select{font-size:16px;min-height:44px}
+  #studio #work-stickers #mh-gallery img{height:64px}
+  #studio #work-stickers #mh-gallery span{font-size:14px}
+}
+@media(min-width:700px){
+  body.simple-marketing-mode #studio .desk-preview .thumbnail-live-pane .simple-thumbnail-preview canvas{
+    max-height:min(100%,calc(100dvh - 160px))!important;
+  }
+}
