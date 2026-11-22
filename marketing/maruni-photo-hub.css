@@ -22,3 +22,22 @@
 #mh-gallery button{display:grid;justify-items:center;align-content:start;padding:4px}
 #mh-gallery img{height:66px;width:100%;object-fit:contain}
 #mh-gallery span{font-size:12px;line-height:1.3}
+
+.mh-photo-picker{display:flex;align-items:end;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.mh-photo-picker label{flex:1 1 16rem;min-width:0}
+.mh-workspace{display:grid;gap:12px;align-items:start}
+.mh-preview,.mh-controls{min-width:0}
+.mh-preview{text-align:center}
+.mh-preview:has(#mh-stage:not([hidden])){position:sticky;top:8px;background:white;z-index:2}
+.mh-preview #mh-stage{margin:0 auto 8px}
+@media(min-width:700px){
+  .mh-workspace{grid-template-columns:minmax(0,3fr) minmax(280px,2fr)}
+  .mh-preview{grid-column:1;grid-row:1}
+  .mh-controls{grid-column:2;grid-row:1}
+  .mh-workspace:has(#mh-stage[hidden]){display:block}
+  #mh-single #mh-gallery{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:699px){
+  .mh-preview:has(#mh-stage:not([hidden])){grid-row:1}
+  #mh-base{max-height:36vh;max-height:36dvh}
+}
