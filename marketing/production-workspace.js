@@ -248,7 +248,7 @@ async function renderProductionFrame(revision) {
   const natural = state.format === 'naver' || (state.signatureDesign?.schema==='cheonginmaru-signature-v1'?state.signatureDesign.layout.fit==='contain':brandSettings().fit==='contain');
   $('production-crop-note').textContent = natural ? '사진 전체를 보존합니다. 원본 비율과 기존 보정 설정을 유지합니다.' : '플랫폼 비율에 맞춰 가장자리를 일부 자릅니다. 바닥·창이 잘리면 위 슬라이더로 구도를 옮기거나 전체 사진 보존을 선택하세요.';
   try {
-    const canvas = await card(state.theme, productionSlide,state.format,false,{maxEdge:1440});
+    const canvas = await card(state.theme, productionSlide,state.format,false,{maxEdge:1440,liveStickers:true});
     if (revision !== productionRevision) {canvas.width=canvas.height=1; return;}
     if(canvas.dataset.textTruncated)$('production-crop-note').textContent+=' 긴 문구는 이미지에서 줄여 표시합니다. 원고는 전체 문장을 유지합니다.';
     canvas.dataset.slide=productionSlide;canvas.tabIndex=0;canvas.setAttribute('role','button');canvas.setAttribute('title','사진을 끌거나 모서리로 크기 조절 · 글씨를 눌러 수정');

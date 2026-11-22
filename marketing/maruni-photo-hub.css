@@ -54,3 +54,16 @@
   #thumbnail-sticker-slot #mh-gallery img{height:44px}
   #thumbnail-sticker-slot .mr-grid{grid-template-columns:minmax(0,1fr)}
 }
+
+.form-stickers{position:absolute;z-index:8;pointer-events:none}
+.form-stickers .mh-actor>img{width:100%;height:100%}
+.form-stickers .mh-actor button{position:absolute;right:-8px;background:white;color:#284034;border:1px solid #506453;border-radius:50%;width:38px;height:38px;min-height:38px;padding:0;line-height:1}
+.form-stickers .erase{top:-10px}.form-stickers .size{bottom:-10px}
+.form-stickers [hidden],.form-pose-picker[hidden]{display:none!important}
+.form-pose-picker{background:white;padding:8px;border:1px solid #c6d1c4;border-radius:8px;max-height:26dvh;overflow-y:auto}
+.form-pose-picker .mh-nav{display:flex;gap:6px;align-items:center}
+.form-pose-picker #mh-gallery{grid-template-columns:repeat(8,minmax(0,1fr))}
+.form-pose-picker #mh-gallery img{height:44px}
+.form-pose-picker #mh-gallery span{font-size:11px}
+.thumbnail-live-tabs:has(+.form-pose-picker){grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:600px){.form-pose-picker #mh-gallery{grid-template-columns:repeat(4,minmax(0,1fr))}}

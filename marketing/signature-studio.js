@@ -10,7 +10,7 @@ function defaultConfig(){return Core.validate(profile().current);}
 function projectProduct(){return Core.product(window.campaignProduct?campaignProduct():selectedProduct());}
 function photoProduct(id){const key=state.signaturePhotos?.[id]?.productKey;if(key)return Core.product(Writer.resolveProduct(state.catalog,key));return projectProduct();}
 function context(){
- const photos=state.photos.map(p=>({id:p.id,name:p.name,width:p.sourceWidth||1200,height:p.sourceHeight||900,score:Number(p.analysis?.score)||0,duplicate:!!p.analysis?.duplicateOf})),bindings=Core.copy(state.signaturePhotos||{}),photoProducts={},unique=new Map(),areas={};
+ const photos=state.photos.map(p=>({id:p.id,name:p.name,formStickers:p.formStickers,width:p.sourceWidth||1200,height:p.sourceHeight||900,score:Number(p.analysis?.score)||0,duplicate:!!p.analysis?.duplicateOf})),bindings=Core.copy(state.signaturePhotos||{}),photoProducts={},unique=new Map(),areas={};
  for(const p of photos){const product=photoProduct(p.id);if(product){photoProducts[p.id]=product;const key=[product.id,product.brand,product.model,product.color,product.size].join('|');product.renderKey=key;unique.set(key,product);if(bindings[p.id]?.area)areas[key]=[areas[key],bindings[p.id].area].filter(Boolean).join(' · ');}}
  return {...Core.publicSite(state),logoTone:state.thumbnailPosting?.logoTone||'white',structure:String(state.productStructure||''),manualOverlay:Core.copy(state.manualOverlay||{}),separateEnding:state.signatureSequence?.at(-1)?.role==='ending',slideCount:state.signatureSequence?.length||Number(state.slideCount||0),photos,bindings,photoProducts,products:[...unique.values()],areas};
 }
@@ -92,7 +92,9 @@ async function renderCurrent(config,index,format,options={}){
  const custom=brandSettings().titles.split(/\r?\n/)[index];const entry={...slot,title:custom||slot.title};
  return renderSignature(config,ctx,entry,index,format,async(id,max)=>{const p=state.photos.find(p=>p.id===id);if(!p)throw Error('연결된 사진이 없습니다.');const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}},options);
 }
-card=async function(theme,index,format=state.format,proposed=false,options={}){ensure();if(!active())return legacyCard(theme,index,format,proposed,options);return renderCurrent(state.signatureDesign,index,format,options);};
+card=async function(theme,index,format=state.format,proposed=false,options={}){ensure();if(!active()){const c=await legacyCard(theme,index,format,proposed,options);return PhotoStickers.finish(c,ProductionCore.matchPhoto(productionSlides()[index]?.photo,state.photos)||state.photos[index%state.photos.length],options.liveStickers);}const c=await renderCurrent(state.signatureDesign,index,format,options);
+ const id=c.dataset.stickerPhoto||(index===0&&state.thumbnailPosting?.photoId)||state.signatureSequence?.[index]?.photoIds?.[0];
+ return PhotoStickers.finish(c,state.photos.find(p=>p.id===id),options.liveStickers);};
 workflowCard=async function(content,index,format='carousel'){
  if(!content.signatureDesign)return legacyWorkflowCard(content,index,format);
  const slot=content.signatureSequence?.[index];if(!slot)throw Error('보관된 사진 구성에 없는 페이지입니다.');
@@ -100,8 +102,8 @@ workflowCard=async function(content,index,format='carousel'){
 };
 window.signatureExportRenderer=function(){
  if(!active())return null;const source=Core.copy(window.signatureSource()),prefix='signature-export:'+crypto.randomUUID()+':';
- const photos=state.photos.map(p=>({id:prefix+p.id,sourceId:p.id,src:p.src,adjust:Core.copy(p.adjust),thumbnail:p.thumbnail,sourceWidth:p.sourceWidth,sourceHeight:p.sourceHeight}));
- return {count:source.sequence.length,design:source.design,render:(index,format,options={})=>renderSignature(source.design,source.context,source.sequence[index],index,format,async(id,max)=>{const p=photos.find(p=>p.sourceId===id);if(!p)throw Error('출력 원본을 찾지 못했습니다.');const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}},options),dispose:()=>{for(const [key,c]of images)if(String(key).startsWith(prefix)){releaseCanvas(c);images.delete(key);}}};
+ source.coverPhotoId=state.thumbnailPosting?.photoId;const photos=state.photos.map(p=>({id:prefix+p.id,sourceId:p.id,src:p.src,adjust:Core.copy(p.adjust),thumbnail:p.thumbnail,sourceWidth:p.sourceWidth,sourceHeight:p.sourceHeight}));
+ return {count:source.sequence.length,design:source.design,render:async(index,format,options={})=>{const c=await renderSignature(source.design,source.context,source.sequence[index],index,format,async(id,max)=>{const p=photos.find(p=>p.sourceId===id);if(!p)throw Error('출력 원본을 찾지 못했습니다.');const image=await photoImage(p),was=original;original=false;try{return transformed(image,p.adjust,max);}finally{original=was;}},options);const id=(index===0&&source.coverPhotoId)||source.sequence[index]?.photoIds?.[0];return PhotoStickers.finish(c,source.context.photos.find(p=>p.id===id));},dispose:()=>{for(const [key,c]of images)if(String(key).startsWith(prefix)){releaseCanvas(c);images.delete(key);}}};
 };
 const legacyEasyGenerate=easyGenerate;
 easyGenerate=async function(force=false){

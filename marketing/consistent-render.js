@@ -43,7 +43,7 @@ renderSignature=async function(cfg,ctx,slot,index,format,load,options={}){
      return covers.fromProject(format,choice,{...options,showLogo:cfg.show.logo});
    }
    if(format===state.format && document.body.classList.contains('simple-marketing-mode') && window.CheonginThumbnailEditor?.renderCover){
-     return window.CheonginThumbnailEditor.renderCover(Boolean(options.maxEdge));
+     return window.CheonginThumbnailEditor.renderCover(Boolean(options.maxEdge),Boolean(options.liveStickers));
    }
  }
  cfg=SignatureCore.validate(cfg);

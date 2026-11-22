@@ -252,7 +252,7 @@ function mount(){
   if(autoBusy||exporting)return;if(!autoDirty)return;autoDirty=false;
   if(!state.photos.some(p=>p.id===photo.value)){if(canvas){releaseCanvas(canvas);canvas=null;}view.replaceChildren(el('p','사진을 불러오면 여기에서 썸네일을 바로 볼 수 있어요.','simple-help'));liveStatus.textContent='사진을 먼저 불러오세요.';return;}
   autoBusy=true;const version=revision,key=inputKey();view.setAttribute('aria-busy','true');liveStatus.textContent='썸네일을 자동으로 갱신하고 있어요…';
-  try{const c=await draw({previewOnly:true});if(version!==revision||key!==inputKey()){releaseCanvas(c);autoDirty=true;}else{if(canvas)releaseCanvas(canvas);canvas=c;view.replaceChildren(c);liveStatus.textContent='사진은 드래그·모서리로 조절하고, 글씨는 눌러서 수정하세요.';}}
+  try{const c=await draw({previewOnly:true,live:true});if(version!==revision||key!==inputKey()){releaseCanvas(c);autoDirty=true;}else{if(canvas)releaseCanvas(canvas);canvas=c;view.replaceChildren(c);liveStatus.textContent='사진은 드래그·모서리로 조절하고, 글씨는 눌러서 수정하세요.';}}
   catch(e){if(version===revision){liveStatus.textContent='미리보기를 만들지 못했습니다. 사진이나 설정을 바꾸면 다시 시도합니다. '+e.message;}}
   finally{autoBusy=false;view.setAttribute('aria-busy','false');if(autoDirty){clearTimeout(autoTimer);autoTimer=setTimeout(pumpAuto,80);}}
  }
@@ -363,7 +363,11 @@ function mount(){
   c.dataset.renderer='cheongin-social-empathy-v2';c.dataset.template='social';c.dataset.pairConcept=pairConcept.value;c.dataset.comparison=String(pair&&pairConcept.value==='compare');c.previewMeta={title:v.title,product:v.product,spec:v.spec,location:v.location};return c;
  }
  function channelSettings(){return {...state.thumbnailPosting,photoId:photo.value,titles:{...titles},material:material.value,housing:housing.value,areaPyeong:areaValue(),areaMode:area.value,areaCustom:areaCustom.value,detailId:detail.value,exteriorId:exteriorPhoto.value,pairConcept:pairConcept.value,logoTone:logoTone.value,beforeId:beforePhoto.value,afterId:afterPhoto.value};}
- async function draw({previewOnly=false}={}){
+ async function draw({previewOnly=false,live=false}={}){
+  const p=state.photos.find(p=>p.id===photo.value);
+  return PhotoStickers.finish(await drawBase({previewOnly}),p,live);
+ }
+ async function drawBase({previewOnly=false}={}){
   if(layout.value==='channels'||covers.editorial?.(layout.value)){
    const platform=layout.value==='channels'?channel.value:state.format;
    return covers.fromProject(platform,{...channelSettings(),layout:layout.value,title:title.value.trim()},previewOnly?{maxEdge:1440}:{});
@@ -405,7 +409,7 @@ function mount(){
  allCovers.onclick=()=>run(async()=>{
   const settings=channelSettings(),files={};
   for(const [key,label] of Object.entries(covers.formats)){
-   const output=await covers.fromProject(key,settings);
+   const output=await PhotoStickers.finish(await covers.fromProject(key,settings),state.photos.find(p=>p.id===photo.value));
    try{files[label+'.png']=new Uint8Array(await (await blobOf(output)).arrayBuffer());}
    finally{releaseCanvas(output);}
   }
@@ -427,15 +431,12 @@ function mount(){
   activeTarget=role;target.value=role;zoom.value=String(Math.round(transformFor(role).zoom*100));
  }
  const stickerSlot=el('div');stickerSlot.id='thumbnail-sticker-slot';
- photoTools.after(stickerSlot);
+ photoTools.after(stickerSlot); PhotoStickers.watch(view); PhotoStickers.watch($('designs'));
  window.dispatchEvent(new Event('marketing:sticker-slot-ready'));
- const stickerTool=el('button','선택한 사진에 스티커·말풍선 넣기');
- stickerTool.type='button';resetPosition.after(stickerTool);
- stickerTool.onclick=()=>{
-   const id=({background:photo,before:beforePhoto,after:afterPhoto,detail,exterior:exteriorPhoto}[activeTarget]||photo).value;
-   if(!id||!exteriorSources().some(p=>p.id===id)){uploadStatus.textContent='편집할 위치에 사진을 먼저 넣어 주세요.';return;}
-   window.dispatchEvent(new CustomEvent('marketing:edit-photo',{detail:{id}}));
- };
+ const stickerTool=el('button','캐릭터 추가'),picker=el('div',undefined,'form-pose-picker');
+ picker.hidden=true;stickerTool.type='button';tabs.append(stickerTool);tabs.after(picker);
+ stickerTool.onclick=()=>{if(!PhotoStickers.activeHost()){toast('현장 사진을 먼저 넣어 주세요.');return;}
+   window.dispatchEvent(new CustomEvent('marketing:form-stickers',{detail:picker}));};
  window.addEventListener('marketing:photo-applied',()=>scheduleAuto(0));
  target.onchange=()=>selectTarget(target.value);
  function logicalWidth(){return Number(canvas?.dataset.exportWidth)||1080;}
@@ -460,7 +461,7 @@ function mount(){
  document.addEventListener('paste',e=>{const editable=e.target?.closest?.('textarea,input,[contenteditable="true"]');if(editable)return;const files=[...(e.clipboardData?.files||[])].filter(f=>/^image\//.test(f.type));if(!files.length)return;e.preventDefault();e.stopPropagation();addPhotos(files);},true);
  paste.onclick=async()=>{if(!navigator.clipboard?.read){dropZone.focus();uploadStatus.textContent='이 브라우저에서는 사진 영역을 누른 뒤 붙여넣기를 사용하거나 사진 파일을 선택하세요.';return;}try{const items=await navigator.clipboard.read(),files=[];for(const item of items){const type=item.types.find(t=>/^image\//.test(t));if(type){const blob=await item.getType(type);files.push(new File([blob],'붙여넣기_'+Date.now()+(/jpeg/.test(type)?'.jpg':/webp/.test(type)?'.webp':'.png'),{type}));}}if(!files.length)throw Error('클립보드에 사진이 없습니다. 사진을 복사한 뒤 다시 눌러 주세요.');await addPhotos(files);}catch(e){uploadStatus.textContent=e.name==='NotAllowedError'?'클립보드 접근이 허용되지 않았습니다. 사진 영역에서 붙여넣거나 파일을 선택하세요.':e.message;}};
  zoom.oninput=()=>{putTransform(activeTarget,{...transformFor(activeTarget),zoom:Number(zoom.value)/100});persist();showThumbnail();scheduleAuto(32);};resetPosition.onclick=()=>{putTransform(activeTarget,{x:.5,y:.55,zoom:1});zoom.value='100';persist();scheduleAuto();};
- view.addEventListener('pointerdown',e=>{if(exporting||e.button>0||!canvas)return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*logicalWidth()/rect.width,y=(e.clientY-rect.top)*(canvas.height/(canvas.width/logicalWidth()))/rect.height,box=[...(canvas.photoLayout||[])].reverse().find(b=>style.hits(b,x,y));if(!box)return;e.preventDefault();activeTarget=box.target||'background';target.value=activeTarget;view.focus({preventScroll:true});const t=transformFor(activeTarget);zoom.value=String(Math.round(t.zoom*100));gesture={pointer:e.pointerId,lastX:e.clientX,lastY:e.clientY,rect,box};view.setPointerCapture?.(e.pointerId);view.classList.add('moving');moveStatus.textContent=({background:'배경 사진',before:'시공 전 사진',after:'시공 후 사진',detail:'소재 확대 사진',exterior:'주택 외관 사진'})[activeTarget]+' 위치 조절 중';});
+ view.addEventListener('pointerdown',e=>{if(e.target.closest('.form-stickers')||exporting||e.button>0||!canvas)return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*logicalWidth()/rect.width,y=(e.clientY-rect.top)*(canvas.height/(canvas.width/logicalWidth()))/rect.height,box=[...(canvas.photoLayout||[])].reverse().find(b=>style.hits(b,x,y));if(!box)return;e.preventDefault();activeTarget=box.target||'background';target.value=activeTarget;view.focus({preventScroll:true});const t=transformFor(activeTarget);zoom.value=String(Math.round(t.zoom*100));gesture={pointer:e.pointerId,lastX:e.clientX,lastY:e.clientY,rect,box};view.setPointerCapture?.(e.pointerId);view.classList.add('moving');moveStatus.textContent=({background:'배경 사진',before:'시공 전 사진',after:'시공 후 사진',detail:'소재 확대 사진',exterior:'주택 외관 사진'})[activeTarget]+' 위치 조절 중';});
  view.addEventListener('pointermove',e=>{if(!gesture||gesture.pointer!==e.pointerId)return;e.preventDefault();const b=gesture.box,t=transformFor(activeTarget),width=b.width??b.w,height=b.height??b.h,dx=(e.clientX-gesture.lastX)*logicalWidth()/gesture.rect.width,dy=(e.clientY-gesture.lastY)*(canvas.height/(canvas.width/logicalWidth()))/gesture.rect.height,availableY=b.availableHeight??b.sourceHeight;const x=Math.max(0,Math.min(1,t.x-dx*b.sw/width/Math.max(1,b.sourceWidth-b.sw))),y=Math.max(0,Math.min(1,t.y-dy*b.sh/height/Math.max(1,availableY-b.sh)));putTransform(activeTarget,{...t,x,y});gesture.lastX=e.clientX;gesture.lastY=e.clientY;scheduleAuto(32);});
  function endGesture(e){if(!gesture||gesture.pointer!==e.pointerId)return;gesture=null;view.classList.remove('moving');view.releasePointerCapture?.(e.pointerId);persist();moveStatus.textContent='사진 위치를 저장했습니다. PNG와 게시세트에도 같은 구도가 적용됩니다.';scheduleAuto(32);}
  view.addEventListener('pointerup',endGesture);view.addEventListener('pointercancel',endGesture);
@@ -472,7 +473,7 @@ function mount(){
  });
  window.CheonginThumbnailEditor={
   selectTarget,publishPack,
-  async renderCover(previewOnly){const c=await draw({previewOnly});c.dataset.thumbnail='true';return c;},
+  async renderCover(previewOnly,live=false){const c=await draw({previewOnly,live});c.dataset.thumbnail='true';return c;},
   setLogo(key){if(!Object.hasOwn(style.colors,key))return;logoTone.value=key;remember();scheduleAuto(0);window.renderProductionWorkspace?.();},
   applyCopy(v,raw){
    const facts=Object.fromEntries(['location','product','spec','structure'].filter(k=>v[k]).map(k=>[k,v[k]]));

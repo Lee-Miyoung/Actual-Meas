@@ -99,7 +99,16 @@
   }
   for(const b of $('mh-poses').querySelectorAll('[data-actor]'))b.onclick=()=>{actor=b.dataset.actor;page=0;poses();};
   $('mh-prev').onclick=()=>{page--;poses();};$('mh-next').onclick=()=>{page++;poses();};
+  const controls=hub.querySelector('.mh-controls'),controlsHome=controls.parentElement;
+  let picker=null;
+  function closePicker(){if(picker){controlsHome.prepend(controls);picker.hidden=true;picker=null;}}
+  window.addEventListener('marketing:form-stickers',e=>{
+    if(picker){closePicker();return;}
+    picker=e.detail;picker.replaceChildren(controls);picker.hidden=false;poses();
+  });
+  document.addEventListener('pointerdown',e=>{if(picker&&!picker.contains(e.target)&&!e.target.closest('.thumbnail-live-tabs'))closePicker();},true);
   async function addPose(asset){
+    if(picker){try{await PhotoStickers.add(asset);closePicker();}catch(e){toast(e.message);}return;}
     const target=photo;
     if(!target){note('캐릭터를 넣을 현장 사진을 먼저 골라 주세요.');return;}
     if(applying)return;
@@ -114,11 +123,11 @@
   }
   $('mh-add-balloon').onclick=async()=>{
     const target=photo,text=$('mh-dialogue').value.trim(),font=$('mh-font').value,shape=$('mh-shape').value;
-    if(!target||!text){note('사진을 선택하고 대사를 입력해 주세요.');return;}
+    if((!target&&!picker)||!text){note('사진을 선택하고 대사를 입력해 주세요.');return;}
     try{
       const R=window.MaruniStoryRender;
       await R.loadBubbleFont(font,text);
-      if(photo!==target)return;
+      if(!picker&&photo!==target)return;
       const c=document.createElement('canvas'),ctx=c.getContext('2d'),face=R.bubbleFont(font,38);
       ctx.font=face;
       const lines=window.MaruniStoryCore.wrap(text,t=>ctx.measureText(t).width,660);
@@ -187,7 +196,7 @@
   function mountTools(){
     const slot=$('thumbnail-sticker-slot');
     if(slot && document.body.classList.contains('simple-marketing-mode')){
-      if(hub.parentElement!==slot)slot.append(hub);
+      if(hub.parentElement!==slot){slot.append(hub);hub.open=false;}
     }else if(home.nextSibling!==hub)home.after(hub);
   }
   mountTools();
