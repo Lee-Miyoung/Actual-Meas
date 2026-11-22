@@ -14,7 +14,7 @@
 
 /* Keep Safari's document scroller out of the tablet workspace. Each pane owns its scroll. */
 @media (min-width:700px) and (max-width:1366px){
-  body.simple-marketing-mode:not(:has(#maruni-hub[open])){position:fixed;inset:0;margin:0;height:auto!important;overflow:hidden!important}
+  body.simple-marketing-mode:not(:has(#studio > #maruni-hub[open])):not(.maruni-editor-scrolling){position:fixed;inset:0;margin:0;height:auto!important;overflow:hidden!important}
   body.simple-marketing-mode main{height:100%!important;box-sizing:border-box;overflow:hidden!important;padding:12px 14px!important}
   body.simple-marketing-mode #studio,body.simple-marketing-mode #studio .production-desk{height:100%!important;min-height:0!important}
   body.simple-marketing-mode #studio .simple-marketing-panel{box-sizing:border-box}
@@ -33,7 +33,7 @@ body.simple-marketing-mode #studio .desk-layout>.desk-preview:has(.thumbnail-liv
 @media(max-width:699px){
   body.simple-marketing-mode #studio .desk-layout>.desk-preview:has(.thumbnail-live-tabs){height:clamp(290px,62dvh,560px)!important}
 }
-body.simple-marketing-mode #studio .desk-preview:has(.thumbnail-live-tabs)>:not(.thumbnail-live-tabs,.thumbnail-live-pane,#production-preview,.preview-navigation){display:none!important}
+body.simple-marketing-mode #studio .desk-preview:has(.thumbnail-live-tabs)>:not(.thumbnail-live-tabs,.thumbnail-live-pane,#production-preview,.preview-navigation,.form-pose-picker){display:none!important}
 body.simple-marketing-mode #studio .desk-preview>.thumbnail-live-tabs{grid-row:1;grid-column:1;margin:0!important}
 body.simple-marketing-mode #studio .desk-preview>:is(#production-preview,.thumbnail-live-pane){grid-row:2;grid-column:1;box-sizing:border-box;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;position:relative;overflow:hidden!important}
 body.simple-marketing-mode #studio .desk-preview #production-preview #designs,
@@ -61,4 +61,40 @@ body.simple-marketing-mode #studio .simple-output-card .simple-actions{
 }
 body.simple-marketing-mode #studio .simple-output-card .simple-actions button{
   width:100%;padding:9px 8px;min-width:0;white-space:normal;word-break:keep-all
+}
+
+/* Anchor the artwork to its tools when the tablet sidebar expands. */
+body.simple-marketing-mode #studio .desk-layout>.desk-preview:has(.thumbnail-live-tabs){
+  grid-template-rows:auto auto minmax(0,1fr) auto;
+}
+body.simple-marketing-mode #studio .desk-preview>.form-pose-picker:not([hidden]){
+  display:block!important;grid-column:1;grid-row:2;max-height:24dvh;overflow-y:auto;
+}
+body.simple-marketing-mode #studio .desk-preview>:is(#production-preview,.thumbnail-live-pane){grid-row:3}
+body.simple-marketing-mode #studio .desk-preview>.preview-navigation{grid-row:4}
+body.simple-marketing-mode #studio .desk-preview.thumbnail-mode>.preview-navigation{display:none!important}
+body.simple-marketing-mode #studio .desk-preview .thumbnail-live-pane .simple-thumbnail-preview,
+body.simple-marketing-mode #studio .desk-preview #production-preview #designs{align-items:flex-start!important}
+body.simple-marketing-mode #studio .desk-preview .simple-thumbnail-preview canvas,
+body.simple-marketing-mode #studio .desk-preview #production-preview #designs canvas{
+  margin:0 auto!important;max-height:100%!important;max-width:100%!important;width:auto!important;height:auto!important;
+}
+
+@media (min-width:700px) and (max-width:1366px){
+  body.simple-marketing-mode:not(.maruni-editor-scrolling) main:has(#studio:not([hidden]) #thumbnail-sticker-slot){
+    display:flex;flex-direction:column;box-sizing:border-box;
+  }
+  body.simple-marketing-mode:not(.maruni-editor-scrolling) main #studio:not([hidden]){
+    flex:1 1 0;height:auto!important;min-height:0!important;
+  }
+  body.simple-marketing-mode:not(.maruni-editor-scrolling) main:has(#studio:not([hidden]) #thumbnail-sticker-slot)>footer{display:none}
+  body.simple-marketing-mode #studio .production-desk{box-sizing:border-box;height:100%!important}
+  body.simple-marketing-mode #studio .desk-layout>.desk-preview:has(.thumbnail-live-tabs){position:relative!important;top:0!important}
+}
+@media (min-width:700px) and (max-width:1366px){
+  body.simple-marketing-mode main:has(#studio:not([hidden]) #thumbnail-sticker-slot)>.space-preview-entry{
+    margin:0 0 6px!important;padding:0 8px!important;border:0!important;flex-shrink:0;
+  }
+  body.simple-marketing-mode .space-preview-entry a{padding:5px 10px!important}
+  body.simple-marketing-mode #studio .desk-preview>.form-pose-picker:not([hidden]){max-height:min(22dvh,170px)}
 }

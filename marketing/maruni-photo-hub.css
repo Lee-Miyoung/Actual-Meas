@@ -14,7 +14,7 @@
 #mh-single .mh-actor button{position:absolute;z-index:1;right:0;width:34px;height:34px;min-height:34px;border-radius:50%;padding:0;background:white;color:#402a21;touch-action:none}
 .mh-actor .erase{top:0}.mh-actor .size{bottom:0}
 #maruni-hub:not([open])>#mh-single{display:none}
-@media(max-width:1366px){body.simple-marketing-mode:has(#maruni-hub[open]),body.simple-marketing-mode:has(#maruni-hub[open]) main,body.simple-marketing-mode:has(#maruni-hub[open]) #studio{height:auto!important;overflow:visible!important}}
+@media(max-width:1366px){body.simple-marketing-mode:has(#studio > #maruni-hub[open]),body.simple-marketing-mode:has(#studio > #maruni-hub[open]) main,body.simple-marketing-mode:has(#studio > #maruni-hub[open]) #studio{height:auto!important;overflow:visible!important}}
 
 #mh-choices{display:flex;flex-wrap:wrap;gap:6px}.ml-story-type button{margin:3px}.ml-story-type label:has(#ml-type){display:none}
 
