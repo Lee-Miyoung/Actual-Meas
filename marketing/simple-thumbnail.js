@@ -426,6 +426,9 @@ function mount(){
  function selectTarget(role){
   activeTarget=role;target.value=role;zoom.value=String(Math.round(transformFor(role).zoom*100));
  }
+ const stickerSlot=el('div');stickerSlot.id='thumbnail-sticker-slot';
+ photoTools.after(stickerSlot);
+ window.dispatchEvent(new Event('marketing:sticker-slot-ready'));
  const stickerTool=el('button','선택한 사진에 스티커·말풍선 넣기');
  stickerTool.type='button';resetPosition.after(stickerTool);
  stickerTool.onclick=()=>{

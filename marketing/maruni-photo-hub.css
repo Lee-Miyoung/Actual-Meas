@@ -42,6 +42,15 @@
   #mh-base{max-height:36vh;max-height:36dvh}
 }
 
-.mh-editor-dialog{box-sizing:border-box;width:min(1120px,96vw);max-height:92dvh;overflow:auto;overscroll-behavior:contain;padding:12px;border:0;border-radius:12px}
-.mh-editor-dialog::backdrop{background:#19221d88}
-.mh-editor-dialog>button{min-height:44px}
+
+#thumbnail-sticker-slot{container-type:inline-size;min-width:0}
+#thumbnail-sticker-slot #maruni-hub{margin:8px 0}
+@container (max-width:600px){
+  #thumbnail-sticker-slot .mh-workspace{grid-template-columns:minmax(0,1fr)}
+  #thumbnail-sticker-slot .mh-preview{grid-column:1;grid-row:1;position:static}
+  #thumbnail-sticker-slot .mh-controls{grid-column:1;grid-row:2}
+  #thumbnail-sticker-slot #mh-base{max-height:28dvh}
+  #thumbnail-sticker-slot #mh-gallery{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #thumbnail-sticker-slot #mh-gallery img{height:44px}
+  #thumbnail-sticker-slot .mr-grid{grid-template-columns:minmax(0,1fr)}
+}

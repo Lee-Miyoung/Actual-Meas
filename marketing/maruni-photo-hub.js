@@ -108,7 +108,7 @@
       const ratio=base.naturalWidth/base.naturalHeight;
       const w=Math.min(.25,.45/ratio*img.width/img.height);
       chosen={path:asset.path,name:asset.label,x:.35,y:.35,w};layers.push(chosen);render();
-      stage.scrollIntoView({block:'center',behavior:'instant'});
+      stage.scrollIntoView({block:'nearest'});
       note(asset.label+' 포즈를 넣었어요. 캐릭터를 잡고 끌면 움직입니다.');
     }catch{note('선택한 포즈를 열 수 없습니다.');}
   }
@@ -145,7 +145,7 @@
       p.src=output;if(list.length)p.characterEdit={source,layers:list};else delete p.characterEdit;
       images.delete(p.id);delete p.thumbnail;await photoImage(p);
       if(state.photos.includes(p))selected=state.photos.indexOf(p);thumbnails();invalidate();await preview();await renderProductionWorkspace();
-      await flushPendingSave();note($('save-status').textContent);window.dispatchEvent(new Event('marketing:photo-applied'));if(editorDialog.open)editorDialog.close();
+      await flushPendingSave();note($('save-status').textContent);window.dispatchEvent(new Event('marketing:photo-applied'));
     }catch(e){note(e.message||'사진에 적용하지 못했습니다.');}finally{applying=false;}
   };
   photos.onchange=()=>refreshPhotos(photos.value);
@@ -182,18 +182,25 @@
     preset.onclick=()=>{if(select.value!==option.value){select.value=option.value;select.dispatchEvent(new Event('change'));}};
     select.closest('details').append(preset);
   }
-  const editorDialog=document.createElement('dialog'), originalSlot=document.createComment('사진 편집기');
-  hub.before(originalSlot);
-  editorDialog.className='mh-editor-dialog';
-  editorDialog.setAttribute('aria-label','사진 편집');
-  const closeButton=document.createElement('button');
-  closeButton.type='button';closeButton.textContent='사진 편집으로 돌아가기';
-  closeButton.onclick=()=>editorDialog.close();
-  editorDialog.append(closeButton);document.body.append(editorDialog);
-  editorDialog.onclose=()=>originalSlot.after(hub);
+  const home=document.createComment('사진 편집기');
+  hub.before(home);
+  function mountTools(){
+    const slot=$('thumbnail-sticker-slot');
+    if(slot && document.body.classList.contains('simple-marketing-mode')){
+      if(hub.parentElement!==slot)slot.append(hub);
+    }else if(home.nextSibling!==hub)home.after(hub);
+  }
+  mountTools();
+  window.addEventListener('marketing:sticker-slot-ready',mountTools);
+  new MutationObserver(mountTools).observe(document.body,{attributes:true,attributeFilter:['class']});
+  function revealTools(){
+    const card=hub.closest('.simple-thumbnail-card');
+    if(card)card.open=true;
+    hub.open=true;
+  }
   function openPhotoEditor(id){
-    editorDialog.append(hub);editorDialog.showModal();hub.open=true;
-    switchMode('single');refreshPhotos(id);editorDialog.scrollTop=0;
+    mountTools();revealTools();switchMode('single');refreshPhotos(id);
+    hub.scrollIntoView({block:'nearest'});
   }
   window.addEventListener('marketing:edit-photo',e=>openPhotoEditor(e.detail.id));
   function entry(anchor,production){
@@ -208,7 +215,7 @@
   function openGallery(){
     if(location.hash!=='#mh-poses')return;
     document.querySelector('button[data-tab="studio"]')?.click();
-    hub.open=true;switchMode('single');$('mh-poses').scrollIntoView({block:'center'});
+    revealTools();switchMode('single');$('mh-poses').scrollIntoView({block:'center'});
   }
   window.addEventListener('hashchange',openGallery);
   window.addEventListener('load',openGallery);
