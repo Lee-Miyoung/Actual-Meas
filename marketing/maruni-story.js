@@ -162,7 +162,7 @@
     try {
       // Render to a temporary canvas to prevent partially drawn asynchronous frames.
       const p = C.copy(project), s = p.scenes[active], chosen = selected, drawRevision = revision, c = document.createElement('canvas'); c.width = 648; c.height = 810;
-      try { const next = await R.draw(c, p, s, image, { selected: chosen }); if (project.id === p.id && scene().id === s.id && revision === drawRevision && selected === chosen) { $('#mr-canvas').getContext('2d').drawImage(c, 0, 0); boxes = next; refreshActorTargets(); previewTools.refresh(); } else repaint = true; } finally { c.width = c.height = 1; }
+      try { const next = await R.draw(c, p, s, image, { selected: chosen }); if (project.id === p.id && scene().id === s.id && revision === drawRevision && selected === chosen) { canvas.getContext('2d').drawImage(c, 0, 0); boxes = next; refreshActorTargets(); previewTools.refresh(); } else repaint = true; } finally { c.width = c.height = 1; }
     } finally { painting = false; if (repaint) { repaint = false; schedulePaint(); } }
   }
   function assets() {

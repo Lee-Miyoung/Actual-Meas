@@ -13,7 +13,7 @@
     '<p id="ml-status" role="status" aria-live="polite"></p>',
     '<div class="ml-layout"><div class="ml-stage">',
     '<div class="ml-quick-upload"><button id="ml-quick-photo" type="button">＋ 사진 여러 장 선택</button><button id="ml-touch-edit" type="button" aria-pressed="false">화면 스크롤 · 이동 끔</button><small id="ml-photo-tip">사진 위에서도 화면을 밀어 스크롤할 수 있어요. 캐릭터를 옮길 때만 이동 모드를 켜세요.</small></div>',
-    '<canvas id="ml-canvas" width="540" height="675" aria-label="고정 포맷 4대5 이미지 미리보기"></canvas>',
+    '<div class="ml-canvas-wrap"><canvas id="ml-canvas" width="540" height="675" aria-label="고정 포맷 4대5 이미지 미리보기"></canvas></div>',
     '<div class="ml-actions ml-actor-choose-actions"><button id="ml-open-pose-maruni" type="button">마루니 다른 동작 보기</button><button id="ml-open-pose-ruru" type="button">루루 다른 동작 보기</button></div>',
     '<div id="ml-tabs" class="ml-tabs" aria-label="썸네일 및 4컷 선택"></div>',
     '<div class="ml-actions ml-photo-order"><button id="ml-photo-left" type="button">← 사진 이전 컷과 교환</button>',
@@ -639,7 +639,7 @@
         const t=transform(s,actor),dx=t.dx||0,dy=t.dy||0;
         return (x,y)=>{if(busy||current()!==s||actor!==selectedActor)return;t.dx=dx+x;t.dy=dy+y;changed();};
       },
-      anchor:canvas, min:20, max:130,
+      anchor:q('.ml-quick-upload'), min:20, max:130,
       pick(e){
         if(busy || !current().photo)return;
         const p=point(e);
@@ -796,7 +796,7 @@
     q('#ml-library-prev').addEventListener('click',()=>{libraryPage--;renderPhotoLibrary();});
     q('#ml-library-next').addEventListener('click',()=>{libraryPage++;renderPhotoLibrary();});
     for(const selector of ['#ml-drop-zone','#ml-canvas','#ml-tabs']){
-      const zone=q(selector);
+      const zone=selector==='#ml-canvas'?canvas:q(selector);
       zone.addEventListener('dragenter',event=>{event.preventDefault();zone.classList.add('ml-drag-active');});
       zone.addEventListener('dragover',event=>{event.preventDefault();event.dataTransfer.dropEffect='copy';zone.classList.add('ml-drag-active');});
       zone.addEventListener('dragleave',event=>{if(!zone.contains(event.relatedTarget))zone.classList.remove('ml-drag-active');});
@@ -887,7 +887,7 @@
   }
   function syncEditorScrolling(){
     const other=document.getElementById('maruni-story');
-    const expanded=Boolean(root.open||(other&&other.open));
+    const expanded=Boolean(root.open||(other&&other.open))&&!window.marketingWorkbench?.active();
     document.body.classList.toggle('maruni-editor-scrolling',expanded);
   }
   root.addEventListener('toggle',()=>{syncEditorScrolling();if(root.open)init();else {touchEdit=false;drag=null;if(initializeStarted)updateTouchEdit();}});

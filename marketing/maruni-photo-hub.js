@@ -5,6 +5,7 @@
   const drafts=new WeakMap();
   const note=text=>{$('mh-status').textContent=text;};
   function switchMode(key){
+    if (window.marketingWorkbench?.active()) window.marketingWorkbench.reflect(key);
     mode=key;
     $('mh-situations').hidden=key==='locked';
     $('mh-single').hidden=key!=='single';
@@ -103,12 +104,12 @@
   let picker=null;
   function closePicker(){if(picker){controlsHome.prepend(controls);picker.hidden=true;picker=null;}}
   window.addEventListener('marketing:form-stickers',e=>{
-    if(picker){closePicker();return;}
+    if(picker){const same=picker===e.detail;closePicker();if(same)return;}
     picker=e.detail;picker.replaceChildren(controls);picker.hidden=false;poses();
   });
-  document.addEventListener('pointerdown',e=>{if(picker&&!picker.contains(e.target)&&!e.target.closest('.thumbnail-live-tabs'))closePicker();},true);
+  document.addEventListener('pointerdown',e=>{if(picker&&picker.id!=='work-stickers'&&!picker.contains(e.target)&&!e.target.closest('.thumbnail-live-tabs'))closePicker();},true);
   async function addPose(asset){
-    if(picker){try{await PhotoStickers.add(asset);closePicker();}catch(e){toast(e.message);}return;}
+    if(picker){try{await PhotoStickers.add(asset);if(picker?.id!=='work-stickers')closePicker();}catch(e){toast(e.message);}return;}
     const target=photo;
     if(!target){note('캐릭터를 넣을 현장 사진을 먼저 골라 주세요.');return;}
     if(applying)return;
@@ -191,10 +192,14 @@
     preset.onclick=()=>{if(select.value!==option.value){select.value=option.value;select.dispatchEvent(new Event('change'));}};
     select.closest('details').append(preset);
   }
+  window.addEventListener('marketing:work-mode',e=>{
+    closePicker(); const key=e.detail;
+    if(key==='single'){switchMode(key);hub.open=false;}else{hub.open=true;switchMode(key);}
+  });
   const home=document.createComment('사진 편집기');
   hub.before(home);
   function mountTools(){
-    const slot=$('thumbnail-sticker-slot');
+    const slot=$('work-comic-tools')||$('thumbnail-sticker-slot');
     if(slot && document.body.classList.contains('simple-marketing-mode')){
       if(hub.parentElement!==slot){slot.append(hub);hub.open=false;}
     }else if(home.nextSibling!==hub)home.after(hub);
@@ -208,6 +213,7 @@
     hub.open=true;
   }
   function openPhotoEditor(id){
+    if(window.marketingWorkbench?.active()){window.marketingWorkbench.stickers();return;}
     mountTools();revealTools();switchMode('single');refreshPhotos(id);
     hub.scrollIntoView({block:'nearest'});
   }
