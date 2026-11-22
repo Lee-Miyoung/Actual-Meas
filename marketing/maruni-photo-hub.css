@@ -41,3 +41,7 @@
   .mh-preview:has(#mh-stage:not([hidden])){grid-row:1}
   #mh-base{max-height:36vh;max-height:36dvh}
 }
+
+.mh-editor-dialog{box-sizing:border-box;width:min(1120px,96vw);max-height:92dvh;overflow:auto;overscroll-behavior:contain;padding:12px;border:0;border-radius:12px}
+.mh-editor-dialog::backdrop{background:#19221d88}
+.mh-editor-dialog>button{min-height:44px}

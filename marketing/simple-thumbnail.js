@@ -426,6 +426,14 @@ function mount(){
  function selectTarget(role){
   activeTarget=role;target.value=role;zoom.value=String(Math.round(transformFor(role).zoom*100));
  }
+ const stickerTool=el('button','선택한 사진에 스티커·말풍선 넣기');
+ stickerTool.type='button';resetPosition.after(stickerTool);
+ stickerTool.onclick=()=>{
+   const id=({background:photo,before:beforePhoto,after:afterPhoto,detail,exterior:exteriorPhoto}[activeTarget]||photo).value;
+   if(!id||!exteriorSources().some(p=>p.id===id)){uploadStatus.textContent='편집할 위치에 사진을 먼저 넣어 주세요.';return;}
+   window.dispatchEvent(new CustomEvent('marketing:edit-photo',{detail:{id}}));
+ };
+ window.addEventListener('marketing:photo-applied',()=>scheduleAuto(0));
  target.onchange=()=>selectTarget(target.value);
  function logicalWidth(){return Number(canvas?.dataset.exportWidth)||1080;}
  function putTransform(role,value){state.thumbnailPosting??={};state.thumbnailPosting.transforms??={};state.thumbnailPosting.transforms[role]=value;}

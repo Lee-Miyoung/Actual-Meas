@@ -14,10 +14,15 @@
     hub.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===key)));
     if(key==='single'&&hub.open){refreshPhotos();poses();}
   }
+  function editablePhotos(){
+    const exterior=state.thumbnailPosting?.exteriorPhoto;
+    return exterior?[...state.photos,exterior]:state.photos;
+  }
   function refreshPhotos(prefer){
     if(applying)return;
-    photos.replaceChildren(...state.photos.map((p,i)=>new Option((i+1)+' · '+p.name,p.id)));
-    const next=state.photos.find(p=>p.id===prefer)||state.photos.find(p=>p===photo)||state.photos[selected]||state.photos[0];
+    const list=editablePhotos();
+    photos.replaceChildren(...list.map((p,i)=>new Option((i+1)+' · '+p.name,p.id)));
+    const next=list.find(p=>p.id===prefer)||list.find(p=>p===photo)||state.photos[selected]||list[0];
     photo=next;chosen=null;layers=[];
     $('mh-apply').disabled=!next;stage.hidden=!next;
     if(next){
@@ -136,16 +141,16 @@
         for(const item of list){const actor=await loadImage(item.path),w=c.width*item.w;ctx.drawImage(actor,item.x*c.width,item.y*c.height,w,w*actor.height/actor.width);}
         output=c.toDataURL('image/png');if(output==='data:,')throw Error('사진 크기를 처리할 수 없습니다.');c.width=c.height=1;
       }
-      if(!state.photos.includes(p))return;
+      if(!editablePhotos().includes(p))return;
       p.src=output;if(list.length)p.characterEdit={source,layers:list};else delete p.characterEdit;
       images.delete(p.id);delete p.thumbnail;await photoImage(p);
-      selected=state.photos.indexOf(p);thumbnails();invalidate();await preview();await renderProductionWorkspace();
-      await flushPendingSave();note($('save-status').textContent);
+      if(state.photos.includes(p))selected=state.photos.indexOf(p);thumbnails();invalidate();await preview();await renderProductionWorkspace();
+      await flushPendingSave();note($('save-status').textContent);window.dispatchEvent(new Event('marketing:photo-applied'));if(editorDialog.open)editorDialog.close();
     }catch(e){note(e.message||'사진에 적용하지 못했습니다.');}finally{applying=false;}
   };
   photos.onchange=()=>refreshPhotos(photos.value);
   $('mh-upload').onclick=()=>$('photos').click();
-  new MutationObserver(()=>{if(hub.open&&mode==='single'&&(photos.length!==state.photos.length||!state.photos.includes(photo)))refreshPhotos();}).observe($('thumbnails'),{childList:true});
+  new MutationObserver(()=>{if(hub.open&&mode==='single'&&(photos.length!==editablePhotos().length||!editablePhotos().includes(photo)))refreshPhotos();}).observe($('thumbnails'),{childList:true});
   hub.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
   hub.ontoggle=()=>switchMode(mode);
   for(const [name,panel] of [['locked',fixed],['free',free]])panel.addEventListener('toggle',()=>{
@@ -177,10 +182,24 @@
     preset.onclick=()=>{if(select.value!==option.value){select.value=option.value;select.dispatchEvent(new Event('change'));}};
     select.closest('details').append(preset);
   }
+  const editorDialog=document.createElement('dialog'), originalSlot=document.createComment('사진 편집기');
+  hub.before(originalSlot);
+  editorDialog.className='mh-editor-dialog';
+  editorDialog.setAttribute('aria-label','사진 편집');
+  const closeButton=document.createElement('button');
+  closeButton.type='button';closeButton.textContent='사진 편집으로 돌아가기';
+  closeButton.onclick=()=>editorDialog.close();
+  editorDialog.append(closeButton);document.body.append(editorDialog);
+  editorDialog.onclose=()=>originalSlot.after(hub);
+  function openPhotoEditor(id){
+    editorDialog.append(hub);editorDialog.showModal();hub.open=true;
+    switchMode('single');refreshPhotos(id);editorDialog.scrollTop=0;
+  }
+  window.addEventListener('marketing:edit-photo',e=>openPhotoEditor(e.detail.id));
   function entry(anchor,production){
     if(!anchor)return;
     const b=document.createElement('button');b.type='button';b.textContent='사진에 마루니·루루 넣기';
-    b.onclick=()=>{hub.open=true;switchMode('single');refreshPhotos((production?state.signatureSequence?.[state.productionView?.slide||0]?.photoIds?.[0]:null)||state.photos[selected]?.id);hub.scrollIntoView({block:'start'});};
+    b.onclick=()=>{openPhotoEditor((production?state.signatureSequence?.[state.productionView?.slide||0]?.photoIds?.[0]:null)||state.photos[selected]?.id);};
     anchor.append(b);
   }
   entry($('export-photo').parentElement,false);
