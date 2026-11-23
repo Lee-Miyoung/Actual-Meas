@@ -42,7 +42,7 @@
           <label>선택한 항목 크기<input id="mr-size" type="range" min="8" max="90" value="30" disabled></label>
           <div class="mr-toolbar"><button id="mr-flip" type="button">좌우 반전</button><button id="mr-front" type="button">맨 앞으로</button><button id="mr-delete" type="button">선택 삭제</button><button id="mr-bubble-add" type="button">말풍선 추가</button></div>
           <label>말풍선 모양<select id="mr-format"><option value="legacy">기존 말풍선</option><option value="speech">대화</option><option value="thought">생각</option><option value="note">현장 설명</option><option value="oval">둥근 캡슐</option><option value="caption">진한 자막 상자</option><option value="none">없음</option></select></label><label>말풍선 글꼴<select id="mr-font-family"><option value="original">함렛 명조</option><option value="serif">본명조</option><option value="sans">본고딕</option></select></label><label>말풍선 화자<select id="mr-speaker" disabled></select></label>
-          <label>말풍선 내용<textarea id="mr-bubble" rows="3" maxlength="180" placeholder="말풍선을 선택하거나 추가하세요" disabled></textarea></label>
+          <label>말풍선 내용<textarea id="mr-bubble" rows="3" maxlength="180" placeholder="대사를 입력하거나 붙여넣으세요" disabled></textarea></label>
           <div class="mr-toolbar"><button type="button" data-mr-phrase="결이 잘 보인다개!">결이 잘 보인다개!</button><button type="button" data-mr-phrase="여기도 확인했다개!">여기도 확인했다개!</button></div>
           <label>전체 컷 말풍선 글자 크기<input id="mr-font" type="range" min="24" max="64" value="38"></label>
           <p class="mr-note">좌우 반전하면 원본 명찰 글자도 함께 뒤집힙니다. 문구는 직접 확인한 뒤 저장하세요.</p>
@@ -145,7 +145,7 @@
     $('#mr-size').disabled = !l; $('#mr-size').value = Math.round((l?.width || .3) * 100);
     $('#mr-flip').disabled = l?.type !== 'actor' || !l.allowFlip; $('#mr-delete').disabled = $('#mr-front').disabled = !l;
     $('#mr-bubble-add').disabled = scene().layers.length >= 12;
-    $('#mr-bubble').disabled = $('#mr-speaker').disabled = !bubble; $('#mr-bubble').value = bubble ? l.text : '';
+    $('#mr-bubble').disabled = !bubble && scene().layers.length >= 12; $('#mr-speaker').disabled = !bubble; $('#mr-bubble').value = bubble ? l.text : '';
     $('#mr-font-family').disabled=!bubble; $('#mr-font-family').value=l?.font||'original';
     $('#mr-format').disabled=!bubble; $('#mr-format').value=bubble?(l.format||'legacy'):'speech';
     const sp = $('#mr-speaker'); sp.replaceChildren(new Option('화자 없음', ''));
@@ -314,7 +314,22 @@
   function addBubble() { if (scene().layers.length >= 12) throw Error('한 컷 최대 12개입니다.'); const a = layer()?.type === 'actor' ? layer() : scene().layers.find(l => l.type === 'actor'); const l = { id: C.id(), type: 'bubble', speakerId: a?.id || null, text: '', x: a ? (a.x < .5 ? .27 : .73) : .5, y: Math.min(.7, .18 + scene().layers.filter(l => l.type === 'bubble' && l.speakerId === (a?.id || null)).length * .22), width: a ? .46 : .7 }; scene().layers.push(l); selected = l.id; photoMode = false; }
   $('#mr-bubble-add').onclick = () => { if (busy) return; remember(); addBubble(); changed(); controls(); $('#mr-bubble').focus(); };
   let typingId = null;
-  $('#mr-bubble').oninput = e => { if (busy || layer()?.type !== 'bubble') return; if (typingId !== selected) { remember(); typingId = selected; } layer().text = e.target.value; changed(); };
+  $('#mr-bubble').oninput = e => {
+    if (busy) return;
+    const text = e.target.value;
+    if (layer()?.type !== 'bubble') {
+      if (!text || scene().layers.length >= 12) return;
+      remember();
+      addBubble();
+      layer().text = text;
+      controls();
+    } else {
+      if (typingId !== selected) remember();
+      layer().text = text;
+    }
+    typingId = selected;
+    changed();
+  };
   $('#mr-bubble').onblur = () => { typingId = null; };
   $('#mr-speaker').onchange = e => { if (busy || layer()?.type !== 'bubble') return; remember(); layer().speakerId = e.target.value || null; changed(); };
   root.querySelectorAll('[data-mr-phrase]').forEach(b => b.onclick = () => { if (busy) return; remember(); if (layer()?.type !== 'bubble') addBubble(); layer().text = b.dataset.mrPhrase; changed(); controls(); });
@@ -329,8 +344,8 @@
     host.querySelectorAll('.mr-actor-target').forEach(el=>el.remove());
     if(photoMode || touchEdit)return;
     const cr=canvas.getBoundingClientRect(), hr=host.getBoundingClientRect();
-    for(const actor of scene().layers.filter(l=>l.type==='actor')){
-      const b=boxes.get(actor.id); if(!b)continue;
+    for(const item of scene().layers){
+      const b=boxes.get(item.id); if(!b)continue;
       const pad=document.createElement('div');
       pad.className='mr-actor-target';
       Object.assign(pad.style,{position:'absolute',touchAction:'none',left:(cr.left-hr.left+b.x*cr.width/R.W)+'px',top:(cr.top-hr.top+b.y*cr.height/R.H)+'px',width:b.w*cr.width/R.W+'px',height:b.h*cr.height/R.H+'px'});
