@@ -19,13 +19,13 @@
     '<div class="ml-actions ml-photo-order"><button id="ml-photo-left" type="button">← 사진 이전 컷과 교환</button>',
     '<button id="ml-photo-right" type="button">사진 다음 컷과 교환 →</button>',
     '<button id="ml-scene-up" type="button">본편 순서 앞으로</button><button id="ml-scene-down" type="button">본편 순서 뒤로</button></div>',
-    '<div class="ml-actions"><button id="ml-export-one" type="button">현재 장 PNG 저장</button><button id="ml-export-all" class="ml-primary" type="button">썸네일+4컷 ZIP 저장</button>',
+    '<div class="ml-actions"><label>이미지 형식<select id="ml-image-format"><option value="png">PNG</option><option value="jpg">JPG</option></select></label><button id="ml-export-one" type="button">현재 장 이미지 저장</button><button id="ml-export-all" class="ml-primary" type="button">썸네일+4컷 ZIP 저장</button>',
     '<button id="ml-share" type="button">현재 장 공유(아이폰)</button></div>',
     '<p class="ml-note">모든 출력 1080×1350px · 로고는 표지만 · 글씨·말풍선·여백은 고정 · 사진은 기기 안에서만 처리합니다. 사진 원본 색상·결 보정 없음.</p>',
     '</div><div class="ml-controls">',
-    '<details class="ml-story-type"><summary>상황 바꾸기</summary><label>콘텐츠 형식 선택<select id="ml-type"><option value="product">제품 소개</option><option value="episode">시공 에피소드</option><option value="process">시공 과정·전후</option><option value="tips">생활·관리 정보</option><option value="everyday">그냥 사는 이야기</option><option value="behind">현장 밖 비하인드</option></select></label><p id="ml-type-tip" class="ml-note">기존 사진과 캐릭터는 유지하고 제목·대사만 형식에 맞게 바꿉니다.</p></details>',
+    '<details class="ml-story-type"><summary>상황 바꾸기</summary><label>콘텐츠 형식 선택<select id="ml-type">'+Workflow.types().map(t=>'<option value="'+t.id+'">'+t.label+'</option>').join('')+'</select></label><p id="ml-type-tip" class="ml-note">기존 사진과 캐릭터는 유지하고 제목·대사만 형식에 맞게 바꿉니다.</p></details>',
     '<label id="ml-topic-label"><span id="ml-topic-name">제품 / 현장 제품명</span><input id="ml-product" maxlength="65" placeholder="예: 동화 시그니월 슬레이트모티프"></label>',
-    '<label>공통 시리즈 이름<input id="ml-series" maxlength="26" value="마루니·루루 제품 이야기"></label>',
+    '<label>공통 시리즈 이름<input id="ml-series" maxlength="26" value="마루니·루루 | 제품 소개"></label>',
     '<div class="ml-minirow"><label>시공 분야<select id="ml-field"><option>벽장재</option><option>마루</option><option>기타</option></select></label><label>시공 지역<input id="ml-region" maxlength="45" placeholder="예: 인천 송도"></label></div>',
     '<label>제품 규격(확인된 경우만)<input id="ml-spec" maxlength="65" placeholder="예: 1010 × 2460 × 9T"></label>',
     '<label>사진 1~20장 한번에 넣기(JPG·PNG·WebP)<input id="ml-photo" type="file" multiple accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif"></label>',
@@ -74,7 +74,7 @@
   const clone = x => JSON.parse(JSON.stringify(x));
   const makeId = () => (crypto.randomUUID ? crypto.randomUUID() : 'p'+Date.now()+'x'+Math.random().toString(16).slice(2));
   function makeProject() {
-    return {schema:'cheonginmaru-maruni-locked-v1',id:makeId(),name:'새 마루니·루루 시리즈',type:'product',series:'마루니·루루 제품 이야기',product:'동화 시그니월 슬레이트모티프',field:'벽장재',region:'',spec:'',library:[],
+    return {schema:'cheonginmaru-maruni-locked-v1',id:makeId(),name:'새 마루니·루루 시리즈',type:'product',series:'마루니·루루 | 제품 소개',product:'동화 시그니월 슬레이트모티프',field:'벽장재',region:'',spec:'',library:[],
       updatedAt:Date.now(),scenes:Workflow.scenesFor('product').map(s => Object.assign({},s,{photo:null,photoId:null,focusY:50,bubbleFormat:'speech'}))};
   }
   let project=makeProject(), active=0, catalog=[], dbPromise, saving=Promise.resolve(), saveTimer, drawToken=0, busy=false, persistedPhotos=new Set();
@@ -516,7 +516,10 @@
   function preview(){drawToken++;queuePaint();}
   function fields(){
     q('#ml-name').value=project.name;
-    q('#ml-type').value=project.type||'product';
+    const typeSelect=q('#ml-type');
+    if(project.type==='behind' && !typeSelect.querySelector('[value=behind]')) typeSelect.add(new Option(Workflow.label('behind'),'behind'));
+    if(project.type!=='behind') typeSelect.querySelector('[value=behind]')?.remove();
+    typeSelect.value=project.type||'product';
     const daily=Workflow.get(project.type).channel==='daily';
     q('#ml-topic-name').textContent=daily?'일상 이야기 주제':'제품명 / 현장·이야기 주제';
     q('#ml-type-tip').textContent=Workflow.label(project.type)+' · 실제 사진과 공식 캐릭터를 유지하는 고정 양식';
@@ -546,9 +549,9 @@
     q('#ml-tabs').querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-pressed',String(active===i)));
   }
   function filename(s){return String(s||'현장이야기').replace(/[\\/:*?"<>|\u0000-\u001f]/g,'').slice(0,42)||'현장이야기';}
-  function png(){return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PNG 변환에 실패했습니다.')),'image/png'));}
+  function encodeImage(ext){return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('이미지 변환에 실패했습니다.')),ext==='jpg'?'image/jpeg':'image/png',0.95));}
   function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),15000);}
-  async function makePng(i){canvas.width=W;canvas.height=H;await draw(i);return png();}
+  async function makeImage(i,ext='png'){canvas.width=W;canvas.height=H;await draw(i);return encodeImage(ext);}
   async function withBusy(fn){
     if(busy)return;busy=true;
     q('#ml-export-one').disabled=q('#ml-export-all').disabled=q('#ml-share').disabled=true;
@@ -836,15 +839,17 @@
     q('#ml-new').addEventListener('click',async()=>{try{await save();project=makeProject();persistedPhotos=new Set();libraryBlobs=new Map();libraryPage=0;clearGalleryThumbs();active=0;fields();renderPhotoLibrary();await save();preview();}catch(e){status(e.message,true);}});
     q('#ml-open').addEventListener('click',()=>openProject(q('#ml-projects').value).catch(e=>status(e.message,true)));
     q('#ml-export-one').addEventListener('click',()=>withBusy(async()=>{
-      const b=await makePng(active),n=active===0?'00_썸네일':String(active).padStart(2,'0')+'_컷';
-      download(b,filename(project.name)+'_'+n+'_1080x1350.png');
+      const ext=q('#ml-image-format').value;
+      const b=await makeImage(active,ext),n=active===0?'00_썸네일':String(active).padStart(2,'0')+'_컷';
+      download(b,filename(project.name)+'_'+n+'_1080x1350.'+ext);
     }));
     q('#ml-export-all').addEventListener('click',()=>withBusy(async()=>{
+      const ext=q('#ml-image-format').value;
       const entries=Object.create(null);
       for(let i=0;i<COUNT;i++){
         status((i===0?'썸네일':i+'컷')+' 생성 중…');
-        const b=await makePng(i);
-        entries[(i===0?'00_썸네일':String(i).padStart(2,'0')+'_컷')+'.png']=[new Uint8Array(await b.arrayBuffer()),{level:0}];
+        const b=await makeImage(i,ext);
+        entries[(i===0?'00_썸네일':String(i).padStart(2,'0')+'_컷')+'.'+ext]=[new Uint8Array(await b.arrayBuffer()),{level:0}];
         await new Promise(resolve=>setTimeout(resolve,0));
       }
       entries['인스타_캡션.txt']=[new TextEncoder().encode(caption()),{level:0}];
@@ -852,7 +857,7 @@
       download(blob,filename(project.name)+'_썸네일_4컷.zip');
     }));
     q('#ml-share').addEventListener('click',()=>withBusy(async()=>{
-      const b=await makePng(active),f=new File([b],filename(project.name)+'_'+active+'.png',{type:'image/png'});
+      const b=await makeImage(active),f=new File([b],filename(project.name)+'_'+active+'.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[f]})&&navigator.share){
         await navigator.share({files:[f],title:project.name});
         status('공유 화면을 열었습니다. 사진 앱 저장 여부는 직접 확인해 주세요.');

@@ -17,7 +17,7 @@ test('제품→그냥 사는 이야기 변경 시 사진과 캐릭터 포즈/좌
  const pose=project.scenes.map(s=>s.maruni);
  F.chooseTemplate(project,'everyday');
  assert.equal(project.type,'everyday');
- assert.match(project.series,/사는 이야기/);
+ assert.equal(project.series,'마루니·루루 | 일상 이야기');
  assert.equal(project.scenes[0].title.includes('오늘'),true);
  assert.deepEqual(project.scenes.map(s=>s.photo),photos);
  assert.deepEqual(project.scenes.map(s=>s.photoId),['id0','id1','id2','id3','id4']);

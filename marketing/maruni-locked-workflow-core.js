@@ -5,7 +5,7 @@
   // 글자 크기, 말풍선, 로고/캐릭터 디자인은 기존 렌더러에서 잠금.
   const TEMPLATES=Object.freeze({
     product:{
-      label:'제품 소개',series:'마루니·루루 제품 이야기',topic:'동화 시그니월 슬레이트모티프',
+      label:'제품 소개',series:'마루니·루루 | 제품 소개',topic:'동화 시그니월 슬레이트모티프',
       channel:'product',icon:'📦',
       scenes:[
         ['회색 벽인데\n왜 이렇게 고급스러울까?','','은은한 석재 질감이 완성하는 벽'],
@@ -16,7 +16,7 @@
       ]
     },
     episode:{
-      label:'시공 에피소드',series:'마루니·루루 현장 에피소드',topic:'오늘의 시공 현장 이야기',
+      label:'현장 에피소드',series:'마루니·루루 | 현장 에피소드',topic:'오늘의 시공 현장 이야기',
       channel:'work',icon:'🛠️',
       scenes:[
         ['현장에서\n무슨 일이 있었을까요?','','오늘 현장에서 있었던 이야기'],
@@ -27,7 +27,7 @@
       ]
     },
     process:{
-      label:'시공 과정·전후',series:'마루니·루루 시공 기록',topic:'시공 전후 현장 기록',
+      label:'시공 현장',series:'마루니·루루 | 시공 현장',topic:'시공 전후 현장 기록',
       channel:'work',icon:'📐',
       scenes:[
         ['이 공간은\n어떻게 달라졌을까요?','','시공 과정을 사진으로 확인하세요'],
@@ -38,7 +38,7 @@
       ]
     },
     tips:{
-      label:'생활·관리 정보',series:'마루니·루루 생활 팁',topic:'집을 오래 예쁘게 쓰는 팁',
+      label:'관리 방법',series:'마루니·루루 | 관리 방법',topic:'집을 오래 예쁘게 쓰는 팁',
       channel:'information',icon:'💡',
       scenes:[
         ['우리 집을 위한\n작은 관리 팁은?','','쉽게 실천하는 생활 정보'],
@@ -49,7 +49,7 @@
       ]
     },
     everyday:{
-      label:'그냥 사는 이야기',series:'마루니·루루 사는 이야기',topic:'우리의 소소한 하루',
+      label:'일상 이야기',series:'마루니·루루 | 일상 이야기',topic:'우리의 소소한 하루',
       channel:'daily',icon:'☕',
       scenes:[
         ['오늘은 어떤\n하루였을까요?','','평범해서 더 소중한 순간'],
@@ -57,6 +57,17 @@
         ['뜻밖의 순간','어, 이게 뭐지?','평범한 날의 뜻밖의 장면'],
         ['함께한 시간','이 순간이 좋아!','소소하지만 기억하고 싶은 시간'],
         ['오늘의 한마디','오늘도 잘 보냈어!','우리의 하루는 이렇게 지나가요']
+      ]
+    },
+    question:{
+      label:'고객 질문',series:'마루니·루루 | 고객 질문',topic:'마루와 도배 시공 순서',
+      channel:'question',icon:'💬',
+      scenes:[
+        ['마루랑 도배, 뭐부터 해야 해요?','','공사 순서를 묻는 고객님께'],
+        ['오늘의 질문','두 팀 날짜를 어떻게 잡죠?','일정을 잡기 전에 많이 물어보세요'],
+        ['청인마루 현장에서는','보통 마루를 먼저 깔아요.','걸레받이까지 마무리해요'],
+        ['그다음 도배','도배할 땐 마루를 보양해요.','새 바닥을 보호해요'],
+        ['일정을 잡기 전에','우리 집 공정도 같이 확인해요.','현장 조건에 맞춰 일정을 조율해요']
       ]
     },
     behind:{
@@ -71,7 +82,7 @@
       ]
     }
   });
-  const types=()=>Object.entries(TEMPLATES).map(([id,t])=>({id,label:t.label,icon:t.icon,series:t.series,topic:t.topic,channel:t.channel}));
+  const types=()=>['product','process','episode','question','tips','everyday'].map(id=>[id,TEMPLATES[id]]).map(([id,t])=>({id,label:t.label,icon:t.icon,series:t.series,topic:t.topic,channel:t.channel}));
   function get(type){return TEMPLATES[type]||TEMPLATES.product;}
   function scenesFor(type){
     return get(type).scenes.map(([title,bubble,foot],i)=>({
