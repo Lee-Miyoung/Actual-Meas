@@ -48,6 +48,7 @@
     '<div id="ml-pose-grid" class="ml-pose-grid"></div>',
     '<div class="ml-actions ml-pose-pager"><button type="button" id="ml-pose-prev">이전</button><output id="ml-pose-page">1 / 1</output><button type="button" id="ml-pose-next">다음</button>',
     '<button type="button" id="ml-pose-hide">이 컷에서 숨기기</button></div></div></div>',
+    '<details class="ml-fine-controls"><summary>위치·크기 세부 설정</summary>',
     '<div class="ml-minirow"><label>마루니 크기<input id="ml-size-maruni" type="range" min="20" max="130" value="100"></label>',
     '<label>루루 크기<input id="ml-size-ruru" type="range" min="20" max="130" value="100"></label></div>',
     '<button id="ml-actor-reset" type="button">캐릭터 위치·크기 초기화</button>',
@@ -57,7 +58,7 @@
     '<label>루루 공식 포즈<select id="ml-ruru"><option value="">없음</option></select></label></div>',
     '<div class="ml-minirow"><label>캐릭터 배치 방향<select id="ml-side"><option value="right">오른쪽 아래</option><option value="left">왼쪽 아래</option></select></label>',
     '<label>사진 위아래 위치<input id="ml-photo-y" type="range" min="0" max="100" value="50"></label></div>',
-    '<p class="ml-note">공식 캐릭터 PNG만 선택합니다. 포즈를 다시 그리지 않으며 반짝이·장식 효과를 새로 추가하지 않습니다. 표지에만 공식 원본 SVG 로고를 합성합니다.</p>',
+    '<p class="ml-note">공식 캐릭터 PNG만 선택합니다. 포즈를 다시 그리지 않으며 반짝이·장식 효과를 새로 추가하지 않습니다. 표지에만 공식 로고를 표시합니다.</p></details>',
     '<div class="ml-divider"></div>',
     '<div class="ml-actions"><button id="ml-copy-caption" type="button">고정 형식 캡션 복사</button><button id="ml-copy-comment" type="button">고정댓글 복사</button></div>',
     '<p class="ml-note">질문형 제목 → 제품 정보 → 현장 특징 → 청인마루 소개 → 문의 → 해시태그 순서로 문구를 정리합니다. 현장 정보는 직접 확인 후 게시하세요.</p>',
@@ -448,9 +449,27 @@
     }
     if(canvas.width<1080){actorBoxes=boxes;previewTools?.refresh();}  // 고화질 출력에서는 편집 중 hit 영역 변경 금지
   }
+  function centeredBadge(value,x,y,width,height,radius,background,border,size,padding,color){
+    rounded(x,y,width,height,radius,background,border);
+    const label=String(value || '').trim().replace(/\s+/g,' ');
+    if(!label)return;
+    ctx.save();
+    ctx.textAlign='center';
+    ctx.textBaseline='alphabetic';
+    ctx.font=window.CheonginCoverStyle.font(size);
+    const available=width-2*padding;
+    const advance=ctx.measureText(label).width;
+    if(advance>available)ctx.font=window.CheonginCoverStyle.font(size*available/advance);
+    const m=ctx.measureText(label);
+    const dx=(m.actualBoundingBoxLeft-m.actualBoundingBoxRight)/2;
+    const dy=(m.actualBoundingBoxAscent-m.actualBoundingBoxDescent)/2;
+    if(!Number.isFinite(dy))ctx.textBaseline='middle';
+    ctx.fillStyle=color;
+    ctx.fillText(label,x+width/2+(Number.isFinite(dx)?dx:0),y+height/2+(Number.isFinite(dy)?dy:0));
+    ctx.restore();
+  }
   function pillCaption(text,y){
-    rounded(55,y,970,98,46,'rgba(255,252,246,.94)','#c8b69b');
-    textBlock(text,540,y+27,900,36,46,1,ink,'center');
+    centeredBadge(text,55,y,970,98,46,'rgba(255,252,246,.94)','#c8b69b',36,35,ink);
   }
   async function draw(index,guard=()=>true){
     const scene=project.scenes[index];
@@ -462,6 +481,7 @@
       index===0?window.CheonginCoverStyle.contentLogo():Promise.resolve(null),
       a?assetImage(a.path):Promise.resolve(null),
       b?assetImage(b.path):Promise.resolve(null),
+      window.CheonginCoverStyle.loadTitle([scene.foot,project.product,project.series].join(' ')),
       window.MaruniStoryRender.fonts()
     ]);
     if(!guard())return false;
@@ -473,12 +493,10 @@
       gradient.addColorStop(0,'rgba(255,252,246,.89)');gradient.addColorStop(.6,'rgba(255,252,246,.45)');gradient.addColorStop(1,'rgba(255,252,246,0)');
       ctx.fillStyle=gradient;ctx.fillRect(0,0,W,900);
       window.CheonginCoverStyle.drawLogo(ctx,canvas,logo,W,55,50);
-      rounded(544,63,480,74,37,green,null);
-      textBlock(project.series,784,82,420,31,43,1,'#fffaf0','center');
+      centeredBadge(project.series,544,63,480,74,37,green,null,31,30,'#fffaf0');
       rounded(50,240,980,365,34,'rgba(255,252,246,.88)',null);
       textBlock(scene.title,88,289,904,72,100,2,ink);
-      rounded(80,543,850,74,35,bronze,null);
-      textBlock(project.product,505,561,780,34,46,1,'#fffdf7','center');
+      centeredBadge(project.product,(W-850)/2,543,850,74,35,bronze,null,34,35,'#fffdf7');
     }else{
       rounded(0,0,W,285,0,'rgba(255,252,246,.84)',null);
       textBlock(project.series,52,49,600,30,42,1,ink);
