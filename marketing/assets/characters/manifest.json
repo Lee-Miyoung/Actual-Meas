@@ -3909,6 +3909,1006 @@
         1311,
         1015
       ]
+    },
+    {
+      "id": "maruni-77",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "줄자로 폭 재기",
+      "tags": [
+        "새 포즈",
+        "줄자로 폭 재기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/77.png",
+      "width": 180,
+      "height": 251,
+      "sha256": "6987b4e1c648a70882eeed83536c196f69a24c04a122fd64354dea479a5bc8af",
+      "source": {
+        "filename": "마루니_1_줄자로 폭 재기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        180,
+        251
+      ]
+    },
+    {
+      "id": "maruni-78",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "오크 샘플 내밀기",
+      "tags": [
+        "새 포즈",
+        "오크 샘플 내밀기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/78.png",
+      "width": 174,
+      "height": 251,
+      "sha256": "9e80d28bec4408634f24164d70177382884bdb43e866562ea7df2dc3caa06443",
+      "source": {
+        "filename": "마루니_2_오크 샘플 내밀기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        174,
+        251
+      ]
+    },
+    {
+      "id": "maruni-79",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "도면 펼치기",
+      "tags": [
+        "새 포즈",
+        "도면 펼치기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/79.png",
+      "width": 159,
+      "height": 251,
+      "sha256": "48d8b6a719083eeb90cad738daf711d00b117e111be2abfee950a7e875dfbe0b",
+      "source": {
+        "filename": "마루니_3_도면 펼치기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        159,
+        251
+      ]
+    },
+    {
+      "id": "maruni-80",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "고무망치 들기",
+      "tags": [
+        "새 포즈",
+        "고무망치 들기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/80.png",
+      "width": 189,
+      "height": 252,
+      "sha256": "618509f9cf0a0756e9771649710aa4dd0f6026d12812dae878cc26a80d649086",
+      "source": {
+        "filename": "마루니_4_고무망치 들기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        189,
+        252
+      ]
+    },
+    {
+      "id": "maruni-81",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "연필로 표시",
+      "tags": [
+        "새 포즈",
+        "연필로 표시"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/81.png",
+      "width": 206,
+      "height": 234,
+      "sha256": "afd541fce51747448346519ecbac3ebaf7a6d261e1736541c9b22df3109ff1cd",
+      "source": {
+        "filename": "마루니_5_연필로 표시.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        206,
+        234
+      ]
+    },
+    {
+      "id": "maruni-82",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "빛에 비춰 마루 보기",
+      "tags": [
+        "새 포즈",
+        "빛에 비춰 마루 보기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/82.png",
+      "width": 190,
+      "height": 250,
+      "sha256": "a731c03455942345085634e1cb8abadc0579fd55b29db66cf66d14d847a2250c",
+      "source": {
+        "filename": "마루니_6_빛에 비춰 마루 보기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        190,
+        250
+      ]
+    },
+    {
+      "id": "maruni-83",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "클립보드 확인",
+      "tags": [
+        "새 포즈",
+        "클립보드 확인"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/83.png",
+      "width": 163,
+      "height": 254,
+      "sha256": "0571101eced8b7ed97f40cecb19551fa3ca01aad9993e44b9ef0bfb771af2b79",
+      "source": {
+        "filename": "마루니_7_클립보드 확인.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        163,
+        254
+      ]
+    },
+    {
+      "id": "maruni-84",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "레이저 줄자 조작",
+      "tags": [
+        "새 포즈",
+        "레이저 줄자 조작"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/84.png",
+      "width": 219,
+      "height": 256,
+      "sha256": "6863fdc2994c3c9fecdf1e1e32ec708f581ea18c6bc92af1ae48a199a636874a",
+      "source": {
+        "filename": "마루니_8_레이저 줄자 조작.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        219,
+        256
+      ]
+    },
+    {
+      "id": "maruni-85",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "무릎 꿇어 바닥 점검",
+      "tags": [
+        "새 포즈",
+        "무릎 꿇어 바닥 점검"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/85.png",
+      "width": 227,
+      "height": 210,
+      "sha256": "8c6ae368f0dd1a3cc8ffda77f0a5edf2e0b80889fc141d0dd81025940fb8a239",
+      "source": {
+        "filename": "마루니_9_무릎 꿇어 바닥 점검.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        227,
+        210
+      ]
+    },
+    {
+      "id": "maruni-86",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "장갑 끼우기",
+      "tags": [
+        "새 포즈",
+        "장갑 끼우기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/86.png",
+      "width": 180,
+      "height": 246,
+      "sha256": "12f6cf5beed55d5529ae195b1578bc7c08cb2103a223893b3fbf4151ffe6ba4d",
+      "source": {
+        "filename": "마루니_10_장갑 끼우기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        180,
+        246
+      ]
+    },
+    {
+      "id": "maruni-87",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "소매로 땀 닦기",
+      "tags": [
+        "새 포즈",
+        "소매로 땀 닦기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/87.png",
+      "width": 161,
+      "height": 246,
+      "sha256": "3b011d6bc28d637706b29dcd1f46ff2b77ec6d628228fcb1a42022cc9c5ad894",
+      "source": {
+        "filename": "마루니_11_소매로 땀 닦기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        161,
+        246
+      ]
+    },
+    {
+      "id": "maruni-88",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "보호안경 쓰기",
+      "tags": [
+        "새 포즈",
+        "보호안경 쓰기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/88.png",
+      "width": 168,
+      "height": 247,
+      "sha256": "dbf76a750e6812d2d4ac4685ee9162613305e3758d2a869325f9590fb455ed01",
+      "source": {
+        "filename": "마루니_12_보호안경 쓰기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        168,
+        247
+      ]
+    },
+    {
+      "id": "maruni-89",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "문턱 가리키기",
+      "tags": [
+        "새 포즈",
+        "문턱 가리키기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/89.png",
+      "width": 210,
+      "height": 237,
+      "sha256": "1e8022ab92b6a944ead369e5044e556bfa9ae89434d81bdd736b7ba9e1836503",
+      "source": {
+        "filename": "마루니_13_문턱 가리키기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        210,
+        237
+      ]
+    },
+    {
+      "id": "maruni-90",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "빗자루로 쓸기",
+      "tags": [
+        "새 포즈",
+        "빗자루로 쓸기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/90.png",
+      "width": 205,
+      "height": 245,
+      "sha256": "b67f4e2ba520099ec9017fddeffb2220ad91c3c91783454c48cfe2346aa52e6f",
+      "source": {
+        "filename": "마루니_14_빗자루로 쓸기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        205,
+        245
+      ]
+    },
+    {
+      "id": "maruni-91",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "두 손으로 상자 운반",
+      "tags": [
+        "새 포즈",
+        "두 손으로 상자 운반"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/91.png",
+      "width": 179,
+      "height": 244,
+      "sha256": "954e3e209d4be0171c7446577c6acb86d56cb9ccb6c31ceb646257511a5ffe49",
+      "source": {
+        "filename": "마루니_15_두 손으로 상자 운반.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        179,
+        244
+      ]
+    },
+    {
+      "id": "maruni-92",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "샘플 부채 펼치기",
+      "tags": [
+        "새 포즈",
+        "샘플 부채 펼치기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/92.png",
+      "width": 221,
+      "height": 244,
+      "sha256": "99532536e772c77ae0738edfbc4a50fe0ce3a461f8f43e7d3f770c34596cbe62",
+      "source": {
+        "filename": "마루니_16_샘플 부채 펼치기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        221,
+        244
+      ]
+    },
+    {
+      "id": "maruni-93",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "시계 확인",
+      "tags": [
+        "새 포즈",
+        "시계 확인"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/93.png",
+      "width": 157,
+      "height": 266,
+      "sha256": "baa1b7ef4603fb55d89326d66dc0dae87bb4f3763f788400cfeec750f28af923",
+      "source": {
+        "filename": "마루니_17_시계 확인.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        157,
+        266
+      ]
+    },
+    {
+      "id": "maruni-94",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "고개 숙여 인사",
+      "tags": [
+        "새 포즈",
+        "고개 숙여 인사"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/94.png",
+      "width": 154,
+      "height": 262,
+      "sha256": "8fc641e4063818772e439679f75b4e69240285a3fe772711ec51a851b056fdcb",
+      "source": {
+        "filename": "마루니_18_고개 숙여 인사.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        154,
+        262
+      ]
+    },
+    {
+      "id": "maruni-95",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "한 손 귀에 대고 듣기",
+      "tags": [
+        "새 포즈",
+        "한 손 귀에 대고 듣기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/95.png",
+      "width": 171,
+      "height": 267,
+      "sha256": "760c7ad2affe25bdfb701c7fac8b522210c825bce4af84c31686eb1f782ec5d9",
+      "source": {
+        "filename": "마루니_19_한 손 귀에 대고 듣기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        171,
+        267
+      ]
+    },
+    {
+      "id": "maruni-96",
+      "actor": "maruni",
+      "version": 1,
+      "status": "ready",
+      "label": "두 팔로 완성 현장 소개",
+      "tags": [
+        "새 포즈",
+        "두 팔로 완성 현장 소개"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/maruni/96.png",
+      "width": 236,
+      "height": 264,
+      "sha256": "eaff3e4fe5503291bfa2f1e662858171ebd71391fb735f8bafe1d0158242a701",
+      "source": {
+        "filename": "마루니_20_두 팔로 완성 현장 소개.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        236,
+        264
+      ]
+    },
+    {
+      "id": "ruru-71",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "샘플 냄새 맡기",
+      "tags": [
+        "새 포즈",
+        "샘플 냄새 맡기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/71.png",
+      "width": 247,
+      "height": 196,
+      "sha256": "4cfce82d79ef7589ca2289b7050f72003e53d1a8339b26f54e1bf4667bcf90e3",
+      "source": {
+        "filename": "루루_1_샘플 냄새 맡기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        247,
+        196
+      ]
+    },
+    {
+      "id": "ruru-72",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "앞발로 마루 가리키기",
+      "tags": [
+        "새 포즈",
+        "앞발로 마루 가리키기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/72.png",
+      "width": 218,
+      "height": 210,
+      "sha256": "c9569cba18eb38eb69d38f8e9aab8b802b59db0504d14b9dd1aa8af5ef656877",
+      "source": {
+        "filename": "루루_2_앞발로 마루 가리키기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        218,
+        210
+      ]
+    },
+    {
+      "id": "ruru-73",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "기지개 켜기",
+      "tags": [
+        "새 포즈",
+        "기지개 켜기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/73.png",
+      "width": 230,
+      "height": 189,
+      "sha256": "278c56ad67758d145d97e0127b2a2143427b964561d9b0cddad21c481be63080",
+      "source": {
+        "filename": "루루_3_기지개 켜기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        230,
+        189
+      ]
+    },
+    {
+      "id": "ruru-74",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "꼬리 흔들며 달리기",
+      "tags": [
+        "새 포즈",
+        "꼬리 흔들며 달리기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/74.png",
+      "width": 261,
+      "height": 193,
+      "sha256": "d2ee751239c9fd0aebdf71808b7a4b860adaedd45ed15bcd5801df27f43aa139",
+      "source": {
+        "filename": "루루_4_꼬리 흔들며 달리기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        261,
+        193
+      ]
+    },
+    {
+      "id": "ruru-75",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "배 깔고 바닥 보기",
+      "tags": [
+        "새 포즈",
+        "배 깔고 바닥 보기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/75.png",
+      "width": 239,
+      "height": 173,
+      "sha256": "a120ff756776fd2e2d59fd363ccf286ef36b224dc2065bcdb593f48e4a133ab6",
+      "source": {
+        "filename": "루루_5_배 깔고 바닥 보기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        239,
+        173
+      ]
+    },
+    {
+      "id": "ruru-76",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "샘플 옆 고개 갸웃",
+      "tags": [
+        "새 포즈",
+        "샘플 옆 고개 갸웃"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/76.png",
+      "width": 211,
+      "height": 224,
+      "sha256": "48a4ea9ba0313c9a1da239b45acceeb7fb334954db286666a23257bd2411ae43",
+      "source": {
+        "filename": "루루_6_샘플 옆 고개 갸웃.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        211,
+        224
+      ]
+    },
+    {
+      "id": "ruru-77",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "줄자 끝 앞발로 누르기",
+      "tags": [
+        "새 포즈",
+        "줄자 끝 앞발로 누르기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/77.png",
+      "width": 258,
+      "height": 216,
+      "sha256": "d889dff15bf704b5f0e24fc9a4b7533412efc8810478f78598328ad9568c3bae",
+      "source": {
+        "filename": "루루_7_줄자 끝 앞발로 누르기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        258,
+        216
+      ]
+    },
+    {
+      "id": "ruru-78",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "카메라 바라보기",
+      "tags": [
+        "새 포즈",
+        "카메라 바라보기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/78.png",
+      "width": 203,
+      "height": 222,
+      "sha256": "bfafa995a0b39c57e2670430d810d1242515b928ddd9f01525a57034016e6aaa",
+      "source": {
+        "filename": "루루_8_카메라 바라보기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        203,
+        222
+      ]
+    },
+    {
+      "id": "ruru-79",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "앞발 모아 부탁하기",
+      "tags": [
+        "새 포즈",
+        "앞발 모아 부탁하기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/79.png",
+      "width": 192,
+      "height": 231,
+      "sha256": "9de7813b8445d81305bd9c847957975e54ce7a339a9eaaaae2473ffa8b105441",
+      "source": {
+        "filename": "루루_9_앞발 모아 부탁하기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        192,
+        231
+      ]
+    },
+    {
+      "id": "ruru-80",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "엎드려 졸기",
+      "tags": [
+        "새 포즈",
+        "엎드려 졸기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/80.png",
+      "width": 239,
+      "height": 204,
+      "sha256": "8863260c1650cd7de6a637aafe63a988296be6f9dc71547d429286b0d5b09747",
+      "source": {
+        "filename": "루루_10_엎드려 졸기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        239,
+        204
+      ]
+    },
+    {
+      "id": "ruru-81",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "옆으로 구르기",
+      "tags": [
+        "새 포즈",
+        "옆으로 구르기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/81.png",
+      "width": 248,
+      "height": 214,
+      "sha256": "0c141eea5b165b1089a8a4e2f3579205dc6bd34d18976523932f1cf20a889a61",
+      "source": {
+        "filename": "루루_11_옆으로 구르기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        248,
+        214
+      ]
+    },
+    {
+      "id": "ruru-82",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "상자에서 고개 내밀기",
+      "tags": [
+        "새 포즈",
+        "상자에서 고개 내밀기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/82.png",
+      "width": 232,
+      "height": 238,
+      "sha256": "7847e658c06692658cea339750fa86ed9ffeeb041750045d84a60b4c3121847b",
+      "source": {
+        "filename": "루루_12_상자에서 고개 내밀기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        232,
+        238
+      ]
+    },
+    {
+      "id": "ruru-83",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "네 발로 살금살금 걷기",
+      "tags": [
+        "새 포즈",
+        "네 발로 살금살금 걷기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/83.png",
+      "width": 241,
+      "height": 168,
+      "sha256": "0032e3feb53546bf5034d6ce90b478ab0403c9ab60ecf39f58abbb82ddf50c90",
+      "source": {
+        "filename": "루루_13_네 발로 살금살금 걷기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        241,
+        168
+      ]
+    },
+    {
+      "id": "ruru-84",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "한쪽 귀 기울이기",
+      "tags": [
+        "새 포즈",
+        "한쪽 귀 기울이기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/84.png",
+      "width": 206,
+      "height": 235,
+      "sha256": "bf65accd5359f35542b4e062dd9c88e55d254b07f9da341e2177afe258cca272",
+      "source": {
+        "filename": "루루_14_한쪽 귀 기울이기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        206,
+        235
+      ]
+    },
+    {
+      "id": "ruru-85",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "폴짝 뛰기",
+      "tags": [
+        "새 포즈",
+        "폴짝 뛰기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/85.png",
+      "width": 204,
+      "height": 235,
+      "sha256": "bae736f56bf806c32a98603cf156664dcb94eea949743c8b8652edd49725db8a",
+      "source": {
+        "filename": "루루_15_폴짝 뛰기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        204,
+        235
+      ]
+    },
+    {
+      "id": "ruru-86",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "뒤돌아보기",
+      "tags": [
+        "새 포즈",
+        "뒤돌아보기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/86.png",
+      "width": 201,
+      "height": 210,
+      "sha256": "5050111da9dc5b3ef1c1f0f39f08491ab900561e73befd278521263bd8d96b56",
+      "source": {
+        "filename": "루루_16_뒤돌아보기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        201,
+        210
+      ]
+    },
+    {
+      "id": "ruru-87",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "코 위 나뭇잎 보기",
+      "tags": [
+        "새 포즈",
+        "코 위 나뭇잎 보기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/87.png",
+      "width": 184,
+      "height": 235,
+      "sha256": "e1e74f70ec575611044024c380d9509a5cfb399d14035818bb5564a9e604943b",
+      "source": {
+        "filename": "루루_17_코 위 나뭇잎 보기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        184,
+        235
+      ]
+    },
+    {
+      "id": "ruru-88",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "앞발 들고 멈추기",
+      "tags": [
+        "새 포즈",
+        "앞발 들고 멈추기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/88.png",
+      "width": 216,
+      "height": 216,
+      "sha256": "158f8ca9294af0949f4fe61cf1f09a7e373254cfa7f132f5916f0ab50ac2429c",
+      "source": {
+        "filename": "루루_18_앞발 들고 멈추기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        216,
+        216
+      ]
+    },
+    {
+      "id": "ruru-89",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "두 발로 서서 반기기",
+      "tags": [
+        "새 포즈",
+        "두 발로 서서 반기기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/89.png",
+      "width": 215,
+      "height": 235,
+      "sha256": "bfeaa1124fcb7865e46c2df036c2378bd05604387e106eb3a03815a9ed4d7c25",
+      "source": {
+        "filename": "루루_19_두 발로 서서 반기기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        215,
+        235
+      ]
+    },
+    {
+      "id": "ruru-90",
+      "actor": "ruru",
+      "version": 1,
+      "status": "ready",
+      "label": "동그랗게 말고 자기",
+      "tags": [
+        "새 포즈",
+        "동그랗게 말고 자기"
+      ],
+      "allowFlip": true,
+      "path": "assets/characters/ruru/90.png",
+      "width": 223,
+      "height": 164,
+      "sha256": "cd34146a4ddcd39171febca776f8af404f1a28a71d117248009cab7e1591dd29",
+      "source": {
+        "filename": "루루_20_동그랗게 말고 자기.png"
+      },
+      "alphaBounds": [
+        0,
+        0,
+        223,
+        164
+      ]
     }
   ]
 }
