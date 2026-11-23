@@ -459,7 +459,7 @@
     // 한 번에 필요한 이미지 읽기. 이후 프레임은 동기적으로 그려 Safari에서 컷 전환이 섞이지 않게 한다.
     const [im,logo,maruni,ruru]=await Promise.all([
       photoImage(scene.photo),
-      index===0?assetImage('brand/logo-black.svg'):Promise.resolve(null),
+      index===0?window.CheonginCoverStyle.contentLogo():Promise.resolve(null),
       a?assetImage(a.path):Promise.resolve(null),
       b?assetImage(b.path):Promise.resolve(null),
       window.MaruniStoryRender.fonts()
@@ -472,7 +472,7 @@
       const gradient=ctx.createLinearGradient(0,0,0,890);
       gradient.addColorStop(0,'rgba(255,252,246,.89)');gradient.addColorStop(.6,'rgba(255,252,246,.45)');gradient.addColorStop(1,'rgba(255,252,246,0)');
       ctx.fillStyle=gradient;ctx.fillRect(0,0,W,900);
-      ctx.drawImage(logo,55,50,235,85);
+      window.CheonginCoverStyle.drawLogo(ctx,canvas,logo,W,55,50);
       rounded(544,63,480,74,37,green,null);
       textBlock(project.series,784,82,420,31,43,1,'#fffaf0','center');
       rounded(50,240,980,365,34,'rgba(255,252,246,.88)',null);
@@ -895,7 +895,7 @@
     const expanded=Boolean(root.open||(other&&other.open))&&!window.marketingWorkbench?.active();
     document.body.classList.toggle('maruni-editor-scrolling',expanded);
   }
-  root.addEventListener('toggle',()=>{syncEditorScrolling();if(root.open)init();else {touchEdit=false;drag=null;if(initializeStarted)updateTouchEdit();}});
+  root.addEventListener('toggle',()=>{syncEditorScrolling();if(root.open){if(initializeStarted)preview();else init();}else {touchEdit=false;drag=null;if(initializeStarted)updateTouchEdit();}});
   document.getElementById('maruni-story')?.addEventListener('toggle',syncEditorScrolling);
   syncEditorScrolling();
   if(root.open)init();

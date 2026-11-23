@@ -70,6 +70,9 @@
     if(!logos.has(key))logos.set(key,loadImage('brand/logo-'+key+'.svg').catch(e=>{logos.delete(key);throw e;}));
     return {image:await logos.get(key),key};
   }
+  function contentLogo() {
+    return logo(typeof state === 'undefined' ? 'white' : state.thumbnailPosting?.logoTone);
+  }
   function drawLogo(g,canvas,mark,units,x,y) {
     const width=units*(canvas.height/canvas.width>1.7 ? .225 : .15),height=width*mark.image.height/mark.image.width;
     const box={units,x,y,width,height};
@@ -288,5 +291,5 @@
       anchorX:ax,anchorY:ay,zoom,sw:side,sh:side,sx,sy,sourceWidth:im.width,sourceHeight:im.height});
 
   }
-  window.CheonginCoverStyle={colors,font,loadTitle,pairLabel,drawLabel,logo,drawLogo,drawText,sceneFrames,hits,cornerLayout,drawCorner,endings,endingText,endingTitleKey,endingNoteKey,endingNote,visitNote,contact,pinnedComment,contactIcon};
+  window.CheonginCoverStyle={colors,font,loadTitle,pairLabel,drawLabel,logo,contentLogo,drawLogo,drawText,sceneFrames,hits,cornerLayout,drawCorner,endings,endingText,endingTitleKey,endingNoteKey,endingNote,visitNote,contact,pinnedComment,contactIcon};
 })();
