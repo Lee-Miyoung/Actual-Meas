@@ -79,6 +79,10 @@
         b.lines.forEach((t, i) => ctx.fillText(t, b.x + 28, b.y + 24 + i * b.lh)); ctx.restore();
       }
     }
+    if (scene.photoId && scene.id === project.scenes[0].id) {
+      const style = window.CheonginCoverStyle;
+      style.drawLogo(ctx, canvas, await style.logo('white'), W, 56, 56);
+    }
     if (options.selected && boxes.has(options.selected)) {
       const b = boxes.get(options.selected); ctx.save(); ctx.strokeStyle = '#38664e'; ctx.lineWidth = 5; ctx.setLineDash([14, 10]); ctx.strokeRect(b.x - 5, b.y - 5, b.w + 10, b.h + 10); ctx.restore();
     }
