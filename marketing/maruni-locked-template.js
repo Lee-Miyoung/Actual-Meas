@@ -37,9 +37,11 @@
     '<div id="ml-photo-grid" class="ml-photo-grid"></div>',
     '<div class="ml-actions ml-gallery-pager"><button id="ml-library-prev" type="button">이전 사진</button><output id="ml-library-page">1 / 1</output><button id="ml-library-next" type="button">다음 사진</button></div></section>',
     '<div class="ml-actions"><button id="ml-copy-photo-next" type="button">현재 사진을 다음 컷에 복사</button><button id="ml-copy-photo-all" type="button">현재 사진을 5장에 사용</button></div>',
+    '<details><summary>대본 한 번에 붙여넣기</summary><textarea id="ml-script" rows="12" placeholder="표지 제목, 1컷~4컷의 마루니·루루 대사와 하단 자막을 붙여넣으세요"></textarea><button id="ml-script-preview" type="button">컷별 미리보기</button><div id="ml-script-check" role="status"></div><button id="ml-script-apply" type="button" hidden>확인 후 적용</button></details>',
     '<label>현재 장 제목(위치·크기 고정)<textarea id="ml-title" maxlength="44" rows="2"></textarea></label>',
     '<label>말풍선 모양<select id="ml-format"><option value="legacy">기존 말풍선</option><option value="speech">대화</option><option value="thought">생각</option><option value="note">현장 설명</option><option value="none">없음</option></select></label><label id="ml-bubble-wrap">현재 장 짧은 말풍선(1개만)<input id="ml-bubble" maxlength="34"></label>',
     '<label>하단 핵심 문구(한 줄)<input id="ml-foot" maxlength="34"></label>',
+    '<label id="ml-second-wrap">두 번째 말풍선(루루)<input id="ml-second" maxlength="68"></label>',
     '<div class="ml-actor-selectors"><strong>공식 캐릭터 · 그림을 눌러 선택</strong><p class="ml-note">아이패드에서 이름 대신 그림으로 찾으세요. 현재 장만 바뀝니다.</p>',
     '<div class="ml-actor-cards"><button type="button" id="ml-card-maruni" class="ml-actor-card"><img id="ml-img-maruni" alt="" loading="lazy"><span id="ml-label-maruni">마루니 · 포즈 선택</span></button>',
     '<button type="button" id="ml-card-ruru" class="ml-actor-card"><img id="ml-img-ruru" alt="" loading="lazy"><span id="ml-label-ruru">루루 · 포즈 선택</span></button></div>',
@@ -509,6 +511,16 @@
       textBlock(String(index).padStart(2,'0'),109,169,100,54,70,1,'#fffdf6','center');
       textBlock(scene.title,185,152,820,62,76,2,ink);
       bubble(scene.bubble,scene,index);
+      if(scene.secondBubble){
+        const other=scene.maruni?'ruru':'maruni';
+        const actor=scene[other]?actorBox(scene,index,other):null;
+        const text=scene.secondBubble;
+        const x=actor?Math.max(35,Math.min(525,actor.x-150)):540;
+        const y=actor?Math.max(550,actor.y-175):560;
+        const w=500,h=120;
+        window.MaruniStoryRender.balloon(ctx,{x,y,w,h},'speech',actor?{x:actor.x+actor.w/2,y:actor.y}:null,paper,ink);
+        textBlock(text,x+w/2,y+22,w-35,34,40,2,ink,'center');
+      }
     }
     drawActors(scene,index,{maruni,ruru});
     pillCaption(scene.foot,1204);
@@ -562,6 +574,8 @@
     q('#ml-quick-photo').textContent=s.photo?'사진 교체하기':'＋ 현재 컷 사진 선택';
     q('#ml-photo-tip').textContent=(active===0?'썸네일':active+'컷')+(s.photo?' · 사진 등록됨':' · 사진 필요');
     q('#ml-bubble-wrap').classList.toggle('ml-hidden',active===0);
+    q('#ml-second-wrap').classList.toggle('ml-hidden',active===0);
+    q('#ml-second').value=s.secondBubble||'';
     q('#ml-maruni').value=s.maruni||'';q('#ml-ruru').value=s.ruru||'';
     for(const actor of ['maruni','ruru']){
       const asset=catalog.find(a=>a.id===s[actor]);
@@ -720,6 +734,34 @@
   }
   function setupEvents(){
     q('#ml-format').onchange=e=>{current().bubbleFormat=e.target.value;changed();};
+    q('#ml-second').addEventListener('input',e=>{current().secondBubble=e.target.value;changed();});
+    let parsedScript=null;
+    q('#ml-script-preview').addEventListener('click',()=>{
+      const raw=q('#ml-script').value.replace(/\r/g,'');
+      const chunks=raw.split(/(?:^|\n)\s*([1-4])컷\s*[·.\-]?[^\n]*(?=\n|$)/m);
+      const cover=chunks[0].match(/(?:표지\s*제목)\s*\n([^\n]+)/);
+      if(!cover || chunks.length!==9){q('#ml-script-check').textContent='표지 제목과 1컷부터 4컷까지 확인해 주세요.';parsedScript=null;q('#ml-script-apply').hidden=true;return;}
+      const next=[{title:cover[1].trim()}],issues=[];
+      for(let i=1;i<chunks.length;i+=2){
+        const number=Number(chunks[i]),body=chunks[i+1];
+        const maruni=body.match(/^\s*마루니\s+(.+)$/m)?.[1]?.trim()||'';
+        const ruru=body.match(/^\s*루루\s+(.+)$/m)?.[1]?.trim()||'';
+        const foot=body.match(/^\s*하단\s*자막\s+(.+)$/m)?.[1]?.trim()||'';
+        if(number!==next.length || !foot || (!maruni&&!ruru))issues.push(number+'컷의 대사나 하단 자막을 확인해 주세요.');
+        if(maruni.length>34||ruru.length>68||foot.length>34)issues.push(number+'컷 문구가 길어요. 말풍선 34자·68자, 하단 34자 이내로 줄여 주세요.');
+        next.push({bubble:maruni||ruru,secondBubble:maruni&&ruru?ruru:'',foot});
+      }
+      if(next[0].title.length>44)issues.push('표지 제목은 44자 이내로 줄여 주세요.');
+      parsedScript=issues.length?null:next;
+      q('#ml-script-check').replaceChildren(...(issues.length?issues:[next[0].title,...next.slice(1).map((v,i)=>(i+1)+'컷 · '+v.bubble+(v.secondBubble?' / '+v.secondBubble:'')+' · '+v.foot)]).map(line=>{const p=document.createElement('p');p.textContent=line;return p;}));
+      q('#ml-script-apply').hidden=!!issues;
+    });
+    q('#ml-script-apply').addEventListener('click',()=>{
+      if(!parsedScript)return;
+      project.scenes.forEach((scene,i)=>Object.assign(scene,parsedScript[i]));
+      parsedScript=null;q('#ml-script-apply').hidden=true;
+      fields();changed();status('대본을 4컷에 적용했습니다. 사진과 캐릭터는 유지됩니다.');
+    });
     q('#ml-touch-edit').addEventListener('click',()=>{
       drag=null;touchEdit=!touchEdit;updateTouchEdit();
       q('#ml-photo-tip').textContent=touchEdit
