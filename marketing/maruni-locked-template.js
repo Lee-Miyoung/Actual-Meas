@@ -415,7 +415,7 @@
       const h=lines.length*50+38;
       const actor=scene.maruni?'maruni':scene.ruru?'ruru':null;
       const ab=actor?actorBox(scene,index,actor):null, sx=ab?ab.x+ab.w/2:540;
-      const x=Math.max(35,Math.min(W-w-35,sx-w/2)),y=ab?Math.max(365,ab.y-h-45):365;
+      const x=Math.max(35,Math.min(W-w-35,sx-w/2)),y=scene.secondBubble?365:(ab?Math.max(365,ab.y-h-45):365);
       window.MaruniStoryRender.balloon(ctx,{x,y,w,h},scene.bubbleFormat,ab?{x:sx,y:ab.y}:null,paper,ink);
       textBlock(text,x+w/2,y+19,w-45,40,50,3,ink,'center');return;
     }
@@ -516,7 +516,7 @@
         const actor=scene[other]?actorBox(scene,index,other):null;
         const text=scene.secondBubble;
         const x=actor?Math.max(35,Math.min(525,actor.x-150)):540;
-        const y=actor?Math.max(550,actor.y-175):560;
+        const y=560;
         const w=500,h=120;
         window.MaruniStoryRender.balloon(ctx,{x,y,w,h},'speech',actor?{x:actor.x+actor.w/2,y:actor.y}:null,paper,ink);
         textBlock(text,x+w/2,y+22,w-35,34,40,2,ink,'center');
