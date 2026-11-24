@@ -481,7 +481,8 @@
       index===0?window.CheonginCoverStyle.contentLogo():Promise.resolve(null),
       a?assetImage(a.path):Promise.resolve(null),
       b?assetImage(b.path):Promise.resolve(null),
-      window.CheonginCoverStyle.loadTitle([scene.foot,project.product,project.series].join(' ')),
+      window.CheonginCoverStyle.loadTitle([scene.foot,project.product].join(' ')),
+      index===0?document.fonts.load('500 24px "Studio Sans"', project.series || ' '):null,
       window.MaruniStoryRender.fonts()
     ]);
     if(!guard())return false;
@@ -493,7 +494,9 @@
       gradient.addColorStop(0,'rgba(255,252,246,.89)');gradient.addColorStop(.6,'rgba(255,252,246,.45)');gradient.addColorStop(1,'rgba(255,252,246,0)');
       ctx.fillStyle=gradient;ctx.fillRect(0,0,W,900);
       window.CheonginCoverStyle.drawLogo(ctx,canvas,logo,W,55,50);
-      centeredBadge(project.series,544,63,480,74,37,green,null,31,30,'#fffaf0');
+      const style=window.CheonginCoverStyle;
+      const seriesBadge=style.cornerLayout(ctx,W,W-64,42,false,(project.series || '').trim(),'',false);
+      style.drawCorner(ctx,canvas,seriesBadge);
       rounded(50,240,980,365,34,'rgba(255,252,246,.88)',null);
       textBlock(scene.title,88,289,904,72,100,2,ink);
       centeredBadge(project.product,(W-850)/2,543,850,74,35,bronze,null,34,35,'#fffdf7');
