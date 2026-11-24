@@ -364,7 +364,7 @@
         const ratio=Math.min(1,2048/Math.max(im.width,im.height));
         const small=document.createElement('canvas');
         small.width=Math.max(1,Math.round(im.width*ratio));small.height=Math.max(1,Math.round(im.height*ratio));
-        small.getContext('2d',{alpha:false}).drawImage(im,0,0,small.width,small.height);
+        const g=small.getContext('2d',{alpha:false});g.imageSmoothingQuality='high';g.drawImage(im,0,0,small.width,small.height);
         return small;
       }finally{im.src='';URL.revokeObjectURL(url);}
     })();
@@ -447,7 +447,7 @@
       ctx.drawImage(images[actor],box.x,box.y,box.w,box.h);
       boxes.set(actor,box);
     }
-    if(canvas.width<1080){actorBoxes=boxes;previewTools?.refresh();}  // 고화질 출력에서는 편집 중 hit 영역 변경 금지
+    if(!busy){actorBoxes=boxes;previewTools?.refresh();}  // 고화질 출력에서는 편집 중 hit 영역 변경 금지
   }
   function centeredBadge(value,x,y,width,height,radius,background,border,size,padding,color){
     rounded(x,y,width,height,radius,background,border);
@@ -487,6 +487,7 @@
     ]);
     if(!guard())return false;
     ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
+    ctx.imageSmoothingQuality='high';
     ctx.clearRect(0,0,W,H);ctx.fillStyle='#e6e3dc';ctx.fillRect(0,0,W,H);
     photoCover(im,scene);
     if(index===0){
@@ -511,7 +512,7 @@
     }
     drawActors(scene,index,{maruni,ruru});
     pillCaption(scene.foot,1204);
-    if(canvas.width<1080&&selectedActor&&actorBoxes.has(selectedActor)){
+    if(!busy&&selectedActor&&actorBoxes.has(selectedActor)){
       const box=actorBoxes.get(selectedActor);ctx.save();ctx.strokeStyle='rgba(64,94,43,.85)';
       ctx.lineWidth=3;ctx.setLineDash([10,9]);ctx.strokeRect(box.x-5,box.y-5,box.w+10,box.h+10);ctx.restore();
     }
@@ -525,8 +526,10 @@
       painting=true;
       const token=drawToken,index=active;
       try{
+        const width=Math.min(W,Math.max(540,Math.ceil(canvas.getBoundingClientRect().width*(window.devicePixelRatio||1))));
+        if(canvas.width!==width){canvas.width=width;canvas.height=Math.round(width*H/W);}
         if(!project.scenes[index].photo){
-          ctx.setTransform(1,0,0,1,0,0);
+          ctx.setTransform(canvas.width/540,0,0,canvas.height/675,0,0);
           ctx.fillStyle='#e9e5dd';ctx.fillRect(0,0,canvas.width,canvas.height);
           ctx.fillStyle='#34251b';ctx.font='22px sans-serif';ctx.fillText((index===0?'썸네일':index+'컷')+' 현장 사진을 선택하세요',35,330);
         }else await draw(index,()=>!busy&&token===drawToken&&index===active);

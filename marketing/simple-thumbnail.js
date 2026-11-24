@@ -270,10 +270,13 @@ function mount(){
   }finally{original=previous;if(image)releaseCanvas(image);if(!previewOnly)source.src='';}
   return corner;
  }
+ function thumbnailPreviewScale(w,h){
+  return window.devicePixelRatio>1?Math.min(1.25,1920/Math.max(w,h)):Math.min(1,1440/Math.max(w,h));
+ }
  async function drawReference({previewOnly=false}={}){
   const selected=state.photos.find(p=>p.id===photo.value);if(!selected)throw Error('배경 사진을 먼저 선택하세요.');
   const v=values(),category=housing.value,before=state.photos.find(p=>p.id===beforePhoto.value),after=state.photos.find(p=>p.id===afterPhoto.value),pair=!!(before&&after&&before.id!==after.id);
-  const [W,H]=ratio.value==='landscape'?[1280,720]:ratio.value==='vertical'?[1080,1920]:ratio.value==='square'?(state.format==='kakao'?[800,800]:[1200,1200]):[1080,1350],c=el('canvas'),q=previewOnly?Math.min(1,1440/Math.max(W,H)):1;c.width=Math.round(W*q);c.height=Math.round(H*q);
+  const [W,H]=ratio.value==='landscape'?[1280,720]:ratio.value==='vertical'?[1080,1920]:ratio.value==='square'?(state.format==='kakao'?[800,800]:[1200,1200]):[1080,1350],c=el('canvas'),q=previewOnly?thumbnailPreviewScale(W,H):1;c.width=Math.round(W*q);c.height=Math.round(H*q);
   const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';const scale=c.width/1080,h=H/(W/1080),wide=ratio.value==='landscape',vertical=ratio.value==='vertical',top=vertical?190:32,bottom=vertical?280:48,m=56;
   g.scale(scale,scale);c.typeLayout=[];c.photoLayout=[];
   const titleText=title.value.trim()||[category,'마루 시공'].filter(Boolean).join(' ');
@@ -298,7 +301,7 @@ function mount(){
  async function drawSocial({previewOnly=false}={}){
   const p=state.photos.find(p=>p.id===photo.value);if(!p)throw Error('배경 사진을 먼저 선택하세요.');
   const v=values(),before=state.photos.find(p=>p.id===beforePhoto.value),after=state.photos.find(p=>p.id===afterPhoto.value),pair=!!(before&&after&&before.id!==after.id),category=housing.value;
-  const [W,H]=ratio.value==='landscape'?[1280,720]:ratio.value==='vertical'?[1080,1920]:ratio.value==='square'?(state.format==='kakao'?[800,800]:[1200,1200]):[1080,1350],c=el('canvas'),q=previewOnly?Math.min(1,1440/Math.max(W,H)):1;c.width=Math.round(W*q);c.height=Math.round(H*q);
+  const [W,H]=ratio.value==='landscape'?[1280,720]:ratio.value==='vertical'?[1080,1920]:ratio.value==='square'?(state.format==='kakao'?[800,800]:[1200,1200]):[1080,1350],c=el('canvas'),q=previewOnly?thumbnailPreviewScale(W,H):1;c.width=Math.round(W*q);c.height=Math.round(H*q);
   const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';const scale=c.width/1080,h=H/(W/1080),wide=ratio.value==='landscape',vertical=ratio.value==='vertical',m=wide?48:64,top=vertical?190:42,bottom=vertical?280:56;
   g.scale(scale,scale);c.typeLayout=[];c.photoLayout=[];
   const headline=v.title||'이 마루, 우리 집에도 어울릴까요?',metadata=[v.spec,v.location].filter(Boolean).join(' · ');
@@ -377,7 +380,7 @@ function mount(){
   const p=state.photos.find(p=>p.id===photo.value);if(!p)throw Error('표지 사진을 먼저 선택하세요.');
   const v=values(),mode=layout.value==='full'?'full':'photo70',floorStart=Number(floor.value)/100;
   const [W,H]=ratio.value==='landscape'?[1280,720]:ratio.value==='vertical'?[1080,1920]:ratio.value==='square'?(state.format==='kakao'?[800,800]:[1200,1200]):[1080,1350];
-  const c=el('canvas'),previewScale=previewOnly?Math.min(1,1440/Math.max(W,H)):1;c.width=Math.round(W*previewScale);c.height=Math.round(H*previewScale);
+  const c=el('canvas'),previewScale=previewOnly?thumbnailPreviewScale(W,H):1;c.width=Math.round(W*previewScale);c.height=Math.round(H*previewScale);
   const g=c.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';const scale=c.width/1080,h=H/(W/1080),wide=ratio.value==='landscape',vertical=ratio.value==='vertical',m=wide?48:64,top=vertical?190:42,bottom=vertical?260:48;
   const kind=v.structure||v.kind||'',onPhoto=mode==='full',ink=onPhoto?'#FFFFFF':'#263C31',muted=onPhoto?'#EEE9DF':'#667667';
   c.typeLayout=[];c.photoLayout=[];g.scale(scale,scale);g.fillStyle='#F4F0E8';g.fillRect(0,0,1080,h);

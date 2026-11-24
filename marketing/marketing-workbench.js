@@ -49,6 +49,27 @@
       };
       comicTabs.append(button);
     }
+    const coverBar=document.createElement('nav');
+    coverBar.className='comic-cover-tabs';
+    coverBar.setAttribute('aria-label','4컷 편집');
+    coverBar.innerHTML='<button type="button">썸네일</button><select aria-label="본문 콘텐츠"><option value="" disabled>본문 콘텐츠</option><option value="1">본문 · 1컷</option><option value="2">본문 · 2컷</option><option value="3">본문 · 3컷</option><option value="4">본문 · 4컷</option></select><select aria-label="캐릭터 추가"><option value="" disabled selected>캐릭터 추가</option><option value="maruni">마루니</option><option value="ruru">루루</option></select>';
+    const [coverButton,cutMenu,actorMenu]=coverBar.children;
+    const cuts=document.getElementById('ml-tabs');
+    const pickCut=n=>cuts.querySelector('[data-cut="'+n+'"]')?.click();
+    coverButton.onclick=()=>pickCut(0);
+    cutMenu.onchange=()=>pickCut(cutMenu.value);
+    actorMenu.onchange=()=>{
+      document.getElementById('ml-open-pose-'+actorMenu.value)?.click();
+      actorMenu.value='';
+    };
+    function syncCut(){
+      const n=cuts.querySelector('[aria-pressed=true]')?.dataset.cut || '0';
+      coverButton.setAttribute('aria-pressed',String(n==='0'));
+      cutMenu.value=n==='0'?'':n;
+    }
+    new MutationObserver(syncCut).observe(cuts,{subtree:true,childList:true,attributes:true,attributeFilter:['aria-pressed']});
+    syncCut();
+    stage.append(coverBar);
     function reflect(key){
       if(mode!==key)panel.scrollTop=0;
       mode=key;selector.value=key;desk.dataset.workMode=key;
@@ -56,6 +77,7 @@
         if(name===key){if(node.parentElement!==stage)stage.append(node);}
         else if(node.parentElement===stage)anchors[name].after(node);
       }
+      coverBar.hidden=key!=='locked';
       const comic=key!=='single';
       stage.hidden=!comic;comicTabs.hidden=!comic;tabs.hidden=comic;comicTools.hidden=!comic;
       stickerBox.hidden=comic||section!=='stickers';

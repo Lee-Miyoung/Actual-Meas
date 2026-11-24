@@ -57,3 +57,12 @@ body.simple-marketing-mode #studio .desk-layout>.desk-preview:has(.thumbnail-liv
     max-height:min(100%,calc(100dvh - 160px))!important;
   }
 }
+
+body.simple-marketing-mode #studio .production-desk[data-work-mode=locked] .desk-layout>#work-comic-preview{
+  flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;
+}
+.comic-cover-tabs{display:flex;width:100%;gap:6px}
+.comic-cover-tabs[hidden]{display:none}
+.comic-cover-tabs>*{flex:1;min-width:0;min-height:44px;text-align:center;font:inherit;border:1px solid #aebba7;border-radius:8px;background:#f8faf5;color:#334331}
+.comic-cover-tabs button[aria-pressed=true],.comic-cover-tabs select:has(option:checked:not([value=""])){background:#2d4937;color:white}
+@media(max-width:699px){#work-comic-preview:has(.comic-cover-tabs:not([hidden]))>.ml-canvas-wrap{width:min(100%,calc((38dvh - 80px)*.8))}}
