@@ -56,3 +56,32 @@ test('원본 사진을 직접 지정하면 컷 정보만 바뀐다',()=>{
  assert.equal(project.scenes[1].title,'은은한 슬레이트 질감');
  assert.throws(()=>F.changePhoto(project.scenes[1],{},'bad'));
 });
+
+test('제품 소개→고객 질문: 이전 루루 대사만 초기화하고 사진·캐릭터 배치를 보존',()=>{
+ const project=mock();
+ project.scenes.forEach((s,i)=>{
+  s.secondBubble='이전 루루 대사 '+i;
+  s.actorTransform={maruni:{dx:i,dy:-i,scale:1.25},ruru:{dx:-i,dy:i,scale:0.75}};
+  s.side=i%2?'left':'right';s.focusY=20+i;s.id='scene-'+i;
+ });
+ const before=project.scenes.map(s=>({scene:s,photo:s.photo,photoId:s.photoId,maruni:s.maruni,ruru:s.ruru,side:s.side,actorTransform:s.actorTransform,focusY:s.focusY,id:s.id}));
+ F.chooseTemplate(project,'question');
+ const expected=F.scenesFor('question');
+ assert.equal(project.type,'question');
+ project.scenes.forEach((s,i)=>{
+  assert.equal(s,before[i].scene);
+  assert.equal(s.title,expected[i].title);
+  assert.equal(s.bubble,expected[i].bubble);
+  assert.equal(s.foot,expected[i].foot);
+  assert.equal(s.secondBubble,'');
+  for(const k of ['photo','photoId','maruni','ruru','side','actorTransform','focusY','id'])assert.equal(s[k],before[i][k],k+' 보존: '+i);
+ });
+});
+test('모든 콘텐츠 형식 전환에서 대본의 두 번째 말풍선을 초기화',()=>{
+ const project=mock();
+ for(const {id} of F.types()){
+  project.scenes.forEach((s,i)=>{s.secondBubble='이전 대본 '+id+' '+i;});
+  F.chooseTemplate(project,id);
+  assert.ok(project.scenes.every(s=>s.secondBubble===''),id);
+ }
+});

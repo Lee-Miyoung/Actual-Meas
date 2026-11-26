@@ -19,8 +19,8 @@ test('고정 4컷 모듈은 유효한 JS이며 기존 편집기와 별도 연결
 });
 test('표지 1 + 본편 4, 4:5, 공식 로고 반복 금지',()=>{
   assert.match(js,/W = 1080, H = 1350, COUNT = 5/);
-  assert.match(js,/brand\/logo-black\.svg/);
-  assert.equal(js.split('brand/logo-black.svg').length,2);
+  assert.match(js,/index===0\?window\.CheonginCoverStyle\.contentLogo\(\):Promise\.resolve\(null\)/);
+  assert.match(js,/window\.CheonginCoverStyle\.drawLogo\(ctx,canvas,logo,W,55,50\)/);
   assert.match(js,/if\(index===0\)/);
   assert.match(js,/const x=110,y=365,w=750,h=158/);
 });
@@ -102,4 +102,11 @@ test('사진 보관함은 별도 저장되며 오래된 프로젝트의 사진 �
  assert.match(js,/libraryBlobs\.get\(row\.id\)/);
  assert.match(js,/loaded\.library=Array\.isArray\(loaded\.library\)/);
  assert.match(js,/s\.photoId/);
+});
+
+test('대본 붙여넣기 뒤 형식 전환은 두 번째 말풍선 상태를 갱신',()=>{
+ assert.match(js,/secondBubble:maruni&&ruru\?ruru:''/);
+ assert.match(js,/Workflow\.chooseTemplate\(project,type\)/);
+ assert.match(js,/q\('#ml-second'\)\.value=s\.secondBubble\|\|''/);
+ assert.match(html,/maruni-locked-workflow-core\.js\?v=clear-second-bubble-20261126/);
 });
