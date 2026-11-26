@@ -98,7 +98,7 @@
     project.type=type;project.series=t.series;project.product=t.topic;
     for(let i=0;i<COUNT;i++){
       const item=project.scenes[i],preset=defs[i];
-      item.title=preset.title;item.bubble=preset.bubble;item.foot=preset.foot;
+      item.title=preset.title;item.bubble=preset.bubble;item.secondBubble='';item.foot=preset.foot;
     }
     return project;
   }
