@@ -739,14 +739,14 @@
     q('#ml-script-preview').addEventListener('click',()=>{
       const raw=q('#ml-script').value.replace(/\r/g,'');
       const chunks=raw.split(/(?:^|\n)\s*([1-4])컷\s*[·.\-]?[^\n]*(?=\n|$)/m);
-      const cover=chunks[0].match(/(?:표지\s*제목)\s*\n([^\n]+)/);
+      const cover=chunks[0].match(/(?:표지\s*제목)\s*[:：]?\s*([^\n]+)/);
       if(!cover || chunks.length!==9){q('#ml-script-check').textContent='표지 제목과 1컷부터 4컷까지 확인해 주세요.';parsedScript=null;q('#ml-script-apply').hidden=true;return;}
       const next=[{title:cover[1].trim()}],issues=[];
       for(let i=1;i<chunks.length;i+=2){
         const number=Number(chunks[i]),body=chunks[i+1];
-        const maruni=body.match(/^\s*마루니\s+(.+)$/m)?.[1]?.trim()||'';
-        const ruru=body.match(/^\s*루루\s+(.+)$/m)?.[1]?.trim()||'';
-        const foot=body.match(/^\s*하단\s*자막\s+(.+)$/m)?.[1]?.trim()||'';
+        const maruni=body.match(/^\s*마루니\s*[:：]?\s*(.+)$/m)?.[1]?.trim()||'';
+        const ruru=body.match(/^\s*루루\s*[:：]?\s*(.+)$/m)?.[1]?.trim()||'';
+        const foot=body.match(/^\s*하단\s*자막\s*[:：]?\s*(.+)$/m)?.[1]?.trim()||'';
         if(number!==next.length || !foot || (!maruni&&!ruru))issues.push(number+'컷의 대사나 하단 자막을 확인해 주세요.');
         if(maruni.length>34||ruru.length>68||foot.length>34)issues.push(number+'컷 문구가 길어요. 말풍선 34자·68자, 하단 34자 이내로 줄여 주세요.');
         next.push({bubble:maruni||ruru,secondBubble:maruni&&ruru?ruru:'',foot});
