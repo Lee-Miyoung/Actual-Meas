@@ -737,16 +737,16 @@
     q('#ml-second').addEventListener('input',e=>{current().secondBubble=e.target.value;changed();});
     let parsedScript=null;
     q('#ml-script-preview').addEventListener('click',()=>{
-      const raw=q('#ml-script').value.replace(/\r/g,'');
-      const chunks=raw.split(/(?:^|\n)\s*([1-4])컷\s*[·.\-]?[^\n]*(?=\n|$)/m);
+      const raw=q('#ml-script').value.replace(/\r/g,'').replace(/\*\*/g,'');
+      const chunks=raw.split(/(?:^|\n)[ \t]*([1-4])컷[ \t]*[·.\-]?[^\n]*(?=\n|$)/m);
       const cover=chunks[0].match(/(?:표지\s*제목)\s*[:：]?\s*([^\n]+)/);
-      if(!cover || chunks.length!==9){q('#ml-script-check').textContent='표지 제목과 1컷부터 4컷까지 확인해 주세요.';parsedScript=null;q('#ml-script-apply').hidden=true;return;}
+      if(!cover || !cover[1].replace(/[:：]/g,'').trim() || chunks.length!==9){q('#ml-script-check').textContent='표지 제목과 1컷부터 4컷까지 확인해 주세요.';parsedScript=null;q('#ml-script-apply').hidden=true;return;}
       const next=[{title:cover[1].trim()}],issues=[];
       for(let i=1;i<chunks.length;i+=2){
         const number=Number(chunks[i]),body=chunks[i+1];
-        const maruni=body.match(/^\s*마루니\s*[:：]?\s*(.+)$/m)?.[1]?.trim()||'';
-        const ruru=body.match(/^\s*루루\s*[:：]?\s*(.+)$/m)?.[1]?.trim()||'';
-        const foot=body.match(/^\s*하단\s*자막\s*[:：]?\s*(.+)$/m)?.[1]?.trim()||'';
+        const maruni=body.match(/^[ \t]*마루니[ \t]*[:：]?[ \t]*(.*)$/m)?.[1]?.trim()||'';
+        const ruru=body.match(/^[ \t]*루루[ \t]*[:：]?[ \t]*(.*)$/m)?.[1]?.trim()||'';
+        const foot=body.match(/^[ \t]*하단[ \t]*자막[ \t]*[:：]?[ \t]*(.*)$/m)?.[1]?.trim()||'';
         if(number!==next.length || !foot || (!maruni&&!ruru))issues.push(number+'컷의 대사나 하단 자막을 확인해 주세요.');
         if(maruni.length>34||ruru.length>68||foot.length>34)issues.push(number+'컷 문구가 길어요. 말풍선 34자·68자, 하단 34자 이내로 줄여 주세요.');
         next.push({bubble:maruni||ruru,secondBubble:maruni&&ruru?ruru:'',foot});
@@ -754,7 +754,7 @@
       if(next[0].title.length>44)issues.push('표지 제목은 44자 이내로 줄여 주세요.');
       parsedScript=issues.length?null:next;
       q('#ml-script-check').replaceChildren(...(issues.length?issues:[next[0].title,...next.slice(1).map((v,i)=>(i+1)+'컷 · '+v.bubble+(v.secondBubble?' / '+v.secondBubble:'')+' · '+v.foot)]).map(line=>{const p=document.createElement('p');p.textContent=line;return p;}));
-      q('#ml-script-apply').hidden=!!issues;
+      q('#ml-script-apply').hidden=!!issues.length;
     });
     q('#ml-script-apply').addEventListener('click',()=>{
       if(!parsedScript)return;
